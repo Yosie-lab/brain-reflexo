@@ -496,7 +496,7 @@ function initShower() {
         isDragging = true;
         initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
         startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
-        requestGyroPermission(); // ジャイロの許可要求 (iOS対策)
+        setTimeout(requestGyroPermission, 150); // ジャイロの許可要求を少し遅らせて音の起動と競合させない
         handleInteraction(e.clientX, e.clientY);
     });
 
@@ -512,7 +512,7 @@ function initShower() {
         isDragging = true;
         initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
         startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
-        requestGyroPermission(); // ジャイロの許可要求 (iOS対策)
+        setTimeout(requestGyroPermission, 150); // ジャイロの許可要求を少し遅らせて音の起動と競合させない
         if (e.touches.length > 0) {
             handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
         }
