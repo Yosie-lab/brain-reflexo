@@ -474,14 +474,14 @@ body, html {
     flex: 1;
 }
 
-/* 𝕏 シェアボタンの特別な配色 */
+/* 𝕏 シェアボタンの特別な配色 (パステルラベンダー〜パステルピンク) */
 .btn-share {
-    background: linear-gradient(135deg, #1f2937, #111827);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: linear-gradient(135deg, #c2aff0, #f2a3b3);
+    box-shadow: 0 4px 15px rgba(242, 163, 179, 0.3);
+    border: none;
 }
 
 .btn-share:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-    background: linear-gradient(135deg, #374151, #1f2937);
+    box-shadow: 0 6px 20px rgba(242, 163, 179, 0.45);
+    filter: brightness(1.05);
 }
