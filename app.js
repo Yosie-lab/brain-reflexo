@@ -2948,32 +2948,30 @@ function tryPopBubble(clientX, clientY) {
 // 繧ｳ繝ｳ繝懈焚繧堤判髱｢荳ｭ螟ｮ縺ｫ縺ｵ繧上▲縺ｨ陦ｨ遉ｺ
 // 褒める言葉の定義（日本語＋英語）
 const COMBO_PRAISES = [
-    { jp: "いいぞ！", en: "Nice!" },
-    { jp: "すごい！", en: "Amazing!" },
-    { jp: "その調子！", en: "Keep it up!" },
-    { jp: "すてき！", en: "Lovely!" },
-    { jp: "さすが！", en: "Brilliant!" },
-    { jp: "お見事！", en: "Well done!" },
-    { jp: "バッチリ！", en: "Perfect!" },
-    { jp: "心地いい！", en: "So soothing!" },
-    { jp: "癒やされる！", en: "So relaxing!" },
-    { jp: "素晴らしい！", en: "Wonderful!" },
-    { jp: "いい波きてる！", en: "Great flow!" },
-    { jp: "天才！", en: "Genius!" },
-    { jp: "気持ちいい！", en: "Feels great!" },
-    { jp: "バツグン！", en: "Excellent!" }
+    { jp: "いい音", en: "Sweet chime" },
+    { jp: "すっきり", en: "Clear" },
+    { jp: "かるく", en: "Lightly" },
+    { jp: "心地よく", en: "Comfortable" },
+    { jp: "きれいに", en: "Cleanly" },
+    { jp: "そっと", en: "Softly" },
+    { jp: "いい流れ", en: "Nice flow" },
+    { jp: "いい波", en: "Nice wave" },
+    { jp: "ゆるやかに", en: "Gently" },
+    { jp: "おだやか", en: "Calm" },
+    { jp: "その調子で", en: "Keep it up" },
+    { jp: "すーっと", en: "Smoothly" }
 ];
 
 const SPECIAL_PRAISES = [
-    { jp: "✨奇跡的！✨", en: "✨Miraculous!✨" },
-    { jp: "🌟超リフレッシュ！🌟", en: "🌟Super Refreshed!🌟" },
-    { jp: "🎉パーフェクト！🎉", en: "🎉Perfect Combo!🎉" },
-    { jp: "💖極上の癒やし！💖", en: "💖Ultimate Bliss!💖" },
-    { jp: "🚀神業タップ！🚀", en: "🚀Godlike Tap!🚀" },
-    { jp: "🌈ビューティフル！🌈", en: "🌈Beautiful!🌈" },
-    { jp: "💫大宇宙の調和！💫", en: "💫Cosmic Harmony!💫" },
-    { jp: "💎至高の輝き！💎", en: "💎Supreme Radiance!💎" },
-    { jp: "🍀幸せいっぱい！🍀", en: "🍀Full of Happiness!🍀" }
+    { jp: "あたまクリアに", en: "Clear mind" },
+    { jp: "深呼吸をひとつ", en: "One deep breath" },
+    { jp: "すてきな響き合い", en: "Lovely resonance" },
+    { jp: "心が軽くなる", en: "Mind feeling lighter" },
+    { jp: "穏やかな時間", en: "Peaceful time" },
+    { jp: "きれいな調和", en: "Beautiful harmony" },
+    { jp: "心地よい広がり", en: "Soothing spread" },
+    { jp: "すっきりリラックス", en: "Refreshing relaxation" },
+    { jp: "静かな心地よさ", en: "Quiet comfort" }
 ];
 
 let lastPraiseIdx = -1;
