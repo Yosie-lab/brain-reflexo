@@ -72,7 +72,19 @@
         <div class="overlay-content">
             <h2>REFRESH COMPLETE</h2>
             <p>脳が心地よくリフレッシュされました<br><span class="en-text">Your mind has been pleasantly refreshed</span></p>
-            <button id="btn-restart" class="btn-primary">もう一度あたまをクリアに / Restart</button>
+            
+            <!-- 脳リフレッシュ診断結果表示エリア -->
+            <div id="diagnosis-container" class="diagnosis-box">
+                <div class="diagnosis-title">🧠 脳リフレッシュ診断 / Diagnosis</div>
+                <div id="diagnosis-percentage" class="diagnosis-percentage">--%</div>
+                <div id="diagnosis-text-jp" class="diagnosis-text-jp">診断中...</div>
+                <div id="diagnosis-text-en" class="diagnosis-text-en">Analyzing...</div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="btn-restart" class="btn-primary">もう一度 / Restart</button>
+                <button id="btn-share-x" class="btn-primary btn-share">𝕏 結果をシェア / Share</button>
+            </div>
         </div>
     </div>
 
