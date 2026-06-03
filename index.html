@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>脳リフレクソ - 音と光の泡つぶし / Brain Reflexo - Sound & Light Bubble Pop</title>
+    <meta name="description" content="フワーと包み込む音と、ピチョンと弾ける泡。考えすぎのあたまをサラッとクリアにする脳疲労リセット空間。 / A relaxing space to clear your mind with soothing sounds and popping bubbles.">
+    <script>
+        // デバッグ用エラーキャッチャー (画面上に直接赤いダイアログでエラーを表示)
+        window.onerror = function(message, source, lineno, colno, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'position:fixed;top:10px;left:10px;width:calc(100% - 20px);max-height:300px;background:rgba(220,38,38,0.95);color:#fff;padding:15px;border-radius:10px;z-index:999999;font-family:monospace;font-size:11px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);line-height:1.4;';
+            errDiv.innerHTML = '<strong>[JS Runtime Error]</strong><br>' + message + '<br><small>Location: ' + source + ':' + lineno + ':' + colno + '</small>' + (error && error.stack ? '<br><pre style="margin-top:5px;white-space:pre-wrap;font-size:10px;opacity:0.8;">' + error.stack + '</pre>' : '');
+            document.body.appendChild(errDiv);
+            return false;
+        };
+    </script>
+    <!-- Google Fonts から洗練されたフォントを読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 背景全体を覆うマインドシャワー＆泡Canvas -->
+    <canvas id="shower-canvas"></canvas>
+
+    <!-- UIオーバーレイ -->
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <h1 class="logo">脳<span>リフレクソ</span><span class="logo-en">Brain Reflexo</span></h1>
+            <p class="subtitle">ピチョンと弾ける音と光で、あたまをサラッとクリアに<br><span class="en-text">Clear your mind with soothing popping sounds and light</span></p>
+        </header>
+
+        <!-- ガイドテキスト（初回のみ表示） -->
+        <p class="guide-text" id="guide-text">画面の泡をタップしてみてください<br><span class="en-text">Try tapping the bubbles on the screen</span></p>
+
+        <!-- いつでもゲームを終了できるボタン -->
+        <div class="game-actions">
+            <button id="btn-quit-active" class="btn-quit">終了する / Quit</button>
+        </div>
+    </div>
+
+    <!-- コンボ表示 -->
+    <div class="combo-display" id="combo-display"></div>
+
+    <!-- リフレッシュゲージ（画面下部の淡い光 of バー） -->
+    <div class="refresh-gauge" id="refresh-gauge">
+        <div class="refresh-gauge-fill" id="refresh-gauge-fill"></div>
+        <span class="refresh-gauge-label" id="refresh-gauge-label"></span>
+    </div>
+
+    <!-- スタート選択画面 -->
+    <div id="start-overlay" class="overlay active">
+        <div class="overlay-content">
+            <h2>脳リフレクソ</h2>
+            <p>モードを選んでください<br><span class="en-text">Choose your play mode</span></p>
+            <button id="btn-play-normal" class="btn-primary" style="margin-bottom: 12px;">
+                ▶ Play
+                <span class="en-text">ゲームをクリアして終了</span>
+            </button>
+            <button id="btn-play-infinite" class="btn-primary btn-infinite">
+                ∞ Endless Play
+                <span class="en-text">終わりなく楽しむ</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- リフレッシュ完了画面 -->
+    <div id="gameover-overlay" class="overlay">
+        <div class="overlay-content">
+            <h2>REFRESH COMPLETE</h2>
+            <p>脳が心地よくリフレッシュされました<br><span class="en-text">Your mind has been pleasantly refreshed</span></p>
+            <button id="btn-restart" class="btn-primary">もう一度あたまをクリアに / Restart</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
