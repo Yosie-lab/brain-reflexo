@@ -424,28 +424,60 @@ function initShower() {
         createShowerParticles(clientX, clientY, 15);
     };
 
+    let isDragging = false;
+
     window.addEventListener('mousemove', (e) => {
         addParticleFlow(e.clientX, e.clientY);
+        if (isDragging && gameActive) {
+            tryPopBubble(e.clientX, e.clientY);
+        }
     });
 
     window.addEventListener('touchmove', (e) => {
         if (e.touches.length > 0) {
-            addParticleFlow(e.touches[0].clientX, e.touches[0].clientY);
+            const touch = e.touches[0];
+            addParticleFlow(touch.clientX, touch.clientY);
+            
+            // ゲーム中ならなぞりポップを実行し、画面スクロールを防止する
+            if (gameActive) {
+                tryPopBubble(touch.clientX, touch.clientY);
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+            }
         }
-    }, { passive: true });
+    }, { passive: false });
 
     window.addEventListener('mousedown', (e) => {
+        isDragging = true;
         initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
         startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
         handleInteraction(e.clientX, e.clientY);
     });
 
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    window.addEventListener('mouseleave', () => {
+        isDragging = false;
+    });
+
     window.addEventListener('touchstart', (e) => {
+        isDragging = true;
         initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
         startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
         if (e.touches.length > 0) {
             handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
         }
+    });
+
+    window.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+
+    window.addEventListener('touchcancel', () => {
+        isDragging = false;
     });
 }
 
