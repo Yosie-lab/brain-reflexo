@@ -1641,15 +1641,15 @@ function endGame(forceQuit = false) {
     }
 }
 
-// 豕｡縺悟ｼｾ縺代ｋ縲後ヴ繝√Ι繝ｳ縲埼浹繧貞粋謌舌＠縺ｦ蜀咲函医ョ繧｣繝ｬ繧､上お繧ｳ繝ｼ莉倥″  繝励メ繝→縺≧遐ｴ陬る浹繝ｬ繧､繝､繝ｼ
-function playPopSound(combo = 1, originX) {
+// 泡が弾ける「ピチョン」音を合成して再生（ディレイ・エコー付き）  プチッと弾ける破裂音レイヤー
+function playPopSound(combo = 1, originX, isChain = false, chainIndex = 0) {
     initAudio();
     if (!audioCtx) return;
     
     // ブラウザの自動再生ブロック対策
     if (audioCtx.state === 'suspended') {
         audioCtx.resume().then(() => {
-            playPopSound(combo, originX);
+            playPopSound(combo, originX, isChain, chainIndex);
         }).catch(() => {});
         return;
     }
@@ -1685,22 +1685,41 @@ function playPopSound(combo = 1, originX) {
         
         // --- 音色・パラメータ設定 ---
         osc.type = 'sine';
-        // 美しいCマイナー・ペンタトニック・スケール
-        const popScale = [261.63, 311.13, 349.23, 392.00, 466.16]; // C4, Eb4, F4, G4, Bb4
         
-        // 画面幅に対してX座標がどの位置にあるかで音程（インデックス）を決める
-        const xRatio = (originX !== undefined && showerCanvas) 
-            ? Math.max(0, Math.min(0.99, originX / showerCanvas.width)) 
-            : 0.5;
-        const scaleIndex = Math.floor(xRatio * popScale.length);
-        let baseFreq = popScale[scaleIndex];
+        let baseFreq;
+        let duration;
         
-        // コンボ数が上がると、オクターブが上昇する（4コンボごとに1オクターブ、最大2オクターブまでシフト）
-        const octaveShift = Math.floor((combo - 1) / 4);
-        baseFreq = baseFreq * Math.pow(2, Math.min(2, octaveShift));
+        if (isChain) {
+            // 連鎖用の美しいダイアトニックスケール (C Major 7th / Lydian風味でハープのように響かせる)
+            const chainScale = [
+                261.63, 293.66, 329.63, 392.00, 440.00, 493.88, // 1オクターブ目 (C4-B4)
+                523.25, 587.33, 659.25, 783.99, 880.00, 987.77, // 2オクターブ目 (C5-B5)
+                1046.50, 1174.66, 1318.51, 1567.98, 1760.00, 1975.53, // 3オクターブ目 (C6-B6)
+                2093.00 // 4オクターブ目のC7
+            ];
+            baseFreq = chainScale[Math.min(chainIndex, chainScale.length - 1)];
+            
+            // 連鎖時は余韻を少し長め（ハープのグリッサンド効果）にして美しい和音にする
+            duration = 0.28 + (chainIndex % 6) * 0.015;
+        } else {
+            // 美しいCマイナー・ペンタトニック・スケール
+            const popScale = [261.63, 311.13, 349.23, 392.00, 466.16]; // C4, Eb4, F4, G4, Bb4
+            
+            // 画面幅に対してX座標がどの位置にあるかで音程（インデックス）を決める
+            const xRatio = (originX !== undefined && showerCanvas) 
+                ? Math.max(0, Math.min(0.99, originX / showerCanvas.width)) 
+                : 0.5;
+            const scaleIndex = Math.floor(xRatio * popScale.length);
+            baseFreq = popScale[scaleIndex];
+            
+            // コンボ数が上がると、オクターブが上昇する（4コンボごとに1オクターブ、最大2オクターブまでシフト）
+            const octaveShift = Math.floor((combo - 1) / 4);
+            baseFreq = baseFreq * Math.pow(2, Math.min(2, octaveShift));
+            
+            duration = 0.08 + Math.min(combo - 1, 5) * 0.006;
+        }
         
         const targetFreq = baseFreq * 2.2;
-        const duration = 0.08 + Math.min(combo - 1, 5) * 0.006;
         
         osc.frequency.setValueAtTime(baseFreq, now);
         osc.frequency.exponentialRampToValueAtTime(targetFreq, now + duration * 0.85);
@@ -2770,7 +2789,7 @@ function triggerChainReaction(parentBubble) {
                 comboCount++;
                 
                 // ポップ音とエフェクトの再生
-                playPopSound(comboCount, b.x);
+                playPopSound(comboCount, b.x, true, index);
                 
                 // 連鎖中の振動は、すべて震わせるとノイズになるので3回に1回だけプチッと振動させる
                 if (comboCount % 3 === 0) {
