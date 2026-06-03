@@ -39,6 +39,13 @@ let auroraSkipCount = 0; // 3フレームに1回だけ再描画
 let auroraParticles = []; // 霧状のエメラルドグリーン粒子
 let stars = []; // 夜空のまたたく星屑
 
+// ジャイロセンサー（パララックス用）
+let targetGyroX = 0;
+let targetGyroY = 0;
+let currentGyroX = 0;
+let currentGyroY = 0;
+let gyroActive = false;
+
 
 
 // 繧ｳ繝ｳ繝懃ｮ｡逅�
@@ -352,6 +359,39 @@ function triggerHaptic(type) {
     }
 }
 
+function handleOrientation(event) {
+    const maxTilt = 30; // 30度で最大の傾きとする
+    let g = event.gamma || 0; // 左右の傾き (-90 〜 90)
+    let b = event.beta || 0;  // 前後の傾き (-180 〜 180)
+    
+    // 左右: -30度〜30度を -1.0〜1.0 にマッピング
+    targetGyroX = Math.max(-1, Math.min(1, g / maxTilt));
+    // 前後: 通常の縦持ち角度（約55度）を基準にし、前後30度のズレを -1.0〜1.0 にマッピング
+    targetGyroY = Math.max(-1, Math.min(1, (b - 55) / maxTilt));
+}
+
+function requestGyroPermission() {
+    if (gyroActive) return;
+    
+    if (typeof DeviceOrientationEvent !== 'undefined' && 
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    window.addEventListener('deviceorientation', handleOrientation);
+                    gyroActive = true;
+                }
+            })
+            .catch(err => {
+                console.warn("ジャイロセンサーの許可要求エラー:", err);
+            });
+    } else {
+        // iOS以外（AndroidやPC等）
+        window.addEventListener('deviceorientation', handleOrientation);
+        gyroActive = true;
+    }
+}
+
 // 星屑の初期化 (夜空のまたたき用)
 function initStars() {
     if (!showerCanvas) return;
@@ -390,9 +430,13 @@ function drawStars() {
         const twinkle = Math.sin(star.phase);
         const currentAlpha = Math.max(0.1, star.baseAlpha + twinkle * 0.25);
 
+        // ジャイロによる視差効果（星は奥にあるため、傾きと逆方向に小さく動かす）
+        const offsetX = currentGyroX * -25 * (star.size / 2);
+        const offsetY = currentGyroY * -25 * (star.size / 2);
+
         showerCtx.fillStyle = star.colorBase + currentAlpha + ')';
         const size = star.size;
-        showerCtx.fillRect(star.x - size / 2, star.y - size / 2, size, size);
+        showerCtx.fillRect(star.x + offsetX - size / 2, star.y + offsetY - size / 2, size, size);
     }
 }
 
@@ -452,6 +496,7 @@ function initShower() {
         isDragging = true;
         initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
         startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
+        requestGyroPermission(); // ジャイロの許可要求 (iOS対策)
         handleInteraction(e.clientX, e.clientY);
     });
 
@@ -467,6 +512,7 @@ function initShower() {
         isDragging = true;
         initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
         startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
+        requestGyroPermission(); // ジャイロの許可要求 (iOS対策)
         if (e.touches.length > 0) {
             handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
         }
@@ -545,6 +591,10 @@ function createShowerRipple(x, y, maxR, speed, hue) {
 }
 
 function updateShower() {
+    // ジャイロの傾きを滑らかに補間
+    currentGyroX += (targetGyroX - currentGyroX) * 0.1;
+    currentGyroY += (targetGyroY - currentGyroY) * 0.1;
+
     // コンボ中は背景を活発にする
     const now = performance.now();
     const activeCombo = (now - lastPopTime < COMBO_WINDOW) ? comboCount : 0;
@@ -796,7 +846,10 @@ function drawRealAuroraCurtain() {
     // ── キャッシュ画像を本Canvasにscreenブレンドで貼り付け（ぼかしフィルタを廃止して拡大補間を利用） ──
     showerCtx.save();
     showerCtx.globalCompositeOperation = 'screen';
-    showerCtx.drawImage(auroraOffscreen, 0, 0, showerCanvas.width, showerCanvas.height);
+    // オーロラをジャイロの傾きと逆方向に少しずらす (パララックス効果)
+    const auroraOffsetX = currentGyroX * -40;
+    const auroraOffsetY = currentGyroY * -30;
+    showerCtx.drawImage(auroraOffscreen, auroraOffsetX, auroraOffsetY, showerCanvas.width, showerCanvas.height);
     showerCtx.restore();
 }
 
@@ -1343,8 +1396,12 @@ function drawBubbles() {
 
         showerCtx.save();
         
+        // ジャイロによる視差効果（手前のバブルほど大きく動くパララックス）
+        const bOffsetX = currentGyroX * 0.4 * b.radius;
+        const bOffsetY = currentGyroY * 0.4 * b.radius;
+        
         // 座標系をバブルの中心に移動させ、アスペクト比スケールをかける
-        showerCtx.translate(b.x, b.y);
+        showerCtx.translate(b.x + bOffsetX, b.y + bOffsetY);
         showerCtx.scale(scaleX, scaleY);
         
         // ポップ中はフェードアウト
@@ -2764,8 +2821,11 @@ function tryPopBubble(clientX, clientY) {
         const b = bubbles[i];
         if (b.popping || b.reserved) continue; // ポップ中または連鎖予約済みの泡は除外
         
-        const dx = clientX - b.x;
-        const dy = clientY - b.y;
+        // ジャイロ視差と同じ座標ズレを加味して判定する
+        const bOffsetX = currentGyroX * 0.4 * b.radius;
+        const bOffsetY = currentGyroY * 0.4 * b.radius;
+        const dx = clientX - (b.x + bOffsetX);
+        const dy = clientY - (b.y + bOffsetY);
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         // 半径の1.2倍を判定範囲にして触りやすく
