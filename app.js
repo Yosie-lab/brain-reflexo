@@ -315,6 +315,43 @@ function pregenerateCarbonatedBuffer() {
     }
 }
 
+// ハプティクス（バイブレーション）をトリガーするヘルパー関数
+function triggerHaptic(type) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+            switch (type) {
+                case 'light':
+                    // 通常バブルのプチッとした微小な振動 (12ms)
+                    navigator.vibrate(12);
+                    break;
+                case 'medium':
+                    // 連鎖バブルなどの少し強めの振動 (25ms)
+                    navigator.vibrate(25);
+                    break;
+                case 'heavy':
+                    // フィーバー突入時のしっかりとした振動
+                    navigator.vibrate([40, 60, 40]);
+                    break;
+                case 'explosion':
+                    // 大爆発・流星群発生時の連続した振動
+                    navigator.vibrate([30, 40, 30, 40, 50]);
+                    break;
+                case 'success':
+                    // ゲームクリア時の心地よい2回振動
+                    navigator.vibrate([60, 80, 80]);
+                    break;
+                default:
+                    if (typeof type === 'number' || Array.isArray(type)) {
+                        navigator.vibrate(type);
+                    }
+                    break;
+            }
+        } catch (e) {
+            console.warn("ハプティクス再生エラー:", e);
+        }
+    }
+}
+
 // 星屑の初期化 (夜空のまたたき用)
 function initStars() {
     if (!showerCanvas) return;
@@ -899,6 +936,7 @@ function createMeteor(hue, originX, originY) {
 
 // 豬∵弌縺ｮ螟ｧ辷匱繧偵ヨ繝ｪ繧ｬ繝ｼ縺吶ｋ
 function triggerMeteorBigExplosion(originX, originY) {
+    triggerHaptic('explosion');
     // 最初の爆発音
     playMeteorBigExplosionSound(originX);
     // 炭酸バブルサウンドの再生
@@ -1502,6 +1540,7 @@ function endGame(forceQuit = false) {
     
     // クリア効果音の再生
     playClearSound();
+    triggerHaptic('success');
     
     // アンビエント音を即座に停止（フェードアウトではなく即時消音）
     stopAmbientSound(true);
@@ -2644,6 +2683,11 @@ function triggerChainReaction(parentBubble) {
                 // ポップ音とエフェクトの再生
                 playPopSound(comboCount, b.x);
                 
+                // 連鎖中の振動は、すべて震わせるとノイズになるので3回に1回だけプチッと振動させる
+                if (comboCount % 3 === 0) {
+                    triggerHaptic('light');
+                }
+                
                 // 巻き込まれた泡が別の「連鎖バブル（金色）」なら、さらにそこから連鎖を誘発
                 if (b.type === 'chain') {
                     triggerChainReaction(b);
@@ -2710,14 +2754,17 @@ function tryPopBubble(clientX, clientY) {
                 feverActive = true;
                 feverEndTime = now + 8000; // フィーバータイムは8秒間
                 playFeverStartSound(b.x);
+                triggerHaptic('heavy');
                 createShowerRipple(b.x, b.y, 280, 3.2, 210); // 白銀の特大波紋 (色相210)
             } else if (b.type === 'chain') {
                 playPopSound(comboCount, b.x);
+                triggerHaptic('medium');
                 triggerChainReaction(b);
             } else {
                 playPopSound(comboCount, b.x);
+                triggerHaptic('light');
                 
-                // フィーバー中ならさらに追加のチャイム音をバックに薄く重ねる
+                // フィーバー中ならさらに追加 of チャイム音をバックに薄く重ねる
                 if (feverActive) {
                     playFeverChimeBackground(b.x);
                 }

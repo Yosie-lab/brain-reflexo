@@ -54,7 +54,7 @@ function startServer(port) {
         console.error(`エラー: ポートのバインドに失敗したため、サーバー起動を停止します。直接 index.html をブラウザで開いて確認できます。`);
         return;
     }
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, '0.0.0.0', () => {
         console.log(`Server running at http://localhost:${port}/`);
     });
 }
