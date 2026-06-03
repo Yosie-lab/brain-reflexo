@@ -1633,40 +1633,6 @@ function endGame(forceQuit = false) {
     
     // アンビエント音を即座に停止（フェードアウトではなく即時消音）
     stopAmbientSound(true);
-
-    if (!forceQuit) {
-        // 脳リフレッシュ診断の生成
-        const percentage = 85 + Math.floor(Math.random() * 16); // 85%〜100%
-        const diagnoses = [
-            { jp: "ディープリラックス状態 🧘", en: "Deeply Relaxed" },
-            { jp: "脳内アルファ波がMAX！ ⚡", en: "Alpha Waves Maxed Out!" },
-            { jp: "極上の癒やし（マインドクリア） ✨", en: "Mind Fully Cleared" },
-            { jp: "集中力とリラックスの黄金比率 ⚖️", en: "Perfect Focus & Relax Balance" },
-            { jp: "宇宙のオーロラとシンクロ完了 🌌", en: "Cosmic Aurora Synced" },
-            { jp: "炭酸の泡のごとく雑念が消滅 🫧", en: "No Stray Thoughts (Like Bubbles)" },
-            { jp: "至高の無（マインドフルネス） 💎", en: "Supreme Mindfulness achieved" }
-        ];
-        const selected = diagnoses[Math.floor(Math.random() * diagnoses.length)];
-
-        // UI表示を更新
-        const pctEl = document.getElementById('diagnosis-percentage');
-        const jpEl = document.getElementById('diagnosis-text-jp');
-        const enEl = document.getElementById('diagnosis-text-en');
-        if (pctEl) pctEl.textContent = `${percentage}%`;
-        if (jpEl) jpEl.textContent = selected.jp;
-        if (enEl) enEl.textContent = selected.en;
-
-        // シェアボタンのイベントリスナーを設定
-        const btnShare = document.getElementById('btn-share-x');
-        if (btnShare) {
-            btnShare.onclick = () => {
-                const shareText = `脳リフレクソをクリアしました！\n🧠 脳のリフレッシュ度：${percentage}%\n【${selected.jp}】\n心地よいオーロラと炭酸音で脳が癒やされました。みんなもあたまをクリアにしよう！\n`;
-                const shareUrl = `https://yosie-lab.github.io/brain-reflexo/`;
-                const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}&hashtags=脳リフレクソ,リラックス,マインドフルネス`;
-                window.open(xUrl, '_blank');
-            };
-        }
-    }
     
     // リフレッシュ完了画面を表示
     const overlay = document.getElementById('gameover-overlay');
