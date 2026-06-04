@@ -3036,18 +3036,18 @@ const COMBO_PRAISES = [
     { jp: "とろけるように", en: "Melt away" },
     { jp: "その調子", en: "Keep it up" },
     { jp: "素敵", en: "Lovely" },
-    { jp: "ゆるく", en: "Gently" }
+    { jp: "癒される", en: "Feeling healed" }
 ];
 
 const SPECIAL_PRAISES = [
     { jp: "あたまがクリア", en: "Clear mind" },
     { jp: "深く深呼吸", en: "Deep breath" },
-    { jp: "極上の癒し", en: "Supreme healing" },
+    { jp: "究極の癒し", en: "Ultimate healing" },
     { jp: "心身が軽い", en: "Mind and body feeling lighter" },
     { jp: "至福の時間", en: "Blissful time" },
     { jp: "心地よい広がり", en: "Soothing spread" },
     { jp: "最高にリラックス", en: "Ultimate relaxation" },
-    { jp: "究極の快感", en: "Ultimate pleasure" },
+    { jp: "極上の快感", en: "Supreme pleasure" },
     { jp: "包み込むように", en: "Enveloping comfort" }
 ];
 
