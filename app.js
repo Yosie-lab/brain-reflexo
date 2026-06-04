@@ -2963,10 +2963,10 @@ const COMBO_PRAISES = [
 ];
 
 const SPECIAL_PRAISES = [
-    { jp: "あたまクリアに", en: "Clear mind" },
-    { jp: "深呼吸をひとつ", en: "One deep breath" },
-    { jp: "すてきな響き合い", en: "Lovely resonance" },
-    { jp: "心が軽くなる", en: "Mind feeling lighter" },
+    { jp: "あたまがクリア", en: "Clear mind" },
+    { jp: "深く深呼吸", en: "Deep breath" },
+    { jp: "すてきな響き", en: "Lovely resonance" },
+    { jp: "心が軽い", en: "Mind feeling lighter" },
     { jp: "穏やかな時間", en: "Peaceful time" },
     { jp: "きれいな調和", en: "Beautiful harmony" },
     { jp: "心地よい広がり", en: "Soothing spread" },
