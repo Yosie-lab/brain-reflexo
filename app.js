@@ -1650,9 +1650,9 @@ function initApp() {
 }
 
 function endGame(forceQuit = false) {
-    // 無限モードかつ強制終了でない場合はオーバーレイを出さずに自動再スタート
+    // 無限モードかつ強制終了でない場合は何もしない
+    // （ゲージのサイクルは incrementPopProgress() が担当するため、ここでのリセットは不要）
     if (infiniteMode && !forceQuit) {
-        startGame();
         return;
     }
 
