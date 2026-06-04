@@ -2850,7 +2850,7 @@ function triggerChainReaction(parentBubble) {
                     showCombo(comboCount);
                 }
                 
-                if (refreshProgress >= 1) {
+                if (!infiniteMode && refreshProgress >= 1) {
                     setTimeout(() => {
                         endGame();
                     }, 600);
@@ -2980,7 +2980,7 @@ function tryPopBubble(clientX, clientY) {
             }
             
             // 繧ｲ繝ｼ繧ｸ貅繧ｿ繝ｳ 竊� 繝ｪ繝輔Ξ繝�す繝･螳御ｺ�
-            if (refreshProgress >= 1) {
+            if (!infiniteMode && refreshProgress >= 1) {
                 setTimeout(() => {
                     endGame();
                 }, 600);
