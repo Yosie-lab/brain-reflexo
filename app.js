@@ -2971,7 +2971,7 @@ const SPECIAL_PRAISES = [
     { jp: "きれいな調和", en: "Beautiful harmony" },
     { jp: "心地よい広がり", en: "Soothing spread" },
     { jp: "最高にリラックス", en: "Ultimate relaxation" },
-    { jp: "静かな快感に", en: "Quiet pleasure" }
+    { jp: "穏やかな快感", en: "Calm pleasure" }
 ];
 
 let lastPraiseIdx = -1;
