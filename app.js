@@ -1645,6 +1645,17 @@ function initApp() {
     });
     window.addEventListener('focus', handleVisibilityOrFocus);
     
+    // iOS Safariでのマルチタッチによるピンチズーム（拡大・縮小操作）をJS側でも強制的に防止
+    document.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gesturechange', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gestureend', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    
     // アニメーションループ開始（ゲーム待機中も背景アニメは動かす）
     requestAnimationFrame(mainLoop);
 }
@@ -3091,12 +3102,12 @@ function showCombo(count) {
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
         if (count % 10 === 0) {
-            // スペシャル評価: 最大13.5vw（通常評価9vwの1.5倍）、画面幅の80%に収まるように自動縮小
-            const fsJp = Math.min(13.5, 80 / praise.jp.length);
+            // スペシャル評価: 最大11.4vw（7文字のサイズ）、画面幅の80%に収まるように自動縮小
+            const fsJp = Math.min(11.4, 80 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
             
-            // 英語スペシャル評価: 最大6.75vw（通常評価4.5vwの1.5倍）、画面幅の85%に収まるように自動縮小
-            const fsEn = Math.min(6.75, 85 / praise.en.length);
+            // 英語スペシャル評価: 最大5.4vw（通常評価4.5vwの1.2倍）、画面幅の85%に収まるように自動縮小
+            const fsEn = Math.min(5.4, 85 / praise.en.length);
             enDiv.style.fontSize = fsEn + 'vw';
         } else {
             // 通常評価: 最大9vw、画面幅의75%に収まるように自動縮小
@@ -3179,6 +3190,8 @@ function startGame() {
     
     // 最初の柔らかなアンビエント音を開始
     startAmbientSound();
+    // テスト用にスペシャル評価を即時表示
+    showCombo(10);
 }
 
 

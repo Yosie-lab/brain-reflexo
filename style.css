@@ -7,6 +7,7 @@
     padding: 0;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: none; /* 全ての要素でダブルタップズームやピンチズーム、スワイプスクロールを防止 */
 }
 
 body, html {
@@ -208,11 +209,11 @@ body, html {
 }
 
 .combo-display.special .combo-jp {
-    font-size: 78px;
+    font-size: 64px;
 }
 
 .combo-display.special .combo-en {
-    font-size: 30px;
+    font-size: 24px;
     opacity: 0.95;
     letter-spacing: 3px;
 }
@@ -227,10 +228,10 @@ body, html {
         letter-spacing: 1.8px;
     }
     .combo-display.special .combo-jp {
-        font-size: 11.7vw;
+        font-size: 9.4vw;
     }
     .combo-display.special .combo-en {
-        font-size: 7.2vw;
+        font-size: 5.8vw;
         letter-spacing: 2.2px;
     }
 }
