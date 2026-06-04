@@ -3042,10 +3042,9 @@ const COMBO_PRAISES = [
 const SPECIAL_PRAISES = [
     { jp: "あたまがクリア", en: "Clear mind" },
     { jp: "深く深呼吸", en: "Deep breath" },
-    { jp: "すてきな響き", en: "Lovely resonance" },
+    { jp: "極上の癒し", en: "Supreme healing" },
     { jp: "心身が軽い", en: "Mind and body feeling lighter" },
     { jp: "至福の時間", en: "Blissful time" },
-    { jp: "きれいな調和", en: "Beautiful harmony" },
     { jp: "心地よい広がり", en: "Soothing spread" },
     { jp: "最高にリラックス", en: "Ultimate relaxation" },
     { jp: "究極の快感", en: "Ultimate pleasure" },
