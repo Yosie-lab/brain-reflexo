@@ -3070,12 +3070,12 @@ function showCombo(count) {
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
         if (count % 10 === 0) {
-            // スペシャル評価: 最大15vw、画面幅の80%に収まるように自動縮小
-            const fsJp = Math.min(15, 80 / praise.jp.length);
+            // スペシャル評価: 最大13.5vw（通常評価9vwの1.5倍）、画面幅の80%に収まるように自動縮小
+            const fsJp = Math.min(13.5, 80 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
             
-            // 英語スペシャル評価: 最大5.5vw、画面幅の85%に収まるように自動縮小
-            const fsEn = Math.min(5.5, 85 / praise.en.length);
+            // 英語スペシャル評価: 最大6.75vw（通常評価4.5vwの1.5倍）、画面幅の85%に収まるように自動縮小
+            const fsEn = Math.min(6.75, 85 / praise.en.length);
             enDiv.style.fontSize = fsEn + 'vw';
         } else {
             // 通常評価: 最大9vw、画面幅의75%に収まるように自動縮小
