@@ -1530,6 +1530,25 @@ function initAudio() {
                 });
             }
             
+            // 状態変化時の自動復旧リスナーを設定
+            if (!audioCtx.onstatechange) {
+                audioCtx.onstatechange = () => {
+                    if (gameActive && audioCtx.state !== 'running' && !isResuming) {
+                        isResuming = true;
+                        const hadOscs = ambientOscs.length > 0;
+                        audioCtx.resume().then(() => {
+                            isResuming = false;
+                            if (gameActive && hadOscs) {
+                                stopAmbientSound(true);
+                                startAmbientSound();
+                            }
+                        }).catch(() => {
+                            isResuming = false;
+                        });
+                    }
+                };
+            }
+            
             // 繝ｭ繝け隗｣髯､縺ｮ縺溘ａ縺ｮ繝€繝溘辟｡髻ｳ蜀咲函域ｯ主屓縺ｮ繧､繝ｳ繧ｿ繝ｩ繧ｯ繧ｷ繝ｧ繝ｳ縺ｧ螳溯｡後＠縺ｦ繝ｭ繝け隗｣髯､繧堤｢ｺ螳溘↓縺吶ｋ縲∽ｾ句､悶せ繝ｭ繝ｼ蟇ｾ遲悶→縺励※菫晁ｭｷ
             try {
                 const buffer = audioCtx.createBuffer(1, 1, 22050);
@@ -1626,9 +1645,10 @@ function initApp() {
                 if (audioCtx.state !== 'running') {
                     if (!isResuming) {
                         isResuming = true;
+                        const hadOscs = ambientOscs.length > 0;
                         audioCtx.resume().then(() => {
                             isResuming = false;
-                            if (gameActive) {
+                            if (gameActive && hadOscs) {
                                 stopAmbientSound(true);
                                 startAmbientSound();
                             }
@@ -2043,8 +2063,13 @@ function startAmbientSound() {
     if (audioCtx.state !== 'running') {
         if (!isResuming) {
             isResuming = true;
+            const hadOscs = ambientOscs.length > 0;
             audioCtx.resume().then(() => {
                 isResuming = false;
+                if (gameActive && hadOscs) { // 非同期解決後にもアクティブか再確認
+                    stopAmbientSound(true); // 古いノードを確実に破棄
+                    startAmbientSound();
+                }
             }).catch(() => {
                 isResuming = false;
             });
