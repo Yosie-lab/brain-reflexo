@@ -2957,7 +2957,7 @@ const COMBO_PRAISES = [
     { jp: "いい流れ", en: "Nice flow" },
     { jp: "いい波", en: "Nice wave" },
     { jp: "ゆるやかに", en: "Gently" },
-    { jp: "おだやか", en: "Calm" },
+    { jp: "リラックス", en: "Relax" },
     { jp: "その調子", en: "Keep it up" },
     { jp: "素敵", en: "Lovely" }
 ];
