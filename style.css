@@ -235,6 +235,10 @@ body, html {
     animation: comboPop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+.combo-display.special.show {
+    animation: comboPop 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 @keyframes comboPop {
     0% {
         transform: translate(-50%, -50%) scale(0.6);
