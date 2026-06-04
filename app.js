@@ -2949,7 +2949,7 @@ function tryPopBubble(clientX, clientY) {
 // 褒める言葉の定義（日本語＋英語）
 const COMBO_PRAISES = [
     { jp: "心地良い音", en: "Soothing sound" },
-    { jp: "すっきり", en: "Clear" },
+    { jp: "スッキリ", en: "Clear" },
     { jp: "かるく", en: "Lightly" },
     { jp: "気持ちいい", en: "Feels great" },
     { jp: "綺麗", en: "Beautiful" },
@@ -2970,7 +2970,7 @@ const SPECIAL_PRAISES = [
     { jp: "穏やかな時間", en: "Peaceful time" },
     { jp: "きれいな調和", en: "Beautiful harmony" },
     { jp: "心地よい広がり", en: "Soothing spread" },
-    { jp: "すっきりリラックス", en: "Refreshing relaxation" },
+    { jp: "スッキリリラックス", en: "Refreshing relaxation" },
     { jp: "静かな心地よさ", en: "Quiet comfort" }
 ];
 
