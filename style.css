@@ -175,6 +175,8 @@ body, html {
     z-index: 5;
     white-space: nowrap;
     transition: color 0.3s ease, text-shadow 0.3s ease;
+    width: 90%;
+    text-align: center;
 }
 
 .combo-jp {
@@ -209,6 +211,22 @@ body, html {
     font-size: 24px;
     opacity: 0.95;
     letter-spacing: 3px;
+}
+
+/* モバイル画面でのコンボテキスト表示切れ防止 */
+@media (max-width: 600px) {
+    .combo-jp {
+        font-size: 8vw;
+    }
+    .combo-en {
+        font-size: 4vw;
+    }
+    .combo-display.special .combo-jp {
+        font-size: 9.5vw;
+    }
+    .combo-display.special .combo-en {
+        font-size: 4.5vw;
+    }
 }
 
 .combo-display.show {
