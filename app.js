@@ -66,6 +66,7 @@ let infiniteMode = false; // true = Endless Play（終わらないモード）
 
 // 髻ｳ螢ｰ髢｢騾｣
 let audioCtx = null;
+let isResuming = false;
 let ambientOscs = [];
 let ambientNodes = []; // 繧ｨ繝輔ぉ繧ｯ繝育ｭ峨荳ｭ髢薙ヮ繝ｼ繝我ｸ€諡ｬ邂｡逅畑
 let ambientGain = null;
@@ -1514,13 +1515,16 @@ function drawBubbles() {
 function initAudio() {
     try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (audioCtx && audioCtx.state === 'closed') {
+            audioCtx = null;
+        }
         if (!audioCtx && AudioContextClass) {
             audioCtx = new AudioContextClass();
         }
         
         if (audioCtx) {
             // 縺吶〒縺ｫ繧ｳ繝ｳ繝く繧ｹ繝医′縺ゅｋ蝣ｴ蜷医〒繧ゅ€《uspended縺ｧ縺ゅｌ縺ｰ譏守､ｺ逧↓蜀埼幕繧定ｩｦ縺ｿ繧具ｼ育音縺ｫSafari繧ヰ繝け繧ｰ繝ｩ繧ｦ繝ｳ繝牙ｾｩ蟶ｰ蟇ｾ遲厄ｼ
-            if (audioCtx.state === 'suspended') {
+            if (audioCtx.state !== 'running') {
                 audioCtx.resume().catch((err) => {
                     console.warn("AudioContext縺ｮ蜀埼幕縺ｫ螟ｱ謨励＠縺ｾ縺励◆:", err);
                 });
@@ -1614,6 +1618,41 @@ function initApp() {
         }, { passive: false });
     }
     
+    // ページ視認性変更やフォーカス時にオーディオコンテキストを復旧する
+    const handleVisibilityOrFocus = () => {
+        if (gameActive) {
+            initAudio();
+            if (audioCtx) {
+                if (audioCtx.state !== 'running') {
+                    if (!isResuming) {
+                        isResuming = true;
+                        audioCtx.resume().then(() => {
+                            isResuming = false;
+                            if (gameActive) {
+                                stopAmbientSound(true);
+                                startAmbientSound();
+                            }
+                        }).catch(() => {
+                            isResuming = false;
+                        });
+                    }
+                } else {
+                    // すでに running の場合：通常のタップ操作等で頻繁にリセット（無音化）されるのを防ぐため、
+                    // アンビエント音が本当に再生されていない場合のみ開始する。
+                    if (ambientOscs.length === 0) {
+                        startAmbientSound();
+                    }
+                }
+            }
+        }
+    };
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            handleVisibilityOrFocus();
+        }
+    });
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    
     // アニメーションループ開始（ゲーム待機中も背景アニメは動かす）
     requestAnimationFrame(mainLoop);
 }
@@ -1647,7 +1686,7 @@ function playPopSound(combo = 1, originX) {
     if (!audioCtx) return;
     
     // ブラウザの自動再生ブロック対策
-    if (audioCtx.state === 'suspended') {
+    if (audioCtx.state !== 'running') {
         audioCtx.resume().then(() => {
             playPopSound(combo, originX);
         }).catch(() => {});
@@ -1746,7 +1785,7 @@ function playFeverStartSound(originX) {
     initAudio();
     if (!audioCtx) return;
     
-    if (audioCtx.state === 'suspended') {
+    if (audioCtx.state !== 'running') {
         audioCtx.resume().then(() => {
             playFeverStartSound(originX);
         }).catch(() => {});
@@ -1928,7 +1967,7 @@ function playClearSound() {
     initAudio();
     if (!audioCtx) return;
     
-    if (audioCtx.state === 'suspended') {
+    if (audioCtx.state !== 'running') {
         audioCtx.resume().then(() => {
             playClearSound();
         }).catch(() => {});
@@ -1994,15 +2033,22 @@ function playClearSound() {
 
 // 譟斐ｉ縺九↑繝輔Ρ繝ｼ縺ｨ縺励◆迺ｰ蠅レ譎ｯ髻ｳ縺ｮ髢句ｧ具ｼ3.5遘偵繝輔ぉ繝ｼ繝峨う繝ｳ  繧ｳ繝ｼ繝ｩ繧ｹ  繝ｪ繝舌繝  蜻ｼ蜷ｸ縺吶ｋ繝輔ぅ繝ｫ繧ｿ繝ｼLFO
 function startAmbientSound() {
-    if (!audioCtx || !gameActive) return; // ゲームがアクティブでない場合は開始しない
+    if (!gameActive) return; // ゲームがアクティブでない場合は開始しない
+    if (!audioCtx) {
+        // audioCtx がまだ無い場合は初期化を試みてリトライ
+        initAudio();
+        if (!audioCtx) return;
+    }
     
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(() => {
-            if (gameActive) { // 非同期解決後にもアクティブか再確認
-                startAmbientSound();
-            }
-        }).catch(() => {});
-        return;
+    if (audioCtx.state !== 'running') {
+        if (!isResuming) {
+            isResuming = true;
+            audioCtx.resume().then(() => {
+                isResuming = false;
+            }).catch(() => {
+                isResuming = false;
+            });
+        }
     }
     
     // 縺吶〒縺ｫ蜀咲函荳ｭ縺ｮ蝣ｴ蜷医菴輔ｂ縺励↑縺
@@ -2129,8 +2175,14 @@ function stopAmbientSound(immediate = false) {
         const fadeTime = immediate ? 0.05 : 0.5; // 即時なら50ms、通常は0.5秒で素早く消音
         
         if (ambientGain) {
-            ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
-            ambientGain.gain.exponentialRampToValueAtTime(0.0001, now + fadeTime);
+            try {
+                ambientGain.gain.cancelScheduledValues(now);
+                const currentVal = Math.max(0, Math.min(0.003, ambientGain.gain.value));
+                ambientGain.gain.setValueAtTime(currentVal, now);
+                ambientGain.gain.linearRampToValueAtTime(0, now + fadeTime);
+            } catch (err) {
+                ambientGain.gain.setValueAtTime(0, now);
+            }
         }
         
         const currentOscs = [...ambientOscs];
@@ -2163,7 +2215,7 @@ function playMeteorSound(originX) {
     initAudio();
     if (!audioCtx) return;
     
-    if (audioCtx.state === 'suspended') {
+    if (audioCtx.state !== 'running') {
         audioCtx.resume().then(() => {
             playMeteorSound(originX);
         }).catch(() => {});
@@ -2276,7 +2328,7 @@ function playMeteorBigExplosionSound(originX) {
     if (!audioCtx) return;
     
     // Web Audio APIの初期化/レジューム試行
-    if (audioCtx.state === 'suspended') {
+    if (audioCtx.state !== 'running') {
         audioCtx.resume().then(() => {
             // 再起呼び出しを避けるためここでは再生しない
         }).catch(() => {});
@@ -2554,7 +2606,7 @@ function playCarbonatedBubbleSound(originX) {
     initAudio();
     if (!audioCtx) return;
 
-    if (audioCtx.state === 'suspended') {
+    if (audioCtx.state !== 'running') {
         audioCtx.resume().then(() => {
             playCarbonatedBubbleSound(originX);
         }).catch(() => {});
@@ -3076,12 +3128,13 @@ function startGame() {
     }
     
     // 繧ｲ繝ｼ繝�繧ｪ繝ｼ繝舌�繝｢繝ｼ繝繝ｫ繧帝撼陦ｨ遉ｺ縺ｫ
+    // 繧ｲ繝ｼ繝繧ｪ繝ｼ繝舌繝｢繝ｼ繝€繝ｫ繧帝撼陦ｨ遉ｺ縺ｫ
     const overlay = document.getElementById('gameover-overlay');
     if (overlay) {
         overlay.classList.remove('active');
     }
     
-    // 閭梧勹縺ｮ譟斐ｉ縺九↑繧｢繝ｳ繝薙お繝ｳ繝磯浹繧帝幕蟋�
+    // 最初の柔らかなアンビエント音を開始
     startAmbientSound();
 }
 
