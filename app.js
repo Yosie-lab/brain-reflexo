@@ -2970,7 +2970,7 @@ const SPECIAL_PRAISES = [
     { jp: "穏やかな時間", en: "Peaceful time" },
     { jp: "きれいな調和", en: "Beautiful harmony" },
     { jp: "心地よい広がり", en: "Soothing spread" },
-    { jp: "スッキリリラックス", en: "Refreshing relaxation" },
+    { jp: "最高にリラックス", en: "Ultimate relaxation" },
     { jp: "静かな心地よさ", en: "Quiet comfort" }
 ];
 
