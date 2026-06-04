@@ -12,6 +12,7 @@
 body, html {
     width: 100%;
     height: 100%;
+    height: 100dvh; /* モバイルブラウザのツールバーによるはみ出しを防ぐ */
     overflow: hidden;
     background-color: #050811; /* フォールバック用の暗い背景色 */
     background: radial-gradient(circle at 50% 30%, #0b1528 0%, #050811 60%, #010205 100%);
@@ -38,6 +39,7 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh; /* 動的ビューポートに対応して常に画面内に収める */
     z-index: 10;
     display: flex;
     flex-direction: column;
@@ -123,8 +125,8 @@ body, html {
    ============================================================= */
 .game-actions {
     position: absolute;
-    bottom: 35px;
-    right: 20px;
+    bottom: calc(35px + env(safe-area-inset-bottom));
+    right: calc(20px + env(safe-area-inset-right));
     animation: fadeInUp 1.2s ease-out;
     z-index: 15;
 }
@@ -268,7 +270,7 @@ body, html {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 20px;
+    height: calc(20px + env(safe-area-inset-bottom));
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -278,7 +280,7 @@ body, html {
 
 .refresh-gauge-fill {
     width: 0%;
-    height: 100%;
+    height: 20px; /* セーフエリアの上部のバー領域のみを塗る */
     background: linear-gradient(90deg, #8da9c4, #81c3d7, #96e6b3, #c2aff0);
     box-shadow: 0 0 12px rgba(129, 195, 215, 0.7);
     transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -286,9 +288,9 @@ body, html {
 
 .refresh-gauge-label {
     position: absolute;
-    top: 50%;
+    top: 10px; /* セーフエリアに依らずバーの縦中央に配置 */
     transform: translateY(-50%);
-    right: 20px;
+    right: calc(20px + env(safe-area-inset-right));
     font-size: 10px;
     font-weight: 800;
     color: #ffffff;
@@ -312,6 +314,7 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     background: rgba(6, 9, 19, 0.45);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
