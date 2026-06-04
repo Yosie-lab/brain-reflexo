@@ -216,18 +216,18 @@ body, html {
 /* モバイル画面でのコンボテキスト表示切れ防止 */
 @media (max-width: 600px) {
     .combo-jp {
-        font-size: 7.5vw;
+        font-size: 7.8vw;
     }
     .combo-en {
-        font-size: 3.5vw;
-        letter-spacing: 1.5px;
+        font-size: 3.8vw;
+        letter-spacing: 1.8px;
     }
     .combo-display.special .combo-jp {
-        font-size: 8.2vw;
+        font-size: 8.8vw;
     }
     .combo-display.special .combo-en {
-        font-size: 3.8vw;
-        letter-spacing: 2px;
+        font-size: 4.2vw;
+        letter-spacing: 2.2px;
     }
 }
 
