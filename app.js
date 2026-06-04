@@ -3008,7 +3008,7 @@ const COMBO_PRAISES = [
     { jp: "そっと", en: "Softly" },
     { jp: "いい波", en: "Nice wave" },
     { jp: "もっと", en: "More" },
-    { jp: "リラックス", en: "Relax" },
+    { jp: "とろけるように", en: "Melt away" },
     { jp: "その調子", en: "Keep it up" },
     { jp: "素敵", en: "Lovely" },
     { jp: "ゆるく", en: "Gently" }
@@ -3023,7 +3023,7 @@ const SPECIAL_PRAISES = [
     { jp: "きれいな調和", en: "Beautiful harmony" },
     { jp: "心地よい広がり", en: "Soothing spread" },
     { jp: "最高にリラックス", en: "Ultimate relaxation" },
-    { jp: "穏やかな快感", en: "Calm pleasure" }
+    { jp: "究極の快感", en: "Ultimate pleasure" }
 ];
 
 let lastPraiseIdx = -1;
