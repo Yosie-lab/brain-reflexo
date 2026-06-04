@@ -2773,6 +2773,31 @@ function mainLoop(timestamp) {
     requestAnimationFrame(mainLoop);
 }
 
+// リフレッシュゲージの進行管理（通常プレイ・エンドレスプレイの両方に対応）
+function incrementPopProgress() {
+    totalPops++;
+    if (infiniteMode && totalPops >= REFRESH_TARGET) {
+        // 無限モード時の満タンイベント：
+        // ゲージを一瞬100%にしてから、お祝いの音を鳴らしてリセットする
+        refreshProgress = 1;
+        updateRefreshGauge();
+        
+        playClearSound();
+        triggerHaptic('success');
+        
+        totalPops = 0;
+        setTimeout(() => {
+            if (gameActive && infiniteMode) {
+                refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
+                updateRefreshGauge();
+            }
+        }, 1000);
+    } else {
+        refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
+        updateRefreshGauge();
+    }
+}
+
 // 連鎖バブルがタップされた際に、周囲の泡を巻き込んで連鎖爆発させる
 function triggerChainReaction(parentBubble) {
     if (!parentBubble) return;
@@ -2839,9 +2864,7 @@ function triggerChainReaction(parentBubble) {
                 createShowerParticles(b.x, b.y, particleCount, b.hue, false);
                 
                 // リフレッシュゲージも進行
-                totalPops++;
-                refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
-                updateRefreshGauge();
+                incrementPopProgress();
                 
                 if (comboCount >= 2) {
                     showCombo(comboCount);
@@ -2958,9 +2981,7 @@ function tryPopBubble(clientX, clientY) {
             }
             
             // 繝ｪ繝輔Ξ繝�す繝･繧ｲ繝ｼ繧ｸ譖ｴ譁ｰ
-            totalPops++;
-            refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
-            updateRefreshGauge();
+            incrementPopProgress();
             
             // 繧ｳ繝ｳ繝懆｡ｨ遉ｺ
             if (comboCount >= 2) {
