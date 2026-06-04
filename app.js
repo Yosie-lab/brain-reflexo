@@ -3099,17 +3099,21 @@ function showCombo(count) {
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
         if (count % 10 === 0) {
-            // スペシャル評価: 7文字以上なら11.25vw、6文字以下なら17vw
-            const isLong = praise.jp.length >= 7;
-            const fsJp = isLong ? 11.25 : 17;
+            // スペシャル評価: 最大15vw、画面幅の80%に収まるように自動縮小
+            const fsJp = Math.min(15, 80 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
-            enDiv.style.fontSize = (fsJp * 0.35) + 'vw';
+            
+            // 英語スペシャル評価: 最大5.5vw、画面幅の85%に収まるように自動縮小
+            const fsEn = Math.min(5.5, 85 / praise.en.length);
+            enDiv.style.fontSize = fsEn + 'vw';
         } else {
-            // 通常評価: 7文字以上なら6.5vw、6文字以下なら7.8vw
-            const isLong = praise.jp.length >= 7;
-            const fsJp = isLong ? 6.5 : 7.8;
+            // 通常評価: 最大9vw、画面幅의75%に収まるように自動縮小
+            const fsJp = Math.min(9, 75 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
-            enDiv.style.fontSize = (fsJp * 0.6) + 'vw';
+            
+            // 英語通常評価: 最大4.5vw、画面幅の80%に収まるように自動縮小
+            const fsEn = Math.min(4.5, 80 / praise.en.length);
+            enDiv.style.fontSize = fsEn + 'vw';
         }
     } else {
         // デスクトップサイズ時はインラインスタイルをクリアしてCSS定義に委ねる
