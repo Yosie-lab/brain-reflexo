@@ -3096,6 +3096,25 @@ function showCombo(count) {
     enDiv.textContent = praise.en;
     el.appendChild(enDiv);
     
+    // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
+    if (window.innerWidth <= 600) {
+        if (count % 10 === 0) {
+            // スペシャル評価: 最大17vwとし、文字数に合わせて縮小
+            const fsJp = Math.min(17, 90 / praise.jp.length);
+            jpDiv.style.fontSize = fsJp + 'vw';
+            enDiv.style.fontSize = (fsJp * 0.35) + 'vw';
+        } else {
+            // 通常評価: 最大7.8vwとし、文字数に合わせて縮小
+            const fsJp = Math.min(7.8, 90 / praise.jp.length);
+            jpDiv.style.fontSize = fsJp + 'vw';
+            enDiv.style.fontSize = (fsJp * 0.6) + 'vw';
+        }
+    } else {
+        // デスクトップサイズ時はインラインスタイルをクリアしてCSS定義に委ねる
+        jpDiv.style.fontSize = '';
+        enDiv.style.fontSize = '';
+    }
+    
     el.classList.remove('show');
     // リフローを強制してアニメーションを再トリガー
     void el.offsetWidth;
