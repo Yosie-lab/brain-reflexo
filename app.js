@@ -1533,18 +1533,8 @@ function initAudio() {
             // 状態変化時の自動復旧リスナーを設定
             if (!audioCtx.onstatechange) {
                 audioCtx.onstatechange = () => {
-                    if (gameActive && audioCtx.state !== 'running' && !isResuming) {
-                        isResuming = true;
-                        const hadOscs = ambientOscs.length > 0;
-                        audioCtx.resume().then(() => {
-                            isResuming = false;
-                            if (gameActive && hadOscs) {
-                                stopAmbientSound(true);
-                                startAmbientSound();
-                            }
-                        }).catch(() => {
-                            isResuming = false;
-                        });
+                    if (gameActive && audioCtx.state !== 'running') {
+                        startAmbientSound();
                     }
                 };
             }
@@ -1642,26 +1632,8 @@ function initApp() {
         if (gameActive) {
             initAudio();
             if (audioCtx) {
-                if (audioCtx.state !== 'running') {
-                    if (!isResuming) {
-                        isResuming = true;
-                        const hadOscs = ambientOscs.length > 0;
-                        audioCtx.resume().then(() => {
-                            isResuming = false;
-                            if (gameActive && hadOscs) {
-                                stopAmbientSound(true);
-                                startAmbientSound();
-                            }
-                        }).catch(() => {
-                            isResuming = false;
-                        });
-                    }
-                } else {
-                    // すでに running の場合：通常のタップ操作等で頻繁にリセット（無音化）されるのを防ぐため、
-                    // アンビエント音が本当に再生されていない場合のみ開始する。
-                    if (ambientOscs.length === 0) {
-                        startAmbientSound();
-                    }
+                if (audioCtx.state !== 'running' || ambientOscs.length === 0) {
+                    startAmbientSound();
                 }
             }
         }
@@ -2063,10 +2035,9 @@ function startAmbientSound() {
     if (audioCtx.state !== 'running') {
         if (!isResuming) {
             isResuming = true;
-            const hadOscs = ambientOscs.length > 0;
             audioCtx.resume().then(() => {
                 isResuming = false;
-                if (gameActive && hadOscs) { // 非同期解決後にもアクティブか再確認
+                if (gameActive) { // 非同期解決後にもアクティブか再確認
                     stopAmbientSound(true); // 古いノードを確実に破棄
                     startAmbientSound();
                 }
@@ -2074,6 +2045,7 @@ function startAmbientSound() {
                 isResuming = false;
             });
         }
+        return; // 重要：サスペンド状態のときはオシレーターの新規作成処理に進まず抜ける
     }
     
     // 縺吶〒縺ｫ蜀咲函荳ｭ縺ｮ蝣ｴ蜷医菴輔ｂ縺励↑縺
