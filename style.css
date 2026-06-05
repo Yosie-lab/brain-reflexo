@@ -204,8 +204,14 @@ body, html {
 
 /* 10タップごとの超・褒める言葉用の特別スタイル */
 .combo-display.special {
-    color: #fecdd3; /* 桜色/ローズピンク */
-    text-shadow: 0 0 20px #fb7185, 0 0 40px #fda4af, 0 0 80px rgba(253, 164, 175, 0.4);
+    color: #ff79b0; /* 鮮やかなピンク */
+    text-shadow: 0 0 20px #ff2a85, 0 0 40px #ff7da9, 0 0 80px rgba(255, 42, 133, 0.4);
+}
+
+.combo-display.special .combo-jp,
+.combo-display.special .combo-en {
+    color: #ff79b0; /* 日本語・英語ともに確実にピンクにする */
+    text-shadow: 0 0 20px #ff2a85, 0 0 40px #ff7da9, 0 0 80px rgba(255, 42, 133, 0.4);
 }
 
 .combo-display.special .combo-jp {

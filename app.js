@@ -3029,30 +3029,26 @@ function tryPopBubble(clientX, clientY) {
 // 繧ｳ繝ｳ繝懈焚繧堤判髱｢荳ｭ螟ｮ縺ｫ縺ｵ繧上▲縺ｨ陦ｨ遉ｺ
 // 褒める言葉の定義（日本語＋英語）
 const COMBO_PRAISES = [
-    { jp: "心地良い", en: "Soothing" },
-    { jp: "スッキリ", en: "Clear" },
+    { jp: "心地いい!", en: "Soothing" },
+    { jp: "スッキリ!", en: "Clear" },
     { jp: "快感!", en: "Pleasure!" },
-    { jp: "気持ちいい", en: "Feels great" },
-    { jp: "綺麗", en: "Beautiful" },
-    { jp: "そっと", en: "Softly" },
-    { jp: "いい波", en: "Nice wave" },
-    { jp: "もっと", en: "More" },
-    { jp: "とろけるように", en: "Melt away" },
-    { jp: "その調子", en: "Keep it up" },
-    { jp: "素敵", en: "Lovely" },
-    { jp: "癒される", en: "Feeling healed" }
+    { jp: "気持ちいい!", en: "Feels great" },
+    { jp: "そっと!", en: "Softly" },
+    { jp: "もっと!", en: "More" },
+    { jp: "とろける!", en: "Melt away" },
+    { jp: "その調子!", en: "Keep it up" },
+    { jp: "すてき!", en: "Lovely" },
+    { jp: "癒やされる!", en: "Feeling healed" }
 ];
 
 const SPECIAL_PRAISES = [
-    { jp: "あたまがクリア", en: "Clear mind" },
-    { jp: "深く深呼吸", en: "Deep breath" },
-    { jp: "究極の癒し", en: "Ultimate healing" },
-    { jp: "心身が軽い", en: "Mind and body feeling lighter" },
-    { jp: "至福の時間", en: "Blissful time" },
-    { jp: "心地よい広がり", en: "Soothing spread" },
-    { jp: "最高にリラックス", en: "Ultimate relaxation" },
-    { jp: "極上の快感", en: "Supreme pleasure" },
-    { jp: "包み込むように", en: "Enveloping comfort" }
+    { jp: "頭スッキリクリア!", en: "Clear mind" },
+    { jp: "究極の癒やし!", en: "Ultimate healing" },
+    { jp: "超リフレッシュ!", en: "Mind and body feeling lighter" },
+    { jp: "幸せいっぱい!", en: "Blissful time" },
+    { jp: "心地よい広がり!", en: "Soothing spread" },
+    { jp: "超リラックス!", en: "Ultimate relaxation" },
+    { jp: "極上の快感!", en: "Supreme pleasure" }
 ];
 
 let lastPraiseIdx = -1;
@@ -3102,8 +3098,8 @@ function showCombo(count) {
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
         if (count % 10 === 0) {
-            // スペシャル評価: 最大11.4vw（7文字のサイズ）、画面幅の80%に収まるように自動縮小
-            const fsJp = Math.min(11.4, 80 / praise.jp.length);
+            // スペシャル評価: 最大12.5vw（3〜6文字は12.5vw、7文字は11.4vw）、画面幅の80%に収まるように自動縮小
+            const fsJp = Math.min(12.5, 80 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
             
             // 英語スペシャル評価: 最大5.4vw（通常評価4.5vwの1.2倍）、画面幅の85%に収まるように自動縮小
