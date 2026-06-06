@@ -700,9 +700,9 @@ function getAuroraWave(x, globalT, width, height) {
 function initAuroraParticles() {
     auroraParticles = [];
     const colorChoices = [
-        "200, 255, 235", // 明るいミントグリーン（発光感）
-        "16, 220, 120",  // 鮮やかなエメラルドグリーン
-        "10, 180, 130"   // 深みのあるミントブルー
+        "206, 255, 224", // 明るいミントグリーン（発光感、黄緑寄りに調整）
+        "32, 220, 110",  // 鮮やかなエメラルドグリーン（黄緑寄りに調整）
+        "24, 180, 118"   // 深みのあるミントブルー（黄緑寄りに調整）
     ];
     for (let i = 0; i < 320; i++) {
         const p = {
@@ -743,7 +743,7 @@ function drawAuroraParticles(scale) {
             p.xRatio = Math.random();
             p.size = 6 + Math.random() * 18;
             p.alpha = 0.03 + Math.random() * 0.09;
-            const colorChoices = ["200, 255, 235", "16, 220, 120", "10, 180, 130"];
+            const colorChoices = ["206, 255, 224", "32, 220, 110", "24, 180, 118"];
             p.colorBase = colorChoices[Math.floor(Math.random() * colorChoices.length)];
         }
 
@@ -759,7 +759,7 @@ function drawAuroraParticles(scale) {
         // 全体をもっと透けたグラデーションにするためのフェード計算
         const fade = Math.pow(1.0 - p.yRatio, 2.0); // 2乗にして上部ほどより早く、かつ滑らかに透明に溶け込ませる
         const twinkle = 0.4 + 0.6 * Math.sin(p.phase);
-        const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * 0.81; // 発光量を9割に減らす (元の0.9 * 0.9 = 0.81)
+        const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * 0.855; // 発光量を0.95倍にする (元の0.9 * 0.95 = 0.855)
 
         if (finalAlpha <= 0) continue;
 
@@ -815,19 +815,19 @@ function drawRealAuroraCurtain() {
             // 画像の右上のように、太く柔らかい光の柱（Rays）が縦に広がるような質感を作る（細かな縦筋にはならない）
             const rayVal = Math.sin(rx * 0.008 + globalT * 0.30) * Math.cos(rx * 0.003 - globalT * 0.12);
             const curtainRays = 0.70 + 0.30 * Math.abs(rayVal);
-            const midAlpha = 0.0252 * globalAlphaMod * curtainRays; // 発光量を9割に減らす (元の0.028 * 0.9 = 0.0252)
+            const midAlpha = 0.0266 * globalAlphaMod * curtainRays; // 発光量を0.95倍にする (元の0.028 * 0.95 = 0.0266)
 
             const grad = auroraOffCtx.createLinearGradient(ox, oyBase, ox, oyBase + ocurtainHeight);
             const a = midAlpha * oz;
 
             // 画像の右上にある本物のオーロラのような、眩しいミントホワイトの発光コアを持つグラデーション
             grad.addColorStop(0.00, "rgba(  0,  20,  10, 0)"); // 最上部：透明
-            grad.addColorStop(0.35, "rgba(  2,  80,  45, " + (a * 0.15) + ")"); // 上部フェード
-            grad.addColorStop(0.68, "rgba(  5, 175,  95, " + (a * 1.10) + ")"); // エメラルドグリーン
-            grad.addColorStop(0.82, "rgba( 16, 235, 130, " + (a * 2.00) + ")"); // マイルドなネオングリーン (眩しさ軽減)
-            grad.addColorStop(0.85, "rgba(225, 255, 245, " + (a * 3.08) + ")"); // 眩しさを抑えたホワイトコア (1.1倍に調整)
-            grad.addColorStop(0.88, "rgba( 16, 235, 130, " + (a * 1.80) + ")"); // 下部マイルドグリーン (眩しさ軽減)
-            grad.addColorStop(0.94, "rgba(  2, 120,  65, " + (a * 0.50) + ")"); // 下部フェード
+            grad.addColorStop(0.35, "rgba(  8,  80,  40, " + (a * 0.15) + ")"); // 上部フェード（黄緑寄りに調整）
+            grad.addColorStop(0.68, "rgba( 20, 175,  85, " + (a * 1.10) + ")"); // エメラルドグリーン（黄緑寄りに調整）
+            grad.addColorStop(0.82, "rgba( 32, 235, 118, " + (a * 2.00) + ")"); // マイルドなネオングリーン（黄緑寄りに調整）
+            grad.addColorStop(0.85, "rgba(228, 255, 238, " + (a * 3.08) + ")"); // 眩しさを抑えたホワイトコア（黄緑寄りに調整）
+            grad.addColorStop(0.88, "rgba( 32, 235, 118, " + (a * 1.80) + ")"); // 下部マイルドグリーン（黄緑寄りに調整）
+            grad.addColorStop(0.94, "rgba( 12, 120,  58, " + (a * 0.50) + ")"); // 下部フェード（黄緑寄りに調整）
             grad.addColorStop(1.00, "rgba(  0,  20,  10, 0)"); // 最下部：透明
 
             auroraOffCtx.strokeStyle = grad;
