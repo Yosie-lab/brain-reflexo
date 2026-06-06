@@ -759,7 +759,7 @@ function drawAuroraParticles(scale) {
         // 全体をもっと透けたグラデーションにするためのフェード計算
         const fade = Math.pow(1.0 - p.yRatio, 2.0); // 2乗にして上部ほどより早く、かつ滑らかに透明に溶け込ませる
         const twinkle = 0.4 + 0.6 * Math.sin(p.phase);
-        const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * 0.9;
+        const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * 0.81; // 発光量を9割に減らす (元の0.9 * 0.9 = 0.81)
 
         if (finalAlpha <= 0) continue;
 
@@ -815,7 +815,7 @@ function drawRealAuroraCurtain() {
             // 画像の右上のように、太く柔らかい光の柱（Rays）が縦に広がるような質感を作る（細かな縦筋にはならない）
             const rayVal = Math.sin(rx * 0.008 + globalT * 0.30) * Math.cos(rx * 0.003 - globalT * 0.12);
             const curtainRays = 0.70 + 0.30 * Math.abs(rayVal);
-            const midAlpha = 0.028 * globalAlphaMod * curtainRays;
+            const midAlpha = 0.0252 * globalAlphaMod * curtainRays; // 発光量を9割に減らす (元の0.028 * 0.9 = 0.0252)
 
             const grad = auroraOffCtx.createLinearGradient(ox, oyBase, ox, oyBase + ocurtainHeight);
             const a = midAlpha * oz;
