@@ -569,7 +569,7 @@ function createShowerParticles(x, y, count, hueBase, isSpecialEvent = false) {
             maxLife: Math.random() * (isSpecialEvent ? 55 : 45) + (isSpecialEvent ? 35 : 20),
             life: 0,
             hue: particleHue,
-            alpha: isSpecialEvent ? 0.6925 : 0.95, // 大爆発の花火は発光量をさらに0.9倍にする (元の0.7695 * 0.9 = 0.6925)
+            alpha: isSpecialEvent ? 0.6578 : 0.95, // 大爆発の花火は発光量をさらに0.95倍にする (元の0.6925 * 0.95 = 0.6578)
             type: pType,
             angle: Math.random() * Math.PI * 2,
             spin: isSpecialEvent ? (Math.random() - 0.5) * 0.12 : 0,
@@ -700,9 +700,9 @@ function getAuroraWave(x, globalT, width, height) {
 function initAuroraParticles() {
     auroraParticles = [];
     const colorChoices = [
-        "218, 255, 202", // 明るいミントグリーン（発光感、さらに黄緑寄りに調整）
-        "64, 220, 90",   // 鮮やかなエメラルドグリーン（さらに黄緑寄りに調整）
-        "52, 180, 94"    // 深みのあるミントブルー（さらに黄緑寄りに調整）
+        "212, 255, 213", // 明るいミントグリーン（発光感、黄緑寄りを5%戻す）
+        "48, 220, 100",  // 鮮やかなエメラルドグリーン（黄緑寄りを5%戻す）
+        "38, 180, 106"   // 深みのあるミントブルー（黄緑寄りを5%戻す）
     ];
     for (let i = 0; i < 320; i++) {
         const p = {
@@ -743,7 +743,7 @@ function drawAuroraParticles(scale) {
             p.xRatio = Math.random();
             p.size = 6 + Math.random() * 18;
             p.alpha = 0.03 + Math.random() * 0.09;
-            const colorChoices = ["218, 255, 202", "64, 220, 90", "52, 180, 94"];
+            const colorChoices = ["212, 255, 213", "48, 220, 100", "38, 180, 106"];
             p.colorBase = colorChoices[Math.floor(Math.random() * colorChoices.length)];
         }
 
@@ -822,12 +822,12 @@ function drawRealAuroraCurtain() {
 
             // 画像の右上にある本物のオーロラのような、眩しいミントホワイトの発光コアを持つグラデーション
             grad.addColorStop(0.00, "rgba(  0,  20,  10, 0)"); // 最上部：透明
-            grad.addColorStop(0.35, "rgba( 20,  80,  30, " + (a * 0.15) + ")"); // 上部フェード（さらに黄緑寄りに調整）
-            grad.addColorStop(0.68, "rgba( 50, 175,  65, " + (a * 1.10) + ")"); // エメラルドグリーン（さらに黄緑寄りに調整）
-            grad.addColorStop(0.82, "rgba( 64, 235,  94, " + (a * 2.00) + ")"); // マイルドなネオングリーン（さらに黄緑寄りに調整）
-            grad.addColorStop(0.85, "rgba(234, 255, 224, " + (a * 3.08) + ")"); // 眩しさを抑えたホワイトコア（さらに黄緑寄りに調整）
-            grad.addColorStop(0.88, "rgba( 64, 235,  94, " + (a * 1.80) + ")"); // 下部マイルドグリーン（さらに黄緑寄りに調整）
-            grad.addColorStop(0.94, "rgba( 32, 120,  44, " + (a * 0.50) + ")"); // 下部フェード（さらに黄緑寄りに調整）
+            grad.addColorStop(0.35, "rgba( 14,  80,  35, " + (a * 0.15) + ")"); // 上部フェード（黄緑寄りを5%戻す）
+            grad.addColorStop(0.68, "rgba( 20, 175,  85, " + (a * 1.10) + ")"); // エメラルドグリーン（黄緑寄りを5%戻す）
+            grad.addColorStop(0.82, "rgba( 32, 235, 118, " + (a * 2.00) + ")"); // マイルドなネオングリーン（黄緑寄りを5%戻す）
+            grad.addColorStop(0.85, "rgba(228, 255, 238, " + (a * 3.08) + ")"); // 眩しさを抑えたホワイトコア（黄緑寄りを5%戻す）
+            grad.addColorStop(0.88, "rgba( 32, 235, 118, " + (a * 1.80) + ")"); // 下部マイルドグリーン（黄緑寄りを5%戻す）
+            grad.addColorStop(0.94, "rgba( 12, 120,  58, " + (a * 0.50) + ")"); // 下部フェード（黄緑寄りを5%戻す）
             grad.addColorStop(1.00, "rgba(  0,  20,  10, 0)"); // 最下部：透明
 
             auroraOffCtx.strokeStyle = grad;
@@ -1034,7 +1034,7 @@ function triggerMeteorBigExplosion(originX, originY) {
     // 1. メインの巨大大輪花火 (レッドとブルーを主体にし、シルバーを削減)
     createShowerParticles(x, y, 20, 210, true); // シルバー (40 -> 20に減量)
     createShowerParticles(x, y, 50, 349, true); // レッド (30 -> 50に大幅増量)
-    createShowerRipple(x, y, 270, 3.2, 349, 0.5832); // 特大波紋をシルバーからレッド(349)に変更 (さらに発光量0.9倍、0.648 * 0.9 = 0.5832)
+    createShowerRipple(x, y, 270, 3.2, 349, 0.554); // 特大波紋をシルバーからレッド(349)に変更 (さらに発光量0.95倍、0.5832 * 0.95 = 0.554)
     launchExplosionMeteors(x, y, 50, 60); // 50本の流星
     
     // 2. クライマックスの多重連鎖爆発 (時間差で色彩豊かな大輪が重なり合う)
@@ -1046,7 +1046,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         playFeverStartSound(cx); // チャイムスイープ音
         createShowerParticles(cx, cy, 20, 262, true); // 紫 (25 -> 20に減量)
         createShowerParticles(cx, cy, 35, 213, true); // 青 (20 -> 35に増量)
-        createShowerRipple(cx, cy, 180, 3.8, 213, 0.5832); // 波紋を青(213)に変更 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 180, 3.8, 213, 0.554); // 波紋を青(213)に変更 (さらに発光量0.95倍)
         launchExplosionMeteors(cx, cy, 25, 45);
     }, 120);
     
@@ -1057,7 +1057,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         playFeverStartSound(cx);
         createShowerParticles(cx, cy, 20, 148, true); // 緑 (25 -> 20に減量)
         createShowerParticles(cx, cy, 35, 213, true); // 青 (20 -> 35に増量)
-        createShowerRipple(cx, cy, 180, 3.8, 213, 0.5832); // 波紋を青(213)に変更 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 180, 3.8, 213, 0.554); // 波紋を青(213)に変更 (さらに発光量0.95倍)
         launchExplosionMeteors(cx, cy, 25, 45);
     }, 260);
     
@@ -1068,7 +1068,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         playFeverStartSound(cx);
         createShowerParticles(cx, cy, 35, 349, true); // 赤 (25 -> 35に増量)
         createShowerParticles(cx, cy, 20, 262, true); // 紫 (20枚維持)
-        createShowerRipple(cx, cy, 190, 4.0, 349, 0.5832); // 波紋は赤(349) (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 190, 4.0, 349, 0.554); // 波紋は赤(349) (さらに発光量0.95倍)
         launchExplosionMeteors(cx, cy, 25, 45);
     }, 400);
     
@@ -1080,7 +1080,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         createShowerParticles(cx, cy, 10, 210, true); // シルバー (25 -> 10に大幅減量)
         createShowerParticles(cx, cy, 20, 213, true); // 青 (20本追加)
         createShowerParticles(cx, cy, 15, 148, true); // 緑 (20 -> 15に減量)
-        createShowerRipple(cx, cy, 160, 4.0, 213, 0.5832); // 波紋を青(213)に変更 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 160, 4.0, 213, 0.554); // 波紋を青(213)に変更 (さらに発光量0.95倍)
         launchExplosionMeteors(cx, cy, 20, 40);
     }, 520);
     
@@ -1090,9 +1090,9 @@ function triggerMeteorBigExplosion(originX, originY) {
         const cy = y - 120 + (Math.random() - 0.5) * 40;
         playMeteorBigExplosionSound(cx); // 2回目の大爆発音でクライマックスの轟音を再現！
         createShowerParticles(cx, cy, 100, 'multi', true); // 豪華マルチカラー星屑 (重み付け適用で赤・青増量)
-        createShowerRipple(cx, cy, 310, 4.5, 213, 0.5832); // 特大の波紋をシルバーからブルー(213)に変更してシルバーの支配度を低下 (さらに発光量0.9倍)
-        createShowerRipple(cx, cy, 225, 5.2, 262, 0.5832); // 中サイズ波紋: 紫 (さらに発光量0.9倍)
-        createShowerRipple(cx, cy, 170, 6.0, 210, 0.5832); // 小サイズ波紋をシルバー(210)に設定 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 310, 4.5, 213, 0.554); // 特大の波紋をシルバーからブルー(213)に変更してシルバーの支配度を低下 (さらに発光量0.95倍)
+        createShowerRipple(cx, cy, 225, 5.2, 262, 0.554); // 中サイズ波紋: 紫 (さらに発光量0.95倍)
+        createShowerRipple(cx, cy, 170, 6.0, 210, 0.554); // 小サイズ波紋をシルバー(210)に設定 (さらに発光量0.95倍)
         launchExplosionMeteors(cx, cy, 50, 70); // 最後の錦冠の火花
     }, 680);
 }
@@ -1130,7 +1130,7 @@ function createBigExplosionMeteor(hue, originX, originY) {
         hue: hue,
         alpha: 0,
         fadeSpeed: 0.45, // 1縲2繝輔Ξ繝ｼ繝縺ｧ荳€迸ｬ縺ｫ縺励※譛€鬮倩ｼ晏ｺｦ縺ｫ遶九■荳翫￡繧
-        targetAlpha: 0.9 + Math.random() * 0.1,
+        targetAlpha: (0.9 + Math.random() * 0.1) * 0.6925, // 大爆発の流星は発光量をさらに0.95倍にする (元の0.729 * 0.95 = 0.6925)
         sparkleChance: 0.8, // 繧ｹ繝代う繧ｯ医″繧峨ａ縺搾ｼ臥匱逕溽｢ｺ邇ｒ螟ｧ蟷↓蠑輔″荳翫￡
         life: 0,
         maxLife: 8 + Math.random() * 8 // 8縲16繝輔Ξ繝ｼ繝 (邏0.13縲0.26遘) 縺ｮ讌ｵ髯舌遏ｭ蟇ｿ蜻ｽ
