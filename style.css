@@ -441,6 +441,16 @@ body, html {
     box-shadow: 0 6px 20px rgba(194, 175, 240, 0.5);
 }
 
+/* 「Meditation」ボタン: 穏やかなグリーン〜ミント系グラデーション */
+.btn-meditation {
+    background: linear-gradient(135deg, #81c3d7, #a7f3d0);
+    box-shadow: 0 4px 15px rgba(129, 195, 215, 0.35);
+}
+
+.btn-meditation:hover {
+    box-shadow: 0 6px 20px rgba(129, 195, 215, 0.5);
+}
+
 /* モード選択画面のサブラベル調整 */
 #start-overlay .overlay-content h2 {
     font-size: 22px;
@@ -837,8 +847,8 @@ body.theme-aurora {
     background: radial-gradient(circle at 50% 30%, #061917 0%, #03080b 60%, #000204 100%);
 }
 
-body.theme-cosmic {
-    background: radial-gradient(circle at 50% 30%, #150a21 0%, #06030c 60%, #020105 100%);
+body.theme-starry {
+    background: #000000;
 }
 
 body.theme-sakura {
