@@ -3504,23 +3504,12 @@ function showCombo(count) {
     
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
-        if (count % 10 === 0) {
-            // スペシャル評価: 最大12.5vw（3〜6文字は12.5vw、7文字は11.4vw）、画面幅の80%に収まるように自動縮小
-            const fsJp = Math.min(12.5, 80 / praise.jp.length);
-            jpDiv.style.fontSize = fsJp + 'vw';
-            
-            // 英語スペシャル評価: 最大5.4vw（通常評価4.5vwの1.2倍）、画面幅の85%に収まるように自動縮小
-            const fsEn = Math.min(5.4, 85 / praise.en.length);
-            enDiv.style.fontSize = fsEn + 'vw';
-        } else {
-            // 通常評価: 最大9vw、画面幅의75%に収まるように自動縮小
-            const fsJp = Math.min(9, 75 / praise.jp.length);
-            jpDiv.style.fontSize = fsJp + 'vw';
-            
-            // 英語通常評価: 最大4.5vw、画面幅の80%に収まるように自動縮小
-            const fsEn = Math.min(4.5, 80 / praise.en.length);
-            enDiv.style.fontSize = fsEn + 'vw';
-        }
+        // 通常・スペシャル問わず同じサイズ計算を使用し、サイズを縮小して統一
+        const fsJp = Math.min(5.8, 75 / praise.jp.length);
+        jpDiv.style.fontSize = fsJp + 'vw';
+        
+        const fsEn = Math.min(3.6, 80 / praise.en.length);
+        enDiv.style.fontSize = fsEn + 'vw';
     } else {
         // デスクトップサイズ時はインラインスタイルをクリアしてCSS定義に委ねる
         jpDiv.style.fontSize = '';
