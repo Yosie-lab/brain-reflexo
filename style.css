@@ -451,4 +451,405 @@ body, html {
     text-shadow: none;
 }
 
+/* =============================================================
+   9. 設定ボタン (Gear Icon)
+   ============================================================= */
+.btn-settings {
+    position: absolute;
+    top: calc(20px + env(safe-area-inset-top));
+    right: calc(20px + env(safe-area-inset-right));
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    font-size: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-settings:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: rotate(45deg) scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.05);
+}
+
+.btn-settings:active {
+    transform: rotate(45deg) scale(0.95);
+}
+
+/* =============================================================
+   10. 設定パネル (Slide-in Glassmorphic Panel)
+   ============================================================= */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 380px;
+    height: 100%;
+    height: 100dvh;
+    background: rgba(6, 10, 23, 0.45);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 120;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+    overflow-y: auto;
+    pointer-events: auto;
+}
+
+.settings-panel.active {
+    transform: translateX(0);
+}
+
+.settings-content {
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-height: 100%;
+}
+
+.settings-panel h3 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.btn-settings-close {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 28px;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.btn-settings-close:hover {
+    color: #f8fafc;
+}
+
+/* 各設定アイテム */
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* スライダー */
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.slider-container input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255,255,255,0.1);
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #81c3d7;
+    cursor: pointer;
+    transition: transform 0.1s;
+    box-shadow: 0 0 10px rgba(129,195,215,0.5);
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+}
+
+.slider-container span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #81c3d7;
+    min-width: 32px;
+    text-align: right;
+}
+
+/* ボタンオプション（グリッド） */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.btn-option {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    padding: 10px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.btn-option .en-sub {
+    font-size: 8px;
+    font-weight: 400;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.btn-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+}
+
+.btn-option.active {
+    background: linear-gradient(135deg, rgba(129, 195, 215, 0.15), rgba(96, 165, 250, 0.15));
+    border-color: #81c3d7;
+    color: #81c3d7;
+    box-shadow: 0 0 15px rgba(129, 195, 215, 0.15);
+}
+
+/* トグルスイッチ */
+.toggle-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 16px;
+    margin-top: 4px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #94a3b8;
+    transition: .3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 50%;
+}
+
+.switch input:checked + .switch-slider {
+    background-color: rgba(129, 195, 215, 0.2);
+    border-color: #81c3d7;
+}
+
+.switch input:checked + .switch-slider:before {
+    transform: translateX(20px);
+    background-color: #81c3d7;
+    box-shadow: 0 0 8px rgba(129, 195, 215, 0.6);
+}
+
+/* =============================================================
+   11. 呼吸ガイド (Zen Breath Guide)
+   ============================================================= */
+.breath-guide {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2; /* 泡(5)の後ろ、背景Canvas(1)の前に配置 */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.breath-guide.visible {
+    opacity: 0.65;
+}
+
+/* 脈動する呼吸リング */
+.breath-ring {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(129, 195, 215, 0.35);
+    background: radial-gradient(circle, rgba(129, 195, 215, 0.03) 0%, rgba(129, 195, 215, 0) 70%);
+    box-shadow: 0 0 30px rgba(129, 195, 215, 0.1);
+    transform: scale(1.0);
+    will-change: transform, border-color, box-shadow;
+}
+
+.breath-ring-inner {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 0.5px dashed rgba(255, 255, 255, 0.15);
+    transform: scale(1.0);
+}
+
+.breath-text {
+    position: absolute;
+    top: 90px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-align: center;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    transition: color 0.5s ease;
+}
+
+.breath-text .en-sub {
+    display: block;
+    font-size: 8px;
+    font-weight: 400;
+    opacity: 0.6;
+    margin-top: 3px;
+    text-transform: uppercase;
+}
+
+/* 呼吸ガイドのアニメーション定義（JSで進行状況に合わせてスケール制御） */
+/* 吸気(inhale): scale(1.6), 呼気(exhale): scale(0.9) */
+
+/* =============================================================
+   12. リラクゼーションレポート (Zen Summary Card)
+   ============================================================= */
+.relax-report {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+}
+
+.report-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    padding-bottom: 10px;
+}
+
+.report-row:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.report-label {
+    font-size: 11px;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.report-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #81c3d7;
+}
+
+.report-msg {
+    font-size: 11px;
+    color: #e2e8f0;
+    line-height: 1.5;
+    text-align: center;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    letter-spacing: 0.5px;
+}
+
+/* =============================================================
+   13. テーマ別グローバル背景 (CSS変数 or 直接上書き用)
+   ============================================================= */
+body.theme-aurora {
+    background: radial-gradient(circle at 50% 30%, #061917 0%, #03080b 60%, #000204 100%);
+}
+
+body.theme-cosmic {
+    background: radial-gradient(circle at 50% 30%, #150a21 0%, #06030c 60%, #020105 100%);
+}
+
+body.theme-sakura {
+    background: radial-gradient(circle at 50% 30%, #1a0f18 0%, #0a050d 60%, #030106 100%);
+}
+
+/* モバイルレイアウトでの設定パネル幅調整 */
+@media (max-width: 400px) {
+    .settings-panel {
+        max-width: 100%;
+    }
+}
+
 

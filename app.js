@@ -51,13 +51,27 @@ let gyroActive = false;
 // 繧ｳ繝ｳ繝懃ｮ｡逅�
 // 繧ｳ繝ｳ繝懃ｮ｡逅
 let comboCount = 0;
+let maxComboCount = 0;
 let lastPopTime = 0;
+let gameStartTime = 0;
 const COMBO_WINDOW = 1800; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
+
+// リラクゼーション設定（脳リフレクソ改用）
+let volumeBGM = 0.5;
+let volumeSE = 0.8;
+let currentTheme = 'deepsea';
+let currentSoundProfile = 'water';
+let hapticEnabled = true;
+let gyroEnabled = false;
+let breathGuideEnabled = true;
+let breathCycleTime = 0;
+let breathState = 'inhale';
 
 // 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
 let refreshProgress = 0;
 const REFRESH_TARGET = 80; // 完了までに必要な泡のポップ数
 let totalPops = 0;
+let sessionPops = 0;
 
 // ゲーム状態
 let gameActive = false;
@@ -80,6 +94,7 @@ let ambientLFO = null;
 let showerCanvas = null;
 let showerCtx = null;
 let showerParticles = [];
+let cursorTrailParticles = [];
 let showerRipples = [];
 let showerHue = 200;
 
@@ -441,6 +456,41 @@ function drawStars() {
     }
 }
 
+function createCursorTrail(x, y) {
+    if (!gameActive) return;
+    
+    // Choose hue based on visual theme
+    let hue = showerHue;
+    if (currentTheme === 'cosmic') {
+        hue = Math.random() < 0.5 ? 45 : 280; // Gold or purple
+    } else if (currentTheme === 'sakura') {
+        hue = Math.random() < 0.5 ? 340 : 0; // Pink or white
+    } else if (currentTheme === 'aurora') {
+        hue = Math.random() < 0.5 ? 145 : 195; // Emerald or cyan
+    } else {
+        hue = (showerHue + (Math.random() - 0.5) * 20) % 360;
+    }
+    
+    const count = 2; // Create 2 trail particles per move event
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.5 + Math.random() * 1.5;
+        cursorTrailParticles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 0.2, // Drifts slightly up
+            size: 2 + Math.random() * 4,
+            life: 0,
+            maxLife: 20 + Math.random() * 15,
+            hue: hue,
+            spin: (Math.random() - 0.5) * 0.1,
+            angle: Math.random() * Math.PI * 2,
+            alpha: 0.8
+        });
+    }
+}
+
 function initShower() {
     showerCanvas = document.getElementById('shower-canvas');
     if (!showerCanvas) return;
@@ -453,6 +503,7 @@ function initShower() {
     // 繝槭え繧ｹ遘ｻ蜍輔〒蜈峨霆瑚ｷ｡繧堤匱逕
     const addParticleFlow = (clientX, clientY) => {
         createShowerParticles(clientX, clientY, 2);
+        createCursorTrail(clientX, clientY);
     };
     
     // 繧ｯ繝ｪ繝け上ち繝メ譎ゅ蜃ｦ逅ｼ壽ｳ｡縺後≠繧後繝昴ャ繝励€√↑縺代ｌ縺ｰ豕｢邏
@@ -664,6 +715,28 @@ function updateShower() {
             createShowerRipple(rx, ry, autoMaxR, autoSpeed, autoHue);
         }
     }
+
+    // 星屑パーティクルトレイル（カーソルトレイル）の更新
+    for (let i = cursorTrailParticles.length - 1; i >= 0; i--) {
+        const p = cursorTrailParticles[i];
+        p.life++;
+        
+        p.vx *= 0.96; // 摩擦
+        p.vy *= 0.96;
+        p.vy -= 0.04; // わずかに上昇
+        
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        p.angle += p.spin;
+        
+        const lifeRatio = p.life / p.maxLife;
+        p.alpha = 0.8 * (1.0 - lifeRatio);
+        
+        if (p.life >= p.maxLife) {
+            cursorTrailParticles.splice(i, 1);
+        }
+    }
 }
 
 
@@ -854,6 +927,18 @@ function drawRealAuroraCurtain() {
     showerCtx.restore();
 }
 
+function getThemeClearColor(alpha) {
+    if (currentTheme === 'aurora') {
+        return `rgba(3, 8, 11, ${alpha})`;
+    } else if (currentTheme === 'cosmic') {
+        return `rgba(6, 3, 12, ${alpha})`;
+    } else if (currentTheme === 'sakura') {
+        return `rgba(10, 5, 13, ${alpha})`;
+    } else {
+        return `rgba(6, 9, 19, ${alpha})`;
+    }
+}
+
 function drawShower() {
     if (!showerCtx || !showerCanvas) return;
     
@@ -863,7 +948,7 @@ function drawShower() {
     const clearAlpha = Math.max(0.06, 0.12 - activeCombo * 0.006);
 
     // 谿句ワ縺ｮ縺ゅｋ繧ｯ繝ｪ繧｢
-    showerCtx.fillStyle = `rgba(6, 9, 19, ${clearAlpha})`;
+    showerCtx.fillStyle = getThemeClearColor(clearAlpha);
     showerCtx.fillRect(0, 0, showerCanvas.width, showerCanvas.height);
     
     // 夜空のまたたく星屑を描画
@@ -931,6 +1016,42 @@ function drawShower() {
                 showerCtx.stroke();
             }
         }
+    });
+    
+    // カーソルトレイル（星屑トレイル）の描画
+    cursorTrailParticles.forEach(p => {
+        showerCtx.save();
+        showerCtx.translate(p.x, p.y);
+        showerCtx.rotate(p.angle);
+        
+        const size = p.size;
+        const alpha = p.alpha;
+        
+        // 4点星型のパス
+        showerCtx.fillStyle = `hsla(${p.hue}, 100%, 90%, ${alpha})`;
+        showerCtx.beginPath();
+        showerCtx.moveTo(0, -size * 2.2);
+        showerCtx.lineTo(size * 0.3, 0);
+        showerCtx.lineTo(size * 2.2, 0);
+        showerCtx.lineTo(0, size * 0.3);
+        showerCtx.lineTo(0, size * 2.2);
+        showerCtx.lineTo(-size * 0.3, 0);
+        showerCtx.lineTo(-size * 2.2, 0);
+        showerCtx.lineTo(0, -size * 0.3);
+        showerCtx.closePath();
+        showerCtx.fill();
+        
+        // センターのグロー効果
+        const glowGrad = showerCtx.createRadialGradient(0, 0, 0, 0, 0, size * 1.6);
+        glowGrad.addColorStop(0, `hsla(${p.hue}, 100%, 95%, ${alpha})`);
+        glowGrad.addColorStop(0.4, `hsla(${p.hue}, 90%, 75%, ${alpha * 0.4})`);
+        glowGrad.addColorStop(1, `hsla(${p.hue}, 90%, 75%, 0)`);
+        showerCtx.fillStyle = glowGrad;
+        showerCtx.beginPath();
+        showerCtx.arc(0, 0, size * 1.6, 0, Math.PI * 2);
+        showerCtx.fill();
+        
+        showerCtx.restore();
     });
     
     // グローバルアルファを元に戻す
@@ -1557,11 +1678,203 @@ function initAudio() {
     }
 }
 
+const THEME_BUBBLE_COLORS = {
+    ocean: [
+        { hex: '#81c3d7', hue: 195 },
+        { hex: '#f3c68f', hue: 35  },
+        { hex: '#c2aff0', hue: 262 },
+        { hex: '#96e6b3', hue: 148 },
+        { hex: '#f2a3b3', hue: 349 },
+        { hex: '#8da9c4', hue: 213 }
+    ],
+    aurora: [
+        { hex: '#38d064', hue: 140 }, // Mint emerald
+        { hex: '#96e6b3', hue: 148 }, // Pale green
+        { hex: '#38b06a', hue: 150 }, // Deep mint
+        { hex: '#81c3d7', hue: 195 }, // Cyan
+        { hex: '#c2aff0', hue: 262 }, // Violet
+        { hex: '#a7f3d0', hue: 152 }  // Glow emerald
+    ],
+    cosmic: [
+        { hex: '#f43f5e', hue: 350 }, // Rose
+        { hex: '#c2aff0', hue: 262 }, // Purple
+        { hex: '#fbbf24', hue: 45  }, // Gold
+        { hex: '#f472b6', hue: 330 }, // Pink
+        { hex: '#db2777', hue: 325 }, // Deep pink
+        { hex: '#6366f1', hue: 235 }  // Indigo
+    ],
+    sakura: [
+        { hex: '#fbcfe8', hue: 330 }, // Sakura pink
+        { hex: '#f472b6', hue: 330 }, // Rose pink
+        { hex: '#fecdd3', hue: 350 }, // Peach
+        { hex: '#fda4af', hue: 353 }, // Deep peach
+        { hex: '#ffffff', hue: 0 },   // Pure white
+        { hex: '#e8d5db', hue: 340 }  // Warm grey
+    ]
+};
+
+function applyTheme(themeName) {
+    if (!THEME_BUBBLE_COLORS[themeName]) return;
+    currentTheme = themeName;
+    
+    // Body class
+    document.body.classList.remove('theme-aurora', 'theme-cosmic', 'theme-sakura');
+    if (themeName !== 'ocean') {
+        document.body.classList.add(`theme-${themeName}`);
+    }
+    
+    // Modify bubble colors in-place
+    BUBBLE_COLORS.length = 0;
+    THEME_BUBBLE_COLORS[themeName].forEach(color => BUBBLE_COLORS.push(color));
+    
+    // Base Hues
+    if (themeName === 'ocean') {
+        showerHue = 200;
+    } else if (themeName === 'aurora') {
+        showerHue = 145;
+    } else if (themeName === 'cosmic') {
+        showerHue = 280;
+    } else if (themeName === 'sakura') {
+        showerHue = 340;
+    }
+    
+    // Clear caches
+    for (let key in bubbleTemplateCache) {
+        delete bubbleTemplateCache[key];
+    }
+    for (let key in particleSpriteCache) {
+        delete particleSpriteCache[key];
+    }
+    
+    // Re-init templates and particles
+    initBubbleTemplates();
+    initParticleSprites();
+    initStars();
+    initAuroraParticles();
+    
+    // UI class active
+    const themeButtons = document.querySelectorAll('#theme-options .btn-option');
+    themeButtons.forEach(btn => {
+        if (btn.getAttribute('data-theme') === themeName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
 function initApp() {
     // 初回起動時はゲームを開始せずスタート画面を表示する
     initShower();
     initParticleSprites();
     initBubbleTemplates();
+    
+    // 設定関連UIの初期化
+    const btnSettings = document.getElementById('btn-settings');
+    const settingsPanel = document.getElementById('settings-panel');
+    const btnSettingsClose = document.getElementById('btn-settings-close');
+    
+    if (btnSettings && settingsPanel) {
+        btnSettings.addEventListener('click', () => {
+            settingsPanel.classList.add('active');
+        });
+    }
+    if (btnSettingsClose && settingsPanel) {
+        btnSettingsClose.addEventListener('click', () => {
+            settingsPanel.classList.remove('active');
+        });
+    }
+    
+    const sliderVolBGM = document.getElementById('slider-vol-bgm');
+    const labelVolBGM = document.getElementById('label-vol-bgm');
+    if (sliderVolBGM) {
+        sliderVolBGM.value = volumeBGM;
+        if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
+        sliderVolBGM.addEventListener('input', (e) => {
+            volumeBGM = parseFloat(e.target.value);
+            if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
+            if (ambientGain && audioCtx) {
+                const now = audioCtx.currentTime;
+                ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
+                ambientGain.gain.linearRampToValueAtTime(0.003 * volumeBGM, now + 0.1);
+            }
+        });
+    }
+    
+    const sliderVolSE = document.getElementById('slider-vol-se');
+    const labelVolSE = document.getElementById('label-vol-se');
+    if (sliderVolSE) {
+        sliderVolSE.value = volumeSE;
+        if (labelVolSE) labelVolSE.textContent = Math.round(volumeSE * 100) + '%';
+        sliderVolSE.addEventListener('input', (e) => {
+            volumeSE = parseFloat(e.target.value);
+            if (labelVolSE) labelVolSE.textContent = Math.round(volumeSE * 100) + '%';
+        });
+    }
+    
+    const themeButtons = document.querySelectorAll('#theme-options .btn-option');
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme');
+            applyTheme(theme);
+        });
+    });
+    
+    const soundButtons = document.querySelectorAll('#sound-options .btn-option');
+    soundButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const sound = btn.getAttribute('data-sound');
+            currentSoundProfile = sound;
+            soundButtons.forEach(b => {
+                if (b.getAttribute('data-sound') === sound) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            if (audioCtx) {
+                playPopSound(1, window.innerWidth / 2);
+            }
+        });
+    });
+    
+    const chkGyro = document.getElementById('chk-gyro');
+    if (chkGyro) {
+        chkGyro.checked = gyroEnabled;
+        chkGyro.addEventListener('change', (e) => {
+            gyroEnabled = e.target.checked;
+            if (!gyroEnabled) {
+                targetGyroX = 0;
+                targetGyroY = 0;
+            } else {
+                requestGyroPermission();
+            }
+        });
+    }
+    
+    const chkHaptic = document.getElementById('chk-haptic');
+    if (chkHaptic) {
+        chkHaptic.checked = hapticEnabled;
+        chkHaptic.addEventListener('change', (e) => {
+            hapticEnabled = e.target.checked;
+        });
+    }
+    
+    const chkBreath = document.getElementById('chk-breath');
+    if (chkBreath) {
+        chkBreath.checked = breathGuideEnabled;
+        chkBreath.addEventListener('change', (e) => {
+            breathGuideEnabled = e.target.checked;
+            const breathGuide = document.getElementById('breath-guide');
+            if (breathGuide) {
+                if (breathGuideEnabled && gameActive) {
+                    breathGuide.classList.add('visible');
+                } else {
+                    breathGuide.classList.remove('visible');
+                }
+            }
+        });
+    }
     
     // 『スタート選択』画面: 通常Playボタン
     const btnPlayNormal = document.getElementById('btn-play-normal');
@@ -1677,6 +1990,37 @@ function endGame(forceQuit = false) {
     // アンビエント音を即座に停止（フェードアウトではなく即時消音）
     stopAmbientSound(true);
     
+    // 統計情報の集計と表示
+    const timeElapsed = ((performance.now() - gameStartTime) / 1000).toFixed(1);
+    
+    const reportTime = document.getElementById('report-time');
+    if (reportTime) {
+        reportTime.textContent = timeElapsed + 's';
+    }
+    const reportPops = document.getElementById('report-pops');
+    if (reportPops) {
+        reportPops.textContent = sessionPops;
+    }
+    const reportCombo = document.getElementById('report-combo');
+    if (reportCombo) {
+        reportCombo.textContent = maxComboCount;
+    }
+    
+    const reportMsg = document.getElementById('report-msg');
+    if (reportMsg) {
+        let comment = "あたまがサラッとクリアになりました。";
+        if (sessionPops >= 80) {
+            comment = "深い集中状態に入り、脳がすっきりとリフレッシュされました。素晴らしい癒しの時間です。";
+        } else if (maxComboCount >= 15) {
+            comment = "心地よいリズムに乗って、素晴らしい連続タップでした。心がすっと軽くなっています。";
+        } else if (timeElapsed > 60) {
+            comment = "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。深呼吸を忘れずに。";
+        } else {
+            comment = "少しの時間でも、脳の休息になりました。すっきりとした気持ちで次へ進みましょう。";
+        }
+        reportMsg.textContent = comment;
+    }
+    
     // リフレッシュ完了画面を表示
     const overlay = document.getElementById('gameover-overlay');
     if (overlay) {
@@ -1700,36 +2044,21 @@ function playPopSound(combo = 1, originX) {
     try {
         const now = audioCtx.currentTime;
         
-        // 1. メインの「ピチョン」水滴音用のオシレーター
-        const osc = audioCtx.createOscillator();
-        const mainGain = audioCtx.createGain();
+        // SEボリュームが0なら再生しない
+        if (volumeSE <= 0.001) return;
         
-        // 2. 指先の物理的な質感「プチッ」を出すための超短音オシレーター
-        const clickOsc = audioCtx.createOscillator();
-        const clickGain = audioCtx.createGain();
+        // ベースのゲイン量設定
+        const maxVol = 0.28 * volumeSE;
         
-        // ディレイ（エコー）回路の追加
-        const delay = audioCtx.createDelay();
-        const feedback = audioCtx.createGain();
-        
-        osc.connect(mainGain);
-        mainGain.connect(audioCtx.destination);
-        mainGain.connect(delay);
-        
-        clickOsc.connect(clickGain);
-        clickGain.connect(audioCtx.destination);
-        
-        delay.delayTime.setValueAtTime(0.15, now);
-        feedback.gain.setValueAtTime(0.20, now);
-        
-        delay.connect(feedback);
-        feedback.connect(delay);
-        delay.connect(audioCtx.destination);
-        
-        // --- 音色・パラメータ設定 ---
-        osc.type = 'sine';
-        // 美しいCマイナー・ペンタトニック・スケール
-        const popScale = [261.63, 311.13, 349.23, 392.00, 466.16]; // C4, Eb4, F4, G4, Bb4
+        // 美しいペンタトニックスケール (テーマに応じた調整)
+        let popScale = [261.63, 311.13, 349.23, 392.00, 466.16]; // C4, Eb4, F4, G4, Bb4
+        if (currentTheme === 'sakura') {
+            popScale = [293.66, 329.63, 392.00, 440.00, 523.25]; // D4, E4, G4, A4, C5 (A major pentatonic)
+        } else if (currentTheme === 'aurora') {
+            popScale = [261.63, 293.66, 329.63, 392.00, 440.00]; // C4, D4, E4, G4, A4 (C major pentatonic)
+        } else if (currentTheme === 'cosmic') {
+            popScale = [329.63, 392.00, 440.00, 523.25, 587.33]; // E4, G4, A4, C5, D5 (Cosmic scale)
+        }
         
         // 画面幅に対してX座標がどの位置にあるかで音程（インデックス）を決める
         const xRatio = (originX !== undefined && showerCanvas) 
@@ -1742,41 +2071,145 @@ function playPopSound(combo = 1, originX) {
         const octaveShift = Math.floor((combo - 1) / 4);
         baseFreq = baseFreq * Math.pow(2, Math.min(2, octaveShift));
         
-        const targetFreq = baseFreq * 2.2;
-        const duration = 0.08 + Math.min(combo - 1, 5) * 0.006;
+        // 各種ノード初期化
+        const soundGain = audioCtx.createGain();
+        const delay = audioCtx.createDelay();
+        const feedback = audioCtx.createGain();
         
-        osc.frequency.setValueAtTime(baseFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(targetFreq, now + duration * 0.85);
+        soundGain.connect(audioCtx.destination);
+        soundGain.connect(delay);
         
-        mainGain.gain.setValueAtTime(0, now);
-        mainGain.gain.linearRampToValueAtTime(0.3, now + 0.003); // 3msアタック
-        mainGain.gain.exponentialRampToValueAtTime(0.0001, now + duration); // スムーズに消音
+        delay.delayTime.setValueAtTime(0.18, now);
+        feedback.gain.setValueAtTime(0.22, now);
         
-        // B. 物理的な「プチッ」音
+        delay.connect(feedback);
+        feedback.connect(delay);
+        delay.connect(audioCtx.destination);
+        
+        let duration = 0.08 + Math.min(combo - 1, 5) * 0.006;
+        const activeOscillators = [];
+        
+        soundGain.gain.setValueAtTime(0, now);
+        soundGain.gain.linearRampToValueAtTime(maxVol, now + 0.003); // 3msアタック
+        
+        if (currentSoundProfile === 'water') {
+            // --- 1. Water Droplet (水滴) ---
+            const osc = audioCtx.createOscillator();
+            osc.connect(soundGain);
+            osc.type = 'sine';
+            const targetFreq = baseFreq * 2.2;
+            osc.frequency.setValueAtTime(baseFreq, now);
+            osc.frequency.exponentialRampToValueAtTime(targetFreq, now + duration * 0.85);
+            
+            soundGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            
+            osc.start(now);
+            osc.stop(now + duration + 0.05);
+            activeOscillators.push(osc);
+            
+        } else if (currentSoundProfile === 'crystal') {
+            // --- 2. Crystal Bells (クリスタルベル) ---
+            duration = 0.45 + Math.min(combo - 1, 5) * 0.02;
+            soundGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            
+            const ratios = [1.0, 2.0, 3.0, 4.0, 5.2];
+            const gains = [0.65, 0.28, 0.12, 0.06, 0.03];
+            
+            ratios.forEach((ratio, idx) => {
+                const osc = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(baseFreq * ratio, now);
+                g.gain.setValueAtTime(gains[idx], now);
+                
+                osc.connect(g).connect(soundGain);
+                osc.start(now);
+                osc.stop(now + duration);
+                activeOscillators.push(osc, g);
+            });
+            
+        } else if (currentSoundProfile === 'windchime') {
+            // --- 3. Zen Windchime (風鈴) ---
+            duration = 0.55 + Math.min(combo - 1, 5) * 0.02;
+            soundGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            
+            osc1.type = 'triangle';
+            osc2.type = 'sine';
+            
+            // 高域を響かせて澄んだ音を作る
+            const chimeFreq = baseFreq * 1.8;
+            osc1.frequency.setValueAtTime(chimeFreq, now);
+            osc2.frequency.setValueAtTime(chimeFreq + 2.5, now); // ディチューンでうなり
+            
+            const g1 = audioCtx.createGain();
+            const g2 = audioCtx.createGain();
+            g1.gain.setValueAtTime(0.75, now);
+            g2.gain.setValueAtTime(0.25, now);
+            
+            osc1.connect(g1).connect(soundGain);
+            osc2.connect(g2).connect(soundGain);
+            
+            osc1.start(now);
+            osc1.stop(now + duration);
+            osc2.start(now);
+            osc2.stop(now + duration);
+            activeOscillators.push(osc1, osc2, g1, g2);
+            
+        } else if (currentSoundProfile === 'cosmic') {
+            // --- 4. Cosmic Pluck (コズミックプラック) ---
+            duration = 0.28 + Math.min(combo - 1, 5) * 0.015;
+            
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            
+            osc.connect(filter).connect(soundGain);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(baseFreq, now);
+            
+            filter.type = 'lowpass';
+            filter.Q.setValueAtTime(3.2, now);
+            filter.frequency.setValueAtTime(baseFreq * 8.5, now);
+            filter.frequency.exponentialRampToValueAtTime(baseFreq * 1.2, now + duration * 0.55);
+            
+            soundGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            
+            osc.start(now);
+            osc.stop(now + duration + 0.05);
+            activeOscillators.push(osc, filter);
+        }
+        
+        // 2. 指先の物理的な質感「プチッ」を出すための超短音オシレーター
+        const clickOsc = audioCtx.createOscillator();
+        const clickGain = audioCtx.createGain();
+        clickOsc.connect(clickGain).connect(audioCtx.destination);
+        
         clickOsc.type = 'sine';
         const clickFreq = 1800 + Math.min(combo - 1, 8) * 120;
         clickOsc.frequency.setValueAtTime(clickFreq, now);
         
         clickGain.gain.setValueAtTime(0, now);
-        clickGain.gain.linearRampToValueAtTime(0.12, now + 0.001);
+        clickGain.gain.linearRampToValueAtTime(0.12 * volumeSE, now + 0.001); // SEボリュームでスケール
         clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
-        
-        osc.start(now);
-        osc.stop(now + duration + 0.05);
         
         clickOsc.start(now);
         clickOsc.stop(now + 0.03);
         
+        // クリーンアップ
         setTimeout(() => {
             try {
-                osc.disconnect();
-                mainGain.disconnect();
+                activeOscillators.forEach(node => node.disconnect());
+                soundGain.disconnect();
                 clickOsc.disconnect();
                 clickGain.disconnect();
                 delay.disconnect();
                 feedback.disconnect();
             } catch (e) {}
-        }, 1200);
+        }, 1500);
         
     } catch (e) {
         console.warn("効果音再生エラー:", e);
@@ -2780,6 +3213,7 @@ function mainLoop(timestamp) {
     updateShower();
     updateBubbles(timestamp);
     updateMeteors();
+    updateBreathGuide(timestamp);
     drawShower();
     
     requestAnimationFrame(mainLoop);
@@ -2788,6 +3222,7 @@ function mainLoop(timestamp) {
 // リフレッシュゲージの進行管理（通常プレイ・エンドレスプレイの両方に対応）
 function incrementPopProgress() {
     totalPops++;
+    sessionPops++;
     if (infiniteMode && totalPops >= REFRESH_TARGET) {
         // 無限モード時の満タンイベント：
         // ゲージを一瞬100%にしてから、お祝いの音を鳴らしてリセットする
@@ -2854,6 +3289,9 @@ function triggerChainReaction(parentBubble) {
                 
                 // コンボをさらにアップして上昇アルペジオにする
                 comboCount++;
+                if (comboCount > maxComboCount) {
+                    maxComboCount = comboCount;
+                }
                 
                 // ポップ音とエフェクトの再生
                 playPopSound(comboCount, b.x);
@@ -2924,6 +3362,9 @@ function tryPopBubble(clientX, clientY) {
                 comboCount = 1;
             }
             lastPopTime = now;
+            if (comboCount > maxComboCount) {
+                maxComboCount = comboCount;
+            }
             
             // 特殊泡またはフィーバーに応じた効果音再生
             if (b.type === 'silver') {
@@ -3127,6 +3568,86 @@ function showCombo(count) {
     el.classList.add('show');
 }
 
+let lastBreathUpdateTime = 0;
+function updateBreathGuide(timestamp) {
+    const breathGuide = document.getElementById('breath-guide');
+    if (!breathGuide) return;
+    
+    if (!gameActive || !breathGuideEnabled) {
+        breathGuide.classList.remove('visible');
+        return;
+    }
+    
+    breathGuide.classList.add('visible');
+    
+    if (!lastBreathUpdateTime) {
+        lastBreathUpdateTime = timestamp;
+    }
+    const dt = timestamp - lastBreathUpdateTime;
+    lastBreathUpdateTime = timestamp;
+    
+    breathCycleTime = (breathCycleTime + dt) % 12000;
+    
+    const ring = document.querySelector('.breath-ring');
+    const ringInner = document.querySelector('.breath-ring-inner');
+    const textEl = document.getElementById('breath-text');
+    
+    let scale = 1.0;
+    let state = 'inhale';
+    let labelJp = '';
+    let labelEn = '';
+    
+    if (breathCycleTime < 4000) {
+        // Inhale: 0 to 4000
+        state = 'inhale';
+        const progress = breathCycleTime / 4000;
+        scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
+        labelJp = '吸って';
+        labelEn = 'Inhale';
+    } else if (breathCycleTime < 8000) {
+        // Hold: 4000 to 8000
+        state = 'hold';
+        scale = 1.6;
+        labelJp = '止めて';
+        labelEn = 'Hold';
+    } else {
+        // Exhale: 8000 to 12000
+        state = 'exhale';
+        const progress = (breathCycleTime - 8000) / 4000;
+        scale = 1.6 - (1.6 - 0.9) * easeInOutQuad(progress);
+        labelJp = '吐いて';
+        labelEn = 'Exhale';
+    }
+    
+    if (ring) {
+        ring.style.transform = `scale(${scale})`;
+        if (state === 'inhale') {
+            ring.style.boxShadow = `0 0 ${20 + scale * 15}px rgba(129, 195, 215, ${0.1 + scale * 0.1})`;
+        } else if (state === 'hold') {
+            ring.style.boxShadow = `0 0 35px rgba(129, 195, 215, 0.25)`;
+        } else {
+            ring.style.boxShadow = `0 0 ${20 + scale * 15}px rgba(129, 195, 215, ${0.05 + scale * 0.15})`;
+        }
+    }
+    if (ringInner) {
+        ringInner.style.transform = `scale(${scale * 0.95}) rotate(${timestamp * 0.0005}rad)`;
+    }
+    if (textEl && breathState !== state) {
+        breathState = state;
+        textEl.innerHTML = `${labelJp}<br><span class="en-sub">${labelEn}</span>`;
+        
+        textEl.style.transition = 'none';
+        textEl.style.opacity = '0';
+        void textEl.offsetWidth; // reflow
+        textEl.style.transition = 'opacity 0.5s ease';
+        textEl.style.opacity = '1';
+    }
+}
+
+function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
 // 繝ｪ繝輔Ξ繝�す繝･繧ｲ繝ｼ繧ｸ縺ｮ繝舌�繧呈峩譁ｰ
 function updateRefreshGauge() {
     const fill = document.getElementById('refresh-gauge-fill');
@@ -3158,9 +3679,12 @@ function startGame() {
     tappedColorHistory = [];
     popColorHistory = [];
     comboCount = 0;
+    maxComboCount = 0;
     lastPopTime = 0;
     totalPops = 0;
+    sessionPops = 0;
     refreshProgress = 0;
+    gameStartTime = performance.now();
     gameActive = true;
     guideHidden = false;
     nextSpawnTime = performance.now() + 400; // 蟆代＠髢薙ｒ鄂ｮ縺�※豕｡縺悟�蟋九ａ繧�

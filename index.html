@@ -41,10 +41,88 @@
         <button id="btn-quit-active" class="btn-quit">終了する / Quit</button>
     </div>
 
+    <!-- 設定ボタン (歯車) -->
+    <button id="btn-settings" class="btn-settings" aria-label="設定 / Settings">⚙️</button>
+
+    <!-- 設定パネル (スライドイン) -->
+    <div id="settings-panel" class="settings-panel">
+        <div class="settings-content">
+            <button id="btn-settings-close" class="btn-settings-close" aria-label="閉じる / Close">&times;</button>
+            <h3>設定 / Settings</h3>
+            
+            <div class="setting-item">
+                <div class="setting-label">環境音 (BGM) 音量 / BGM Vol</div>
+                <div class="slider-container">
+                    <input type="range" id="slider-vol-bgm" min="0" max="1" step="0.05" value="0.40">
+                    <span id="label-vol-bgm">40%</span>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">効果音 (SE) 音量 / SE Vol</div>
+                <div class="slider-container">
+                    <input type="range" id="slider-vol-se" min="0" max="1" step="0.05" value="0.50">
+                    <span id="label-vol-se">50%</span>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">テーマ選択 / Visual Theme</div>
+                <div class="options-grid" id="theme-options">
+                    <button class="btn-option active" data-theme="ocean">深海<span class="en-sub">Ocean</span></button>
+                    <button class="btn-option" data-theme="aurora">極光<span class="en-sub">Aurora</span></button>
+                    <button class="btn-option" data-theme="cosmic">星雲<span class="en-sub">Cosmic</span></button>
+                    <button class="btn-option" data-theme="sakura">桜風<span class="en-sub">Sakura</span></button>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">音色選択 / Sound Profile</div>
+                <div class="options-grid" id="sound-options">
+                    <button class="btn-option active" data-sound="drop">水滴<span class="en-sub">Drops</span></button>
+                    <button class="btn-option" data-sound="crystal">水晶<span class="en-sub">Crystal</span></button>
+                    <button class="btn-option" data-sound="chime">風鈴<span class="en-sub">Chime</span></button>
+                    <button class="btn-option" data-sound="cosmic">宇宙<span class="en-sub">Cosmic</span></button>
+                </div>
+            </div>
+
+            <div class="setting-item toggle-item">
+                <span class="setting-label">ジャイロ視差効果 / Parallax</span>
+                <label class="switch">
+                    <input type="checkbox" id="chk-gyro" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item toggle-item">
+                <span class="setting-label">振動フィードバック / Haptics</span>
+                <label class="switch">
+                    <input type="checkbox" id="chk-haptic" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item toggle-item">
+                <span class="setting-label">呼吸ガイド / Breath Guide</span>
+                <label class="switch">
+                    <input type="checkbox" id="chk-breath" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 呼吸ガイド (Zen Breath Guide) -->
+    <div id="breath-guide" class="breath-guide">
+        <div class="breath-ring"></div>
+        <div class="breath-ring-inner"></div>
+        <div class="breath-text" id="breath-text">ゆっくり呼吸を合わせましょう<br><span class="en-sub">Gently match your breath</span></div>
+    </div>
+
     <!-- コンボ表示 -->
     <div class="combo-display" id="combo-display"></div>
 
-    <!-- リフレッシュゲージ（画面下部の淡い光 of バー） -->
+    <!-- リフレッシュゲージ（画面下部のバー） -->
     <div class="refresh-gauge" id="refresh-gauge">
         <div class="refresh-gauge-fill" id="refresh-gauge-fill"></div>
         <span class="refresh-gauge-label" id="refresh-gauge-label"></span>
@@ -71,6 +149,26 @@
         <div class="overlay-content">
             <h2>REFRESH COMPLETE</h2>
             <p>脳が心地よくリフレッシュされました<br><span class="en-text">Your mind has been pleasantly refreshed</span></p>
+            
+            <!-- 統計レポート -->
+            <div class="relax-report" id="relax-report">
+                <div class="report-row">
+                    <span class="report-label">リフレッシュ時間 / Time</span>
+                    <strong id="report-time" class="report-val">0s</strong>
+                </div>
+                <div class="report-row">
+                    <span class="report-label">弾けた泡 / Bubbles Popped</span>
+                    <strong id="report-pops" class="report-val">0</strong>
+                </div>
+                <div class="report-row">
+                    <span class="report-label">最大コンボ / Max Combo</span>
+                    <strong id="report-combo" class="report-val">0</strong>
+                </div>
+                <div class="report-msg" id="report-msg">
+                    あたまがサラッとクリアになりました。
+                </div>
+            </div>
+            
             <button id="btn-restart" class="btn-primary">もう一度あたまをクリアに / Restart</button>
         </div>
     </div>
