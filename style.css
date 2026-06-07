@@ -214,12 +214,7 @@ body, html {
     text-shadow: 0 0 20px #ff2a85, 0 0 40px #ff7da9, 0 0 80px rgba(255, 42, 133, 0.4);
 }
 
-.combo-display.special .combo-jp {
-    font-size: 64px;
-}
-
 .combo-display.special .combo-en {
-    font-size: 24px;
     opacity: 0.95;
     letter-spacing: 3px;
 }
@@ -233,11 +228,7 @@ body, html {
         font-size: 4.8vw;
         letter-spacing: 1.8px;
     }
-    .combo-display.special .combo-jp {
-        font-size: 9.4vw;
-    }
     .combo-display.special .combo-en {
-        font-size: 5.8vw;
         letter-spacing: 2.2px;
     }
 }
