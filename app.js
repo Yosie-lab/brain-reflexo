@@ -66,6 +66,9 @@ let gyroEnabled = false;
 let breathGuideEnabled = true;
 let breathCycleTime = 0;
 let breathState = 'inhale';
+let autoplayEnabled = false;
+let lastAutoplayPopTime = 0;
+let autoplayInterval = 1200;
 
 // 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
 let refreshProgress = 0;
@@ -1875,6 +1878,17 @@ function initApp() {
             }
         });
     }
+
+    const chkAutoplay = document.getElementById('chk-autoplay');
+    if (chkAutoplay) {
+        chkAutoplay.checked = autoplayEnabled;
+        chkAutoplay.addEventListener('change', (e) => {
+            autoplayEnabled = e.target.checked;
+            if (autoplayEnabled) {
+                lastAutoplayPopTime = performance.now();
+            }
+        });
+    }
     
     // 『スタート選択』画面: 通常Playボタン
     const btnPlayNormal = document.getElementById('btn-play-normal');
@@ -3214,9 +3228,49 @@ function mainLoop(timestamp) {
     updateBubbles(timestamp);
     updateMeteors();
     updateBreathGuide(timestamp);
+    
+    // 自動プレイの更新
+    if (autoplayEnabled && gameActive) {
+        updateAutoplay(timestamp);
+    }
+    
     drawShower();
     
     requestAnimationFrame(mainLoop);
+}
+
+function updateAutoplay(timestamp) {
+    if (!gameActive || !autoplayEnabled) return;
+    
+    if (timestamp - lastAutoplayPopTime >= autoplayInterval) {
+        lastAutoplayPopTime = timestamp;
+        
+        // ランダムな次の間隔を決定（1.0秒〜1.6秒で人間らしいゆったりした間隔）
+        autoplayInterval = 1000 + Math.random() * 600;
+        
+        // ポップ可能な泡をリストアップ
+        const activeBubbles = bubbles.filter(b => !b.popping && !b.reserved);
+        if (activeBubbles.length > 0) {
+            // 最も大きくなっている（ ripe な ）上位3つからランダムに選ぶことで人間らしさを出す
+            activeBubbles.sort((a, b) => b.radius - a.radius);
+            const poolSize = Math.min(3, activeBubbles.length);
+            const target = activeBubbles[Math.floor(Math.random() * poolSize)];
+            
+            // ジャイロによる座標ズレ分を加味してポップ位置を計算
+            const bOffsetX = currentGyroX * 0.4 * target.radius;
+            const bOffsetY = currentGyroY * 0.4 * target.radius;
+            const popX = target.x + bOffsetX;
+            const popY = target.y + bOffsetY;
+            
+            // ポップ実行
+            if (tryPopBubble(popX, popY)) {
+                // 自動タップ地点に魔法の星屑トレイルを散りばめる
+                for (let j = 0; j < 3; j++) {
+                    createCursorTrail(popX, popY);
+                }
+            }
+        }
+    }
 }
 
 // リフレッシュゲージの進行管理（通常プレイ・エンドレスプレイの両方に対応）
