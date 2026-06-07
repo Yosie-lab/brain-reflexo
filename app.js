@@ -70,6 +70,38 @@ let autoplayEnabled = false;
 let lastAutoplayPopTime = 0;
 let autoplayInterval = 1200;
 
+let bgmOscs = [];
+let bgmGains = [];
+let bgmCurrentChordIndex = 0;
+let bgmLastChordTime = 0;
+
+const BGM_CHORDS = {
+    deepsea: [
+        [130.81, 196.00, 329.63, 493.88, 587.33], // Cmaj9
+        [164.81, 246.94, 392.00, 493.88, 739.99], // Em9
+        [110.00, 164.81, 261.63, 392.00, 493.88], // Am9
+        [87.31, 130.81, 220.00, 329.63, 392.00]   // Fmaj9
+    ],
+    aurora: [
+        [110.00, 164.81, 246.94, 329.63, 440.00], // Asus2
+        [92.50, 138.59, 220.00, 329.63, 493.88],  // F#m11
+        [146.83, 220.00, 369.99, 554.37, 659.25], // Dmaj9
+        [164.81, 246.94, 293.66, 440.00, 587.33]  // E7sus4
+    ],
+    cosmic: [
+        [138.59, 207.65, 329.63, 493.88, 622.25], // C#m9
+        [110.00, 164.81, 277.18, 415.30, 493.88], // Amaj9
+        [103.83, 155.56, 246.94, 369.99, 466.16], // G#m7
+        [92.50, 138.59, 220.00, 329.63, 415.30]   // F#m9
+    ],
+    sakura: [
+        [146.83, 220.00, 369.99, 554.37, 739.99], // Dmaj7
+        [138.59, 207.65, 329.63, 493.88, 659.25], // C#m7
+        [123.47, 185.00, 293.66, 440.00, 587.33], // Bm7
+        [110.00, 164.81, 277.18, 415.30, 554.37]  // Amaj7
+    ]
+};
+
 // 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
 let refreshProgress = 0;
 const REFRESH_TARGET = 80; // 完了までに必要な泡のポップ数
@@ -1764,6 +1796,28 @@ function applyTheme(themeName) {
             btn.classList.remove('active');
         }
     });
+
+    // テーマ変更に伴うBGM和音の即時スライド遷移
+    if (audioCtx && bgmOscs && bgmOscs.length > 0) {
+        const themeKey = themeName === 'ocean' ? 'deepsea' : themeName;
+        const themeChords = BGM_CHORDS[themeKey] || BGM_CHORDS.deepsea;
+        const nextChord = themeChords[bgmCurrentChordIndex];
+        const now = audioCtx.currentTime;
+        
+        bgmOscs.forEach((osc, idx) => {
+            const targetFreq = nextChord[idx] || nextChord[0];
+            if (osc && osc.frequency) {
+                try {
+                    osc.frequency.cancelScheduledValues(now);
+                    osc.frequency.setValueAtTime(osc.frequency.value, now);
+                    osc.frequency.exponentialRampToValueAtTime(targetFreq, now + 3.0);
+                } catch (e) {
+                    osc.frequency.setValueAtTime(targetFreq, now);
+                }
+            }
+        });
+        bgmLastChordTime = performance.now(); // 10秒タイマーのリセット
+    }
 }
 
 function initApp() {
@@ -2598,24 +2652,37 @@ function startAmbientSound() {
         // 蜈ｨ菴薙譛€邨ょ蜉帙ｒ繧ｹ繝斐繧ｫ繝ｼ縺ｸ
         ambientGain.connect(audioCtx.destination);
         
-        // 5. 豬ｮ驕頑─縺ｮ讌ｵ縺ｿ縺ｨ縺ｪ繧狗ｾ弱＠縺ユ繝ｳ繧ｷ繝ｧ繝ｳ蜥碁浹 (C4, G4, B4, D5, G5)
-        const freqs = [261.63, 392.00, 493.88, 587.33, 783.99];
+        // 5. ビジュアルテーマ別の美しい5声の初期和音合成
+        bgmOscs = [];
+        bgmGains = [];
+        bgmCurrentChordIndex = 0;
+        bgmLastChordTime = performance.now();
         
-        freqs.forEach((freq, idx) => {
+        const themeChords = BGM_CHORDS[currentTheme] || BGM_CHORDS.deepsea;
+        const initialChord = themeChords[0];
+        
+        initialChord.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
-            osc.type = 'sine'; // 貔ｓ縺縺繧翫ｒ蜃ｺ縺吶◆繧√↓繧ｵ繧､繝ｳ豕｢繧剃ｽｿ逕ｨ
+            const voiceGain = audioCtx.createGain();
             
-            osc.type = 'sine'; // 貔ｓ縺縺繧翫ｒ蜃ｺ縺吶◆繧√↓繧ｵ繧､繝ｳ豕｢繧剃ｽｿ逕ｨ
+            osc.type = 'sine';
             
-            // 繧上★縺九↓繝メ繝･繝ｼ繝ｳ縺励※縲√さ繝ｼ繝ｩ繧ｹ縺ｨ蜷医ｏ縺輔▲纎繧ｧ讌ｵ荳翫繧ｷ繝･繝ｯ繝ｼ諢溘ｒ菴懊ｋ
-            const detuneOffset = (idx % 2 === 0 ? 2 : -2) + (Math.random() - 0.5) * 1; // 邏ｱ2繧ｻ繝ｳ繝
+            // わずかにデチューンして厚みを出す
+            const detuneOffset = (idx % 2 === 0 ? 2.5 : -2.5) + (Math.random() - 0.5) * 1;
             osc.detune.setValueAtTime(detuneOffset, now);
             
             osc.frequency.setValueAtTime(freq, now);
-            osc.connect(ambientFilter);
+            
+            // 低音は豊かに、高音は透き通るように調整
+            const voiceVolume = idx === 0 ? 0.95 : (idx === 1 ? 0.75 : 0.45);
+            voiceGain.gain.setValueAtTime(voiceVolume, now);
+            
+            osc.connect(voiceGain).connect(ambientFilter);
             osc.start(now);
             
             ambientOscs.push(osc);
+            bgmOscs.push(osc);
+            bgmGains.push(voiceGain);
         });
     } catch (e) {
         console.warn("アンビエント音の開始エラー:", e);
@@ -2645,6 +2712,8 @@ function stopAmbientSound(immediate = false) {
         const currentNodes = [...ambientNodes];
         ambientOscs = [];
         ambientNodes = [];
+        bgmOscs = [];
+        bgmGains = [];
         
         setTimeout(() => {
             // オシレーターの完全停止と接続解除
@@ -3234,6 +3303,11 @@ function mainLoop(timestamp) {
         updateAutoplay(timestamp);
     }
     
+    // BGM和音遷移の更新
+    if (gameActive) {
+        updateBgmChords(timestamp);
+    }
+    
     drawShower();
     
     requestAnimationFrame(mainLoop);
@@ -3270,6 +3344,35 @@ function updateAutoplay(timestamp) {
                 }
             }
         }
+    }
+}
+
+function updateBgmChords(timestamp) {
+    if (!audioCtx || bgmOscs.length === 0) return;
+    
+    // 10秒ごとに和音を遷移させる
+    const elapsed = timestamp - bgmLastChordTime;
+    if (elapsed >= 10000) {
+        bgmLastChordTime = timestamp;
+        
+        // 次のコードに進む
+        const themeChords = BGM_CHORDS[currentTheme] || BGM_CHORDS.deepsea;
+        bgmCurrentChordIndex = (bgmCurrentChordIndex + 1) % themeChords.length;
+        const nextChord = themeChords[bgmCurrentChordIndex];
+        
+        const now = audioCtx.currentTime;
+        bgmOscs.forEach((osc, idx) => {
+            const targetFreq = nextChord[idx] || nextChord[0];
+            if (osc && osc.frequency) {
+                try {
+                    osc.frequency.cancelScheduledValues(now);
+                    osc.frequency.setValueAtTime(osc.frequency.value, now);
+                    osc.frequency.exponentialRampToValueAtTime(targetFreq, now + 4.5);
+                } catch (e) {
+                    osc.frequency.setValueAtTime(targetFreq, now);
+                }
+            }
+        });
     }
 }
 
