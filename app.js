@@ -3550,11 +3550,12 @@ function updateBreathGuide(timestamp) {
     let state = 'inhale';
     let labelJp = '';
     let labelEn = '';
+    let progress = 0;
     
     if (breathCycleTime < 4000) {
         // Inhale: 0 to 4000
         state = 'inhale';
-        const progress = breathCycleTime / 4000;
+        progress = breathCycleTime / 4000;
         scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
         labelJp = '吸って';
         labelEn = 'Inhale';
@@ -3567,24 +3568,52 @@ function updateBreathGuide(timestamp) {
     } else {
         // Exhale: 8000 to 12000
         state = 'exhale';
-        const progress = (breathCycleTime - 8000) / 4000;
+        progress = (breathCycleTime - 8000) / 4000;
         scale = 1.6 - (1.6 - 0.9) * easeInOutQuad(progress);
         labelJp = '吐いて';
         labelEn = 'Exhale';
     }
     
+    // Smooth color interpolation between states:
+    // Inhale (Teal: 45, 212, 191)
+    // Hold (Amber: 251, 191, 36)
+    // Exhale (Indigo: 99, 102, 241)
+    let r = 129, g = 195, b = 215;
+    let fill = 0.05;
+    let glow = 0.1;
+    
+    if (state === 'inhale') {
+        fill = 0.02 + 0.16 * easeInOutQuad(progress);
+        glow = 0.1 + scale * 0.15;
+        // Interpolate from Indigo (exhale end) to Teal
+        r = Math.round(99 + (45 - 99) * progress);
+        g = Math.round(102 + (212 - 102) * progress);
+        b = Math.round(241 + (191 - 241) * progress);
+    } else if (state === 'hold') {
+        fill = 0.18;
+        glow = 0.35;
+        r = 251;
+        g = 191;
+        b = 36;
+    } else {
+        fill = 0.18 - 0.16 * easeInOutQuad(progress);
+        glow = 0.05 + scale * 0.2;
+        // Interpolate from Amber to Indigo
+        r = Math.round(251 + (99 - 251) * progress);
+        g = Math.round(191 + (102 - 191) * progress);
+        b = Math.round(36 + (241 - 36) * progress);
+    }
+    
     if (ring) {
         ring.style.transform = `scale(${scale})`;
-        if (state === 'inhale') {
-            ring.style.boxShadow = `0 0 ${20 + scale * 15}px rgba(129, 195, 215, ${0.1 + scale * 0.1})`;
-        } else if (state === 'hold') {
-            ring.style.boxShadow = `0 0 35px rgba(129, 195, 215, 0.25)`;
-        } else {
-            ring.style.boxShadow = `0 0 ${20 + scale * 15}px rgba(129, 195, 215, ${0.05 + scale * 0.15})`;
-        }
+        ring.style.setProperty('--breath-color', `${r}, ${g}, ${b}`);
+        ring.style.setProperty('--breath-fill', fill);
+        ring.style.setProperty('--breath-glow', glow);
+        ring.style.boxShadow = `0 0 ${25 + scale * 20}px rgba(${r}, ${g}, ${b}, ${glow})`;
     }
     if (ringInner) {
         ringInner.style.transform = `scale(${scale * 0.95}) rotate(${timestamp * 0.0005}rad)`;
+        ringInner.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.25)`;
     }
     if (textEl && breathState !== state) {
         breathState = state;
