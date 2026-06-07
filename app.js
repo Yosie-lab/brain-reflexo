@@ -3686,6 +3686,30 @@ function startGame() {
     const guide = document.getElementById('guide-text');
     if (guide) {
         guide.style.opacity = '';
+        guide.replaceChildren();
+        if (meditationMode) {
+            const jpText = document.createTextNode("ガイドに合わせてゆっくりと呼吸をしてみてください");
+            guide.appendChild(jpText);
+            
+            const br = document.createElement("br");
+            guide.appendChild(br);
+            
+            const enSpan = document.createElement("span");
+            enSpan.className = "en-text";
+            enSpan.textContent = "Slowly breathe in and out with the guide";
+            guide.appendChild(enSpan);
+        } else {
+            const jpText = document.createTextNode("揺れる球をながめながらゆっくりとタップしてみてください");
+            guide.appendChild(jpText);
+            
+            const br = document.createElement("br");
+            guide.appendChild(br);
+            
+            const enSpan = document.createElement("span");
+            enSpan.className = "en-text";
+            enSpan.textContent = "Gently tap while watching the swaying spheres";
+            guide.appendChild(enSpan);
+        }
     }
     
     const comboEl = document.getElementById('combo-display');
