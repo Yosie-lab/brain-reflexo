@@ -59,7 +59,7 @@ const COMBO_WINDOW = 1800; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
 // リラクゼーション設定（脳リフレクソ改用）
 let volumeBGM = 0.5;
 let volumeSE = 0.8;
-let currentTheme = 'deepsea';
+let currentTheme = 'starry';
 let hapticEnabled = true;
 let gyroEnabled = false;
 let breathGuideEnabled = true;
@@ -1791,8 +1791,7 @@ function applyTheme(themeName) {
 function initApp() {
     // 初回起動時はゲームを開始せずスタート画面を表示する
     initShower();
-    initParticleSprites();
-    initBubbleTemplates();
+    applyTheme('starry');
     
     // 設定関連UIの初期化
     const btnSettings = document.getElementById('btn-settings');
