@@ -1726,8 +1726,8 @@ const THEME_BUBBLE_COLORS = {
         { hex: '#f8fafc', hue: 210 }, // Diamond White
         { hex: '#a5f3fc', hue: 187 }, // Ice Blue
         { hex: '#ffcc80', hue: 35 },  // Pale Amber
-        { hex: '#cbd5e1', hue: 215 }, // Soft Silver
-        { hex: '#ffffff', hue: 0 }    // Pure White
+        { hex: '#c2aff0', hue: 262 }, // Starry Violet
+        { hex: '#cbd5e1', hue: 215 }  // Soft Silver
     ],
     sakura: [
         { hex: '#fbcfe8', hue: 330 }, // Sakura pink
