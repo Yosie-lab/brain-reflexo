@@ -3353,6 +3353,7 @@ function tryPopBubble(clientX, clientY) {
                 feverActive = true;
                 feverEndTime = now + 8000; // フィーバータイムは8秒間
                 playFeverStartSound(b.x);
+                playCarbonatedBubbleSound(b.x);
                 triggerHaptic('heavy');
                 createShowerRipple(b.x, b.y, 280, 3.2, 210); // 白銀の特大波紋 (色相210)
             } else if (b.type === 'chain') {
