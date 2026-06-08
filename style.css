@@ -851,6 +851,13 @@ body.theme-sakura {
     background: radial-gradient(circle at 50% 30%, #1a0f18 0%, #0a050d 60%, #030106 100%);
 }
 
+/* 光の紋様（抽象幾何学記号）のサイズ調整 */
+.combo-jp.pattern-symbol {
+    font-size: 80px;
+    line-height: 1.0;
+    font-family: sans-serif;
+}
+
 /* モバイルレイアウトでの設定パネル幅調整 */
 @media (max-width: 400px) {
     .settings-panel {

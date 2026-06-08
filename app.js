@@ -77,6 +77,7 @@ let gameActive = false;
 let guideHidden = false;
 let infiniteMode = false; // true = Endless Play（終わらないモード）
 let meditationMode = false; // true = 瞑想モード（タップ無効、低速、呼吸ガイド強制）
+let popEffectMode = 'praise'; // 'praise' | 'reset' | 'pattern' | 'none'
 
 // 髻ｳ螢ｰ髢｢騾｣
 let audioCtx = null;
@@ -1843,6 +1844,23 @@ function initApp() {
             applyTheme(theme);
         });
     });
+
+    const effectButtons = document.querySelectorAll('#pop-effect-options .btn-option');
+    effectButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const effect = btn.getAttribute('data-effect');
+            popEffectMode = effect;
+            
+            // UI classes active
+            effectButtons.forEach(b => {
+                if (b.getAttribute('data-effect') === effect) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+        });
+    });
     
     const chkGyro = document.getElementById('chk-gyro');
     if (chkGyro) {
@@ -3457,36 +3475,87 @@ const SPECIAL_PRAISES = [
     { jp: "極上の快感!", en: "Supreme pleasure" }
 ];
 
+const RESET_WORDS = [
+    { jp: "そよ風", en: "breeze" },
+    { jp: "こもれび", en: "sunbeams" },
+    { jp: "小川", en: "brook" },
+    { jp: "ひだまり", en: "sunny spot" },
+    { jp: "ねこ", en: "kitty" },
+    { jp: "さくら", en: "cherry blossoms" },
+    { jp: "波音", en: "surf waves" },
+    { jp: "静寂", en: "silence" },
+    { jp: "水滴", en: "waterdrop" },
+    { jp: "白い雲", en: "white cloud" },
+    { jp: "星屑", en: "stardust" },
+    { jp: "ことり", en: "little bird" },
+    { jp: "落ち葉", en: "fallen leaves" },
+    { jp: "雪の結晶", en: "snow crystal" },
+    { jp: "せせらぎ", en: "stream murmur" }
+];
+
+const ABSTRACT_PATTERNS = [
+    "✦", "✧", "❈", "❊", "❃", "✿", "❂", "❀", "❉", "❋"
+];
+
 let lastPraiseIdx = -1;
 let lastSpecialPraiseIdx = -1;
 
-// コンボ数に応じて褒める言葉（日本語＋英語）を画面中央に表示
+// コンボ数に応じて褒める言葉（日本語＋英語）または記号・リセット語を画面中央に表示
 function showCombo(count) {
     if (meditationMode) return;
     const el = document.getElementById('combo-display');
     if (!el) return;
     
+    if (popEffectMode === 'none') {
+        el.classList.remove('show');
+        return;
+    }
+    
     let praise = null;
-    if (count % 10 === 0) {
-        // 10タップごとの特別な言葉
+    let isSpecial = (count % 10 === 0);
+    
+    if (popEffectMode === 'praise') {
+        if (isSpecial) {
+            let idx;
+            do {
+                idx = Math.floor(Math.random() * SPECIAL_PRAISES.length);
+            } while (idx === lastSpecialPraiseIdx && SPECIAL_PRAISES.length > 1);
+            
+            lastSpecialPraiseIdx = idx;
+            praise = SPECIAL_PRAISES[idx];
+            el.classList.add('special');
+        } else {
+            let idx;
+            do {
+                idx = Math.floor(Math.random() * COMBO_PRAISES.length);
+            } while (idx === lastPraiseIdx && COMBO_PRAISES.length > 1);
+            
+            lastPraiseIdx = idx;
+            praise = COMBO_PRAISES[idx];
+            el.classList.remove('special');
+        }
+    } else if (popEffectMode === 'reset') {
         let idx;
         do {
-            idx = Math.floor(Math.random() * SPECIAL_PRAISES.length);
-        } while (idx === lastSpecialPraiseIdx && SPECIAL_PRAISES.length > 1);
-        
-        lastSpecialPraiseIdx = idx;
-        praise = SPECIAL_PRAISES[idx];
-        el.classList.add('special');
-    } else {
-        // 通常の褒める言葉
-        let idx;
-        do {
-            idx = Math.floor(Math.random() * COMBO_PRAISES.length);
-        } while (idx === lastPraiseIdx && COMBO_PRAISES.length > 1);
+            idx = Math.floor(Math.random() * RESET_WORDS.length);
+        } while (idx === lastPraiseIdx && RESET_WORDS.length > 1);
         
         lastPraiseIdx = idx;
-        praise = COMBO_PRAISES[idx];
-        el.classList.remove('special');
+        praise = RESET_WORDS[idx];
+        if (isSpecial) {
+            el.classList.add('special');
+        } else {
+            el.classList.remove('special');
+        }
+    } else if (popEffectMode === 'pattern') {
+        let idx = Math.floor(Math.random() * ABSTRACT_PATTERNS.length);
+        const symbol = ABSTRACT_PATTERNS[idx];
+        praise = { jp: symbol, en: "" };
+        if (isSpecial) {
+            el.classList.add('special');
+        } else {
+            el.classList.remove('special');
+        }
     }
     
     // セキュアなDOM APIで組み立て
@@ -3494,26 +3563,36 @@ function showCombo(count) {
     
     const jpDiv = document.createElement('div');
     jpDiv.className = 'combo-jp';
+    if (popEffectMode === 'pattern') {
+        jpDiv.classList.add('pattern-symbol');
+    }
     jpDiv.textContent = praise.jp;
     el.appendChild(jpDiv);
     
-    const enDiv = document.createElement('div');
-    enDiv.className = 'combo-en';
-    enDiv.textContent = praise.en;
-    el.appendChild(enDiv);
+    if (praise.en) {
+        const enDiv = document.createElement('div');
+        enDiv.className = 'combo-en';
+        enDiv.textContent = praise.en;
+        el.appendChild(enDiv);
+    }
     
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
-        // 通常・スペシャル問わず同じサイズ計算を使用し、サイズを縮小して統一
-        const fsJp = Math.min(5.8, 75 / praise.jp.length);
-        jpDiv.style.fontSize = fsJp + 'vw';
-        
-        const fsEn = Math.min(3.6, 80 / praise.en.length);
-        enDiv.style.fontSize = fsEn + 'vw';
+        if (popEffectMode === 'pattern') {
+            jpDiv.style.fontSize = '12vw';
+        } else {
+            const fsJp = Math.min(5.8, 75 / praise.jp.length);
+            jpDiv.style.fontSize = fsJp + 'vw';
+            if (praise.en) {
+                const fsEn = Math.min(3.6, 80 / praise.en.length);
+                enDiv.style.fontSize = fsEn + 'vw';
+            }
+        }
     } else {
         // デスクトップサイズ時はインラインスタイルをクリアしてCSS定義に委ねる
         jpDiv.style.fontSize = '';
-        enDiv.style.fontSize = '';
+        const enDiv = el.querySelector('.combo-en');
+        if (enDiv) enDiv.style.fontSize = '';
     }
     
     el.classList.remove('show');
