@@ -3464,8 +3464,7 @@ const COMBO_PRAISES = [
     { jp: "その感じ!", en: "Keep it up" },
     { jp: "すてき!", en: "Lovely" },
     { jp: "癒やされる!", en: "Feeling healed" },
-    { jp: "感謝!", en: "Grateful" },
-    { jp: "感動!", en: "Touching" }
+    { jp: "感謝!", en: "Grateful" }
 ];
 
 const SPECIAL_PRAISES = [
@@ -3475,7 +3474,8 @@ const SPECIAL_PRAISES = [
     { jp: "幸せいっぱい!", en: "Blissful time" },
     { jp: "心地よい広がり!", en: "Soothing spread" },
     { jp: "超リラックス!", en: "Ultimate relaxation" },
-    { jp: "極上の快感!", en: "Supreme pleasure" }
+    { jp: "極上の快感!", en: "Supreme pleasure" },
+    { jp: "超感動!", en: "Deeply moved" }
 ];
 
 const RESET_WORDS = [
