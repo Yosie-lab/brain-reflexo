@@ -3463,7 +3463,9 @@ const COMBO_PRAISES = [
     { jp: "とろける!", en: "Melt away" },
     { jp: "その感じ!", en: "Keep it up" },
     { jp: "すてき!", en: "Lovely" },
-    { jp: "癒やされる!", en: "Feeling healed" }
+    { jp: "癒やされる!", en: "Feeling healed" },
+    { jp: "感謝!", en: "Grateful" },
+    { jp: "感動!", en: "Touching" }
 ];
 
 const SPECIAL_PRAISES = [
