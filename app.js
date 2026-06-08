@@ -3454,7 +3454,6 @@ function tryPopBubble(clientX, clientY) {
 // 繧ｳ繝ｳ繝懈焚繧堤判髱｢荳ｭ螟ｮ縺ｫ縺ｵ繧上▲縺ｨ陦ｨ遉ｺ
 // 褒める言葉の定義（日本語＋英語）
 const COMBO_PRAISES = [
-    { jp: "心地いい!", en: "Soothing" },
     { jp: "スッキリ!", en: "Clear" },
     { jp: "快感!", en: "Pleasure!" },
     { jp: "気持ちいい!", en: "Feels great" },
