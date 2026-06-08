@@ -3569,8 +3569,9 @@ function showCombo(count) {
     jpDiv.textContent = praise.jp;
     el.appendChild(jpDiv);
     
+    let enDiv = null;
     if (praise.en) {
-        const enDiv = document.createElement('div');
+        enDiv = document.createElement('div');
         enDiv.className = 'combo-en';
         enDiv.textContent = praise.en;
         el.appendChild(enDiv);
@@ -3583,7 +3584,7 @@ function showCombo(count) {
         } else {
             const fsJp = Math.min(5.8, 75 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
-            if (praise.en) {
+            if (enDiv) {
                 const fsEn = Math.min(3.6, 80 / praise.en.length);
                 enDiv.style.fontSize = fsEn + 'vw';
             }
@@ -3591,7 +3592,6 @@ function showCombo(count) {
     } else {
         // デスクトップサイズ時はインラインスタイルをクリアしてCSS定義に委ねる
         jpDiv.style.fontSize = '';
-        const enDiv = el.querySelector('.combo-en');
         if (enDiv) enDiv.style.fontSize = '';
     }
     
