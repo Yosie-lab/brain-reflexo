@@ -330,6 +330,14 @@ body, html {
     transform: translate3d(0, 0, 0);
 }
 
+/* スタート画面は上寄せ＋スクロール可能にしてボタンが切れないようにする */
+#start-overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 0 max(20px, env(safe-area-inset-bottom));
+}
+
 .overlay.active {
     opacity: 1;
     pointer-events: auto;
@@ -875,9 +883,10 @@ body.theme-sakura {
     padding: 24px 22px 28px;
     max-width: 380px;
     width: 92%;
-    max-height: 92dvh;
-    overflow-y: auto;
-    scrollbar-width: none;
+    /* スクロールはオーバーレイ側が担うのでこちらはautoではなくvisible */
+    overflow: visible;
+    /* 中央寄せ（左右マージン自動） */
+    margin: auto;
 }
 .start-overlay-content::-webkit-scrollbar { display: none; }
 
@@ -1072,27 +1081,96 @@ body.theme-sakura {
     opacity: 0.9;
 }
 
-/* モバイル小画面対応 */
-@media (max-height: 700px) {
+/* モバイル小画面対応（iPhone SE: 667px、iPhone 12: 844px 等） */
+@media (max-height: 750px) {
+    #start-overlay {
+        padding-top: 12px;
+    }
     .start-overlay-content {
-        padding: 16px 18px 20px;
+        padding: 14px 16px 16px;
+    }
+    .start-title {
+        font-size: 18px;
+        margin-bottom: 4px;
+        letter-spacing: 3px;
+    }
+    .start-subtitle {
+        font-size: 10px;
+        margin-bottom: 12px;
     }
     .how-to-guide {
         padding: 10px 6px;
         margin-bottom: 14px;
+        border-radius: 12px;
     }
     .how-to-icon {
-        font-size: 18px;
+        font-size: 17px;
     }
-    .start-title {
-        font-size: 19px;
-        margin-bottom: 4px;
+    .how-to-label {
+        font-size: 11px;
     }
-    .start-subtitle {
-        margin-bottom: 12px;
+    .how-to-desc {
+        font-size: 9px;
+    }
+    .how-to-arrow {
+        font-size: 12px;
+        padding-top: 10px;
+    }
+    .mode-select-label {
+        font-size: 9px;
+        margin-bottom: 8px;
     }
     .mode-card {
         margin-bottom: 7px;
+    }
+    .mode-badge {
+        font-size: 8px;
+        padding: 2px 8px;
+        margin-bottom: 4px;
+    }
+    .btn-mode {
+        padding: 11px 14px !important;
+    }
+    .btn-mode-icon {
+        font-size: 17px;
+        width: 24px;
+    }
+    .btn-mode-title {
+        font-size: 12px;
+    }
+    .btn-mode-detail {
+        font-size: 9px;
+    }
+}
+
+/* iPhone SE（375×667）などさらに小さい画面 */
+@media (max-height: 680px) {
+    #start-overlay {
+        padding-top: 8px;
+    }
+    .start-overlay-content {
+        padding: 10px 14px 12px;
+    }
+    .how-to-guide {
+        padding: 8px 4px;
+        margin-bottom: 10px;
+        gap: 2px;
+    }
+    .how-to-icon {
+        font-size: 15px;
+        margin-bottom: 1px;
+    }
+    .how-to-desc {
+        display: none; /* 極小画面では説明文を非表示 */
+    }
+    .start-subtitle {
+        display: none; /* 極小画面ではサブタイトルを非表示 */
+    }
+    .mode-card {
+        margin-bottom: 5px;
+    }
+    .btn-mode {
+        padding: 10px 12px !important;
     }
 }
 
