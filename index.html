@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.8">
+    <link rel="stylesheet" href="style.css?v=1.9">
 </head>
 <body class="theme-starry">
     <!-- 背景全体を覆うマインドシャワー＆泡Canvas -->
@@ -130,21 +130,70 @@
 
     <!-- スタート選択画面 -->
     <div id="start-overlay" class="overlay active">
-        <div class="overlay-content">
-            <h2>脳リフレクソ</h2>
-            <p>モードを選んでください<br><span class="en-text">Choose your play mode</span></p>
-            <button id="btn-play-normal" class="btn-primary" style="margin-bottom: 12px;">
-                ▶ Play
-                <span class="en-text">ゲームをクリアして終了</span>
-            </button>
-            <button id="btn-play-infinite" class="btn-primary btn-infinite" style="margin-bottom: 12px;">
-                ∞ Endless Play
-                <span class="en-text">終わりなく楽しむ</span>
-            </button>
-            <button id="btn-play-meditation" class="btn-primary btn-meditation">
-                🧘 Meditation / 瞑想 (鑑賞)
-                <span class="en-text">揺れる球と呼吸ガイドで瞑想する</span>
-            </button>
+        <div class="overlay-content start-overlay-content">
+
+            <!-- タイトル -->
+            <h2 class="start-title">脳リフレクソ</h2>
+            <p class="start-subtitle">音と光の泡つぶしで、あたまをサラッとクリアに<br><span class="en-text">Pop bubbles to clear your mind with sound &amp; light</span></p>
+
+            <!-- はじめての方向け 3ステップガイド -->
+            <div class="how-to-guide">
+                <div class="how-to-step">
+                    <div class="how-to-icon">👀</div>
+                    <div class="how-to-label">眺める<span class="en-sub">Watch</span></div>
+                    <div class="how-to-desc">揺れる泡を<br>ゆっくり眺める</div>
+                </div>
+                <div class="how-to-arrow">→</div>
+                <div class="how-to-step">
+                    <div class="how-to-icon">👆</div>
+                    <div class="how-to-label">タップ<span class="en-sub">Tap</span></div>
+                    <div class="how-to-desc">気になった泡を<br>そっとタップ</div>
+                </div>
+                <div class="how-to-arrow">→</div>
+                <div class="how-to-step">
+                    <div class="how-to-icon">✨</div>
+                    <div class="how-to-label">スッキリ<span class="en-sub">Refresh</span></div>
+                    <div class="how-to-desc">あたまが<br>クリアになる</div>
+                </div>
+            </div>
+
+            <!-- モード選択ラベル -->
+            <p class="mode-select-label">モードを選んでスタート<br><span class="en-text">Choose your mode</span></p>
+
+            <!-- Play ボタン（初めての方おすすめ） -->
+            <div class="mode-card" id="mode-card-normal">
+                <span class="mode-badge">✦ はじめての方におすすめ</span>
+                <button id="btn-play-normal" class="btn-primary btn-mode">
+                    <span class="btn-mode-icon">▶</span>
+                    <span class="btn-mode-body">
+                        <span class="btn-mode-title">Play</span>
+                        <span class="btn-mode-detail">泡を80個つぶしてゴール ／ 約3〜5分</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Endless Play ボタン -->
+            <div class="mode-card" id="mode-card-infinite">
+                <button id="btn-play-infinite" class="btn-primary btn-infinite btn-mode">
+                    <span class="btn-mode-icon">∞</span>
+                    <span class="btn-mode-body">
+                        <span class="btn-mode-title">Endless Play</span>
+                        <span class="btn-mode-detail">ゴールなく自由に楽しむ ／ 時間無制限</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Meditation ボタン -->
+            <div class="mode-card" id="mode-card-meditation">
+                <button id="btn-play-meditation" class="btn-primary btn-meditation btn-mode">
+                    <span class="btn-mode-icon">🧘</span>
+                    <span class="btn-mode-body">
+                        <span class="btn-mode-title">Meditation / 瞑想</span>
+                        <span class="btn-mode-detail">呼吸ガイドに合わせて深くリラックス</span>
+                    </span>
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -177,6 +226,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=1.8"></script>
+    <script src="app.js?v=1.9"></script>
 </body>
 </html>

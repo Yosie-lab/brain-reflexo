@@ -866,3 +866,233 @@ body.theme-sakura {
 }
 
 
+/* =============================================================
+   14. スタート画面 オンボーディング導入
+   ============================================================= */
+
+/* オーバーレイコンテンツをスタート画面用に拡張 */
+.start-overlay-content {
+    padding: 24px 22px 28px;
+    max-width: 380px;
+    width: 92%;
+    max-height: 92dvh;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.start-overlay-content::-webkit-scrollbar { display: none; }
+
+/* タイトル */
+.start-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #81c3d7, #c2aff0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    margin-bottom: 6px;
+}
+
+.start-subtitle {
+    font-size: 11px;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+}
+
+/* =============================================================
+   3ステップHow-toガイド
+   ============================================================= */
+.how-to-guide {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 14px 8px;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+.how-to-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.how-to-icon {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 2px;
+    animation: floatIcon 3s ease-in-out infinite;
+}
+
+.how-to-step:nth-child(1) .how-to-icon { animation-delay: 0s; }
+.how-to-step:nth-child(3) .how-to-icon { animation-delay: 0.6s; }
+.how-to-step:nth-child(5) .how-to-icon { animation-delay: 1.2s; }
+
+@keyframes floatIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.how-to-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.how-to-label .en-sub {
+    font-size: 8px;
+    font-weight: 400;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.how-to-desc {
+    font-size: 9.5px;
+    color: #64748b;
+    line-height: 1.5;
+    letter-spacing: 0.3px;
+}
+
+.how-to-arrow {
+    font-size: 14px;
+    color: rgba(129, 195, 215, 0.35);
+    flex-shrink: 0;
+    padding-top: 12px;
+    align-self: flex-start;
+}
+
+/* =============================================================
+   モード選択ラベル
+   ============================================================= */
+.mode-select-label {
+    font-size: 10px;
+    color: #64748b;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out 0.5s both;
+}
+
+/* =============================================================
+   モードカード（バッジ付きボタンコンテナ）
+   ============================================================= */
+.mode-card {
+    position: relative;
+    margin-bottom: 10px;
+    animation: fadeInUp 0.8s ease-out both;
+}
+
+#mode-card-normal  { animation-delay: 0.6s; }
+#mode-card-infinite { animation-delay: 0.75s; }
+#mode-card-meditation { animation-delay: 0.9s; }
+
+/* おすすめバッジ */
+.mode-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #f3c68f;
+    background: rgba(243, 198, 143, 0.12);
+    border: 1px solid rgba(243, 198, 143, 0.3);
+    border-radius: 20px;
+    padding: 2px 10px;
+    margin-bottom: 5px;
+    margin-left: 4px;
+}
+
+/* =============================================================
+   モードボタン（アイコン＋テキスト2行レイアウト）
+   ============================================================= */
+.btn-mode {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px !important;
+    text-align: left;
+    width: 100%;
+}
+
+.btn-mode-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 28px;
+    text-align: center;
+}
+
+.btn-mode-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.btn-mode-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: block;
+    line-height: 1.2;
+}
+
+.btn-mode-detail {
+    font-size: 9.5px;
+    font-weight: 400;
+    opacity: 0.7;
+    letter-spacing: 0.3px;
+    display: block;
+    line-height: 1.4;
+}
+
+/* ホバー時の強調 */
+.btn-mode:hover .btn-mode-title {
+    opacity: 1;
+}
+.btn-mode:hover .btn-mode-detail {
+    opacity: 0.9;
+}
+
+/* モバイル小画面対応 */
+@media (max-height: 700px) {
+    .start-overlay-content {
+        padding: 16px 18px 20px;
+    }
+    .how-to-guide {
+        padding: 10px 6px;
+        margin-bottom: 14px;
+    }
+    .how-to-icon {
+        font-size: 18px;
+    }
+    .start-title {
+        font-size: 19px;
+        margin-bottom: 4px;
+    }
+    .start-subtitle {
+        margin-bottom: 12px;
+    }
+    .mode-card {
+        margin-bottom: 7px;
+    }
+}
+
