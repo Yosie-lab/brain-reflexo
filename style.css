@@ -10,6 +10,14 @@
     touch-action: none; /* 全ての要素でダブルタップズームやピンチズーム、スワイプスクロールを防止 */
 }
 
+/* スクロールが必要なUIパーツはタッチ操作でのスクロール（縦方向）を許可 */
+.overlay,
+.overlay *,
+.settings-panel,
+.settings-panel * {
+    touch-action: pan-y;
+}
+
 body, html {
     width: 100%;
     height: 100%;
@@ -318,8 +326,11 @@ body, html {
     -webkit-backdrop-filter: blur(15px);
     z-index: 100;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 0 max(20px, env(safe-area-inset-bottom));
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
@@ -330,12 +341,10 @@ body, html {
     transform: translate3d(0, 0, 0);
 }
 
-/* スタート画面は上寄せ＋スクロール可能にしてボタンが切れないようにする */
-#start-overlay {
-    align-items: flex-start;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 20px 0 max(20px, env(safe-area-inset-bottom));
+.overlay::before,
+.overlay::after {
+    content: '';
+    margin: auto;
 }
 
 .overlay.active {
@@ -885,8 +894,8 @@ body.theme-sakura {
     width: 92%;
     /* スクロールはオーバーレイ側が担うのでこちらはautoではなくvisible */
     overflow: visible;
-    /* 中央寄せ（左右マージン自動） */
-    margin: auto;
+    /* 左右は中央寄せ、上下は擬似要素でのセンタリングのためマージン0 */
+    margin: 0 auto;
 }
 .start-overlay-content::-webkit-scrollbar { display: none; }
 
