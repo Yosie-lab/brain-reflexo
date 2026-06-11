@@ -610,7 +610,7 @@ body, html {
 }
 
 .settings-content {
-    padding: 40px 24px;
+    padding: 40px 24px calc(40px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     gap: 24px;

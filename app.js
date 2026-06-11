@@ -523,9 +523,15 @@ function initShower() {
         createShowerParticles(clientX, clientY, 15);
     };
 
+    const isElementInUI = (target) => {
+        if (!target) return false;
+        return !!(target.closest && target.closest('#settings-panel, .overlay, .game-actions, .btn-settings, .refresh-gauge'));
+    };
+
     let isDragging = false;
 
     window.addEventListener('mousemove', (e) => {
+        if (isElementInUI(e.target)) return;
         addParticleFlow(e.clientX, e.clientY);
         if (isDragging && gameActive) {
             tryPopBubble(e.clientX, e.clientY);
@@ -533,6 +539,7 @@ function initShower() {
     });
 
     window.addEventListener('touchmove', (e) => {
+        if (isElementInUI(e.target)) return;
         if (e.touches.length > 0) {
             const touch = e.touches[0];
             addParticleFlow(touch.clientX, touch.clientY);
@@ -548,9 +555,10 @@ function initShower() {
     }, { passive: false });
 
     window.addEventListener('mousedown', (e) => {
+        if (isElementInUI(e.target)) return;
         isDragging = true;
-        initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
-        startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
+        initAudio(); // ユーザー操作の直下で確実に初期化
+        startAmbientSound(); // 背景アンビエント音の開始
         setTimeout(requestGyroPermission, 150); // ジャイロの許可要求を少し遅らせて音の起動と競合させない
         handleInteraction(e.clientX, e.clientY);
     });
@@ -564,9 +572,10 @@ function initShower() {
     });
 
     window.addEventListener('touchstart', (e) => {
+        if (isElementInUI(e.target)) return;
         isDragging = true;
-        initAudio(); // 繝ｦ繝ｼ繧ｶ繝ｼ謫堺ｽ懊逶ｴ荳九〒遒ｺ螳溘↓蛻晄悄蛹
-        startAmbientSound(); // 閭梧勹繧｢繝ｳ繝薙お繝ｳ繝磯浹縺ｮ髢句ｧ
+        initAudio(); // ユーザー操作の直下で確実に初期化
+        startAmbientSound(); // 背景アンビエント音の開始
         setTimeout(requestGyroPermission, 150); // ジャイロの許可要求を少し遅らせて音の起動と競合させない
         if (e.touches.length > 0) {
             handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
