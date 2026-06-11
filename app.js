@@ -1855,6 +1855,83 @@ function initApp() {
             settingsPanel.classList.remove('active');
         });
     }
+
+    // 設定パネルのスワイプ閉じ対応（右スワイプで閉じる）
+    if (settingsPanel) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchCurrentX = 0;
+        let isSwiping = false;
+        let ignoreSwipe = false;
+
+        settingsPanel.addEventListener('touchstart', (e) => {
+            // 音量スライダーなどの操作時はスワイプ判定を無視する
+            if (e.target.closest('input[type="range"]')) {
+                ignoreSwipe = true;
+                return;
+            }
+            ignoreSwipe = false;
+            
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchCurrentX = touchStartX;
+            isSwiping = false;
+            
+            // ドラッグ中の追従を滑らかにするため一時的にトランジションを無効化
+            settingsPanel.style.transition = 'none';
+        }, { passive: true });
+
+        settingsPanel.addEventListener('touchmove', (e) => {
+            if (ignoreSwipe) return;
+            
+            const touch = e.touches[0];
+            touchCurrentX = touch.clientX;
+            const diffX = touchCurrentX - touchStartX;
+            const diffY = touch.clientY - touchStartY;
+            
+            // 右スワイプ方向であり、横の動きが縦スクロールより強い場合のみスワイプと判定
+            if (!isSwiping && diffX > 10 && Math.abs(diffX) > Math.abs(diffY)) {
+                isSwiping = true;
+            }
+            
+            if (isSwiping) {
+                // スワイプ量に合わせてパネルを右にずらす（左方向へのドラッグは防ぐ）
+                const translateVal = Math.max(0, diffX);
+                settingsPanel.style.transform = `translateX(${translateVal}px)`;
+                
+                // スワイプ中は背景やパネル自身のスクロール等のデフォルト挙動を防止
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        settingsPanel.addEventListener('touchend', () => {
+            if (ignoreSwipe) return;
+            
+            // トランジションを元に戻す
+            settingsPanel.style.transition = '';
+            
+            const diffX = touchCurrentX - touchStartX;
+            
+            // 100px以上右へスワイプされていたら閉じる
+            if (isSwiping && diffX > 100) {
+                settingsPanel.classList.remove('active');
+            }
+            
+            // トランスフォームスタイルをクリアして元のCSSクラスのスタイリングに戻す
+            settingsPanel.style.transform = '';
+            isSwiping = false;
+        }, { passive: true });
+
+        settingsPanel.addEventListener('touchcancel', () => {
+            settingsPanel.style.transition = '';
+            settingsPanel.style.transform = '';
+            isSwiping = false;
+            ignoreSwipe = false;
+        }, { passive: true });
+    }
     
     const sliderVolBGM = document.getElementById('slider-vol-bgm');
     const labelVolBGM = document.getElementById('label-vol-bgm');
