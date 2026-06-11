@@ -66,6 +66,7 @@ let breathGuideEnabled = true;
 let breathCycleTime = 0;
 let breathState = 'inhale';
 let breathPattern = 'coherent'; // 'coherent' | '478' | 'box'
+let nightModeEnabled = false;
 
 // 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
 let refreshProgress = 0;
@@ -1800,10 +1801,36 @@ function applyTheme(themeName) {
     });
 }
 
+function setNightMode(enabled) {
+    nightModeEnabled = enabled;
+    const chkNightMode = document.getElementById('chk-night-mode');
+    if (chkNightMode) {
+        chkNightMode.checked = enabled;
+    }
+    if (enabled) {
+        document.body.classList.add('night-mode');
+    } else {
+        document.body.classList.remove('night-mode');
+    }
+}
+
+
 function initApp() {
     // 初回起動時はゲームを開始せずスタート画面を表示する
     initShower();
     applyTheme('starry');
+    
+    // ナイトモードの初期化 (18:00〜05:59 は自動で有効化)
+    const currentHour = new Date().getHours();
+    const isNightTime = currentHour >= 18 || currentHour < 6;
+    setNightMode(isNightTime);
+    
+    const chkNightMode = document.getElementById('chk-night-mode');
+    if (chkNightMode) {
+        chkNightMode.addEventListener('change', (e) => {
+            setNightMode(e.target.checked);
+        });
+    }
     
     // 設定関連UIの初期化
     const btnSettings = document.getElementById('btn-settings');
@@ -3866,6 +3893,21 @@ function startGame() {
     
     // UI初期化
     updateRefreshGauge();
+    
+    // プレイモード表示の更新
+    const modeBadge = document.getElementById('play-mode-badge');
+    if (modeBadge) {
+        if (meditationMode) {
+            modeBadge.innerHTML = '🧘 <span>Meditation / 瞑想</span>';
+            modeBadge.className = 'play-mode-badge mode-meditation';
+        } else if (infiniteMode) {
+            modeBadge.innerHTML = '∞ <span>Endless / エンドレス</span>';
+            modeBadge.className = 'play-mode-badge mode-infinite';
+        } else {
+            modeBadge.innerHTML = '✦ <span>Play / 通常</span>';
+            modeBadge.className = 'play-mode-badge mode-normal';
+        }
+    }
     
     const refreshGauge = document.getElementById('refresh-gauge');
     if (refreshGauge) {

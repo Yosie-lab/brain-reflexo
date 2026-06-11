@@ -39,6 +39,7 @@
     <!-- いつでもゲームを終了できるボタン -->
     <div class="game-actions">
         <button id="btn-quit-active" class="btn-quit">終了する / Quit</button>
+        <span id="play-mode-badge" class="play-mode-badge"></span>
     </div>
 
     <!-- 設定ボタン (歯車) -->
@@ -106,6 +107,14 @@
                 <span class="setting-label">呼吸ガイド / Breath Guide</span>
                 <label class="switch">
                     <input type="checkbox" id="chk-breath" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item toggle-item">
+                <span class="setting-label">ナイトモード / Night Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="chk-night-mode">
                     <span class="switch-slider"></span>
                 </label>
             </div>

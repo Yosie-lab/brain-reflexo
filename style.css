@@ -28,6 +28,7 @@ body, html {
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
     color: #f8fafc;
     touch-action: none; /* ダブルタップズームやピンチズーム、スクロールによるレイアウト崩れを防ぐ */
+    transition: filter 0.5s ease;
 }
 
 /* 背景Canvas */
@@ -136,6 +137,9 @@ body, html {
     position: absolute;
     top: calc(20px + env(safe-area-inset-top));
     left: calc(20px + env(safe-area-inset-left));
+    display: flex;
+    align-items: center;
+    gap: 12px;
     animation: fadeInDown 1.2s ease-out;
     z-index: 50; /* リフレッシュゲージ (20) より上に配置して確実にタップ可能にする */
 }
@@ -166,6 +170,49 @@ body, html {
 
 .btn-quit:active {
     transform: translateY(1px);
+}
+
+.play-mode-badge {
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.play-mode-badge.mode-normal {
+    border-color: rgba(129, 195, 215, 0.4);
+    color: #81c3d7;
+    box-shadow: 0 4px 20px rgba(129, 195, 215, 0.15);
+}
+
+.play-mode-badge.mode-infinite {
+    border-color: rgba(194, 175, 240, 0.4);
+    color: #c2aff0;
+    box-shadow: 0 4px 20px rgba(194, 175, 240, 0.15);
+}
+
+.play-mode-badge.mode-meditation {
+    border-color: rgba(167, 243, 208, 0.4);
+    color: #a7f3d0;
+    box-shadow: 0 4px 20px rgba(167, 243, 208, 0.15);
+}
+
+@media (max-width: 480px) {
+    .play-mode-badge {
+        padding: 6px 12px;
+        font-size: 10px;
+    }
 }
 
 /* =============================================================
@@ -1182,4 +1229,25 @@ body.theme-sakura {
         padding: 10px 12px !important;
     }
 }
+
+/* =============================================================
+   15. ナイトモード (ブルーライトフィルター・明度調整)
+   ============================================================= */
+body.night-mode {
+    filter: sepia(0.35) brightness(0.82) contrast(0.95);
+}
+
+body.night-mode::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(245, 158, 11, 0.05); /* マイルドな温かみのある琥珀色オーバーレイ */
+    pointer-events: none;
+    z-index: 999999;
+    transition: background-color 0.5s ease;
+}
+
 
