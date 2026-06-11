@@ -51,7 +51,15 @@
             <button id="btn-settings-close" class="btn-settings-close" aria-label="閉じる / Close">&times;</button>
             <h3>設定 / Settings</h3>
             
-            <div class="setting-item">
+            <div class="setting-item toggle-item" style="border-top: none; padding-top: 0; margin-top: 0;">
+                <span class="setting-label">ナイトモード / Night Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="chk-night-mode">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-item" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px; margin-top: 4px;">
                 <div class="setting-label">環境音 (BGM) 音量 / BGM Vol</div>
                 <div class="slider-container">
                     <input type="range" id="slider-vol-bgm" min="0" max="1" step="0.05" value="0.40">
@@ -116,13 +124,7 @@
                 </label>
             </div>
 
-            <div class="setting-item toggle-item">
-                <span class="setting-label">ナイトモード / Night Mode</span>
-                <label class="switch">
-                    <input type="checkbox" id="chk-night-mode">
-                    <span class="switch-slider"></span>
-                </label>
-            </div>
+
 
             <div class="setting-item" id="breath-pattern-container">
                 <div class="setting-label">呼吸パターン / Breath Pattern</div>
