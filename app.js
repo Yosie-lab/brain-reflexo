@@ -1379,16 +1379,19 @@ function drawMeteors() {
 
 // 譁ｰ縺励＞豕｡繧剃ｸ€縺､逕滓縺吶ｋ
 function createBubble() {
-    const limit = feverActive ? 60 : MAX_BUBBLES;
+    let limit = feverActive ? 60 : MAX_BUBBLES;
+    if (meditationMode) {
+        limit = Math.floor(limit / 2);
+    }
     if (!showerCanvas || bubbles.length >= limit) return;
     
     const colorInfo = BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)];
     // スマホ（幅600px以下）では画面幅比でサイズをスケールダウン
     const isMobile = window.innerWidth <= 600;
-    // スマホかつ瞑想モードのときは、倍率を0.75倍にする。それ以外のスマホ時は0.72倍
-    const mobileScale = (isMobile && meditationMode) ? 0.75 : 0.72;
+    // スマホ時は0.72倍
+    const mobileScale = 0.72;
     const sizeScale = isMobile ? Math.min(1, window.innerWidth / 600) * mobileScale : 1;
-    let radius = (22 + Math.random() * 22) * sizeScale; // 通常スマホ: 約16〜32px / 瞑想モードスマホ: 約16.5〜33px
+    let radius = (22 + Math.random() * 22) * sizeScale; // スマホ: 約16〜32px
     
     let type = 'normal';
     // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
@@ -1410,10 +1413,6 @@ function createBubble() {
     
     // 浮遊速度の決定
     let vy = type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5);
-    if (meditationMode) {
-        // 瞑想モードの速度をご指定の速度に調整
-        vy = -(0.20 + Math.random() * 0.26);
-    }
     
     bubbles.push({
         type: type,
@@ -1451,10 +1450,16 @@ function updateBubbles(timestamp) {
             feverActive = false;
         }
         
-        const limit = feverActive ? 60 : MAX_BUBBLES;
+        let limit = feverActive ? 60 : MAX_BUBBLES;
         // オーロラ（フィーバータイム）が出ている間は球の発生率を4倍にする（間隔を1/4に）
-        const spawnMin = feverActive ? Math.floor(BUBBLE_SPAWN_MIN / 4) : BUBBLE_SPAWN_MIN;
-        const spawnMax = feverActive ? Math.floor(BUBBLE_SPAWN_MAX / 4) : BUBBLE_SPAWN_MAX;
+        let spawnMin = feverActive ? Math.floor(BUBBLE_SPAWN_MIN / 4) : BUBBLE_SPAWN_MIN;
+        let spawnMax = feverActive ? Math.floor(BUBBLE_SPAWN_MAX / 4) : BUBBLE_SPAWN_MAX;
+        
+        if (meditationMode) {
+            limit = Math.floor(limit / 2);
+            spawnMin *= 2;
+            spawnMax *= 2;
+        }
         
         if (timestamp >= nextSpawnTime && bubbles.length < limit) {
             createBubble();
