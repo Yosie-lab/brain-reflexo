@@ -1406,19 +1406,11 @@ function createBubble() {
         }
     }
     
-    // 浮遊速度と揺らぎの決定
+    // 浮遊速度の決定
     let vy = type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5);
-    let swayAmplitude = 0.3 + Math.random() * 0.5;
-    let swaySpeed = 0.008 + Math.random() * 0.02;
-    let targetAlpha = type === 'silver' ? 0.9 : (type === 'chain' ? 0.85 : 0.65 + Math.random() * 0.2);
-
     if (meditationMode) {
-        // 瞑想モード: 泡を大きく、ゆったりとした揺らぎに
-        radius *= 1.55 + Math.random() * 0.5; // 1.55〜2.05倍の大きさ
-        vy = -(0.10 + Math.random() * 0.14);  // かなりゆっくりと上昇
-        swayAmplitude = 1.2 + Math.random() * 1.4; // 大きな左右の揺れ
-        swaySpeed = 0.004 + Math.random() * 0.008; // 非常にゆっくりとした揺れ速度
-        targetAlpha = 0.45 + Math.random() * 0.25; // 柔らかく半透明
+        // 瞑想モードの速度をエンドレスプレイより「少しだけゆっくり」に調整
+        vy = -(0.22 + Math.random() * 0.28);
     }
     
     bubbles.push({
@@ -1429,16 +1421,10 @@ function createBubble() {
         color: type === 'silver' ? '#e2e8f0' : (type === 'chain' ? '#e8d5db' : colorInfo.hex),
         hue: type === 'silver' ? 210 : (type === 'chain' ? 345 : colorInfo.hue),
         vy: vy,
-        swayAmplitude: swayAmplitude,
-        swaySpeed: swaySpeed,
+        swayAmplitude: 0.3 + Math.random() * 0.5,
+        swaySpeed: 0.008 + Math.random() * 0.02,
         swayOffset: Math.random() * Math.PI * 2,
-        alpha: meditationMode ? 0 : targetAlpha, // 瞑想モードはフェードインで登場
-        targetAlpha: targetAlpha,
-        fadeInSpeed: meditationMode ? 0.004 + Math.random() * 0.003 : 1, // 瞑想モードはゆっくりフェードイン
-        // 呼吸するような脈動 (瞑想モードのみ)
-        breathAmplitude: meditationMode ? (0.08 + Math.random() * 0.06) : 0,
-        breathSpeed: meditationMode ? (0.012 + Math.random() * 0.008) : 0,
-        breathOffset: Math.random() * Math.PI * 2,
+        alpha: type === 'silver' ? 0.9 : (type === 'chain' ? 0.85 : 0.65 + Math.random() * 0.2),
         pushX: 0,
         pushY: 0,
         wobble: 0,
@@ -1522,31 +1508,9 @@ function updateBubbles(timestamp) {
             b.time++;
             const speedMultiplier = feverActive ? 1.8 : 1.0;
             
-            // 瞑想モード: ゆっくりフェードイン
-            if (meditationMode && b.alpha < b.targetAlpha) {
-                b.alpha = Math.min(b.targetAlpha, b.alpha + (b.fadeInSpeed || 0.005));
-            }
-            
-            // 瞑想モード: 呼吸するような脈動（透明度を呼吸リズムで微妙に変化）
-            if (meditationMode && b.breathAmplitude > 0) {
-                const breathPulse = Math.sin(b.time * b.breathSpeed + b.breathOffset);
-                b.alpha = Math.max(0.15, Math.min(0.95,
-                    b.targetAlpha + breathPulse * b.breathAmplitude
-                ));
-            }
-
             // 元のゆらゆら移動成分
             const baseDy = b.vy * speedMultiplier;
-            // 瞑想モードは複合サイン波で有機的な揺らぎを表現
-            let baseDx;
-            if (meditationMode) {
-                baseDx = (
-                    Math.sin(b.time * b.swaySpeed + b.swayOffset) * b.swayAmplitude +
-                    Math.sin(b.time * b.swaySpeed * 0.37 + b.swayOffset + 1.3) * b.swayAmplitude * 0.4
-                );
-            } else {
-                baseDx = Math.sin(b.time * b.swaySpeed * speedMultiplier + b.swayOffset) * b.swayAmplitude * speedMultiplier;
-            }
+            const baseDx = Math.sin(b.time * b.swaySpeed * speedMultiplier + b.swayOffset) * b.swayAmplitude * speedMultiplier;
             
             b.y += baseDy;
             b.x += baseDx;
