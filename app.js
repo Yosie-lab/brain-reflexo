@@ -3457,6 +3457,7 @@ const COMBO_PRAISES = [
     { jp: "スッキリ!", en: "Clear" },
     { jp: "快感!", en: "Pleasure!" },
     { jp: "気持ちいい!", en: "Feels great" },
+    { jp: "心地いい!", en: "Comfortable" },
     { jp: "そっと!", en: "Softly" },
     { jp: "もっと!", en: "More" },
     { jp: "とろける!", en: "Melt away" },
@@ -3824,10 +3825,7 @@ function startGame() {
     
     // 最初の柔らかなアンビエント音を開始
     startAmbientSound();
-    // テスト用にスペシャル評価を即時表示
-    if (!meditationMode) {
-        showCombo(10);
-    }
+
 }
 
 

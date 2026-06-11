@@ -134,9 +134,9 @@ body, html {
    ============================================================= */
 .game-actions {
     position: absolute;
-    bottom: calc(35px + env(safe-area-inset-bottom));
-    right: calc(20px + env(safe-area-inset-right));
-    animation: fadeInUp 1.2s ease-out;
+    top: calc(20px + env(safe-area-inset-top));
+    left: calc(20px + env(safe-area-inset-left));
+    animation: fadeInDown 1.2s ease-out;
     z-index: 50; /* リフレッシュゲージ (20) より上に配置して確実にタップ可能にする */
 }
 
