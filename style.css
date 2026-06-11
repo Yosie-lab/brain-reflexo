@@ -209,9 +209,39 @@ body, html {
 }
 
 @media (max-width: 480px) {
-    .play-mode-badge {
+    .app-header {
+        margin-top: 35px; /* 上部の絶対配置ボタンと重ならないようにヘッダー位置を押し下げる */
+    }
+    .app-header .subtitle {
+        display: none; /* プレイ中のすっきりしたビジュアルとスペース確保のためサブタイトルを非表示にする */
+    }
+    .logo {
+        font-size: 19px;
+        letter-spacing: 2px;
+    }
+    .logo-en {
+        font-size: 8px;
+        margin-top: 2px;
+    }
+    .game-actions {
+        top: calc(10px + env(safe-area-inset-top));
+        left: calc(12px + env(safe-area-inset-left));
+        gap: 6px;
+    }
+    .btn-quit {
         padding: 6px 12px;
-        font-size: 10px;
+        font-size: 9px;
+    }
+    .play-mode-badge {
+        padding: 5px 10px;
+        font-size: 9px;
+    }
+    .btn-settings {
+        top: calc(10px + env(safe-area-inset-top));
+        right: calc(12px + env(safe-area-inset-right));
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
     }
 }
 
