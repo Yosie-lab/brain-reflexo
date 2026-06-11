@@ -2368,11 +2368,11 @@ function playPopSound(combo = 1, originX) {
         soundGain.gain.setValueAtTime(0, now);
         soundGain.gain.linearRampToValueAtTime(maxVol, now + 0.003); // 3msアタック
         
-        // --- 1. Water Droplet (水滴) ---
+        // --- 1. Water Droplet (メインの水滴音) ---
         const osc = audioCtx.createOscillator();
         osc.connect(soundGain);
         osc.type = 'sine';
-        const targetFreq = baseFreq * 2.2;
+        const targetFreq = baseFreq * 2.5; // より伸びやかなピチョン感を出すために2.2から2.5に引き上げ
         osc.frequency.setValueAtTime(baseFreq, now);
         osc.frequency.exponentialRampToValueAtTime(targetFreq, now + duration * 0.85);
         
@@ -2381,17 +2381,42 @@ function playPopSound(combo = 1, originX) {
         osc.start(now);
         osc.stop(now + duration + 0.05);
         
-        // 2. 指先の物理的な質感「プチッ」を出すための超短音オシレーター
+        // --- 2. Secondary Drip (跳ね返りの小水滴音) ---
+        // メイン音からわずかに遅れて、より高い音程の水滴が弾けることで、本物の水のような「ピチャン」感を引き立てる
+        const secOsc = audioCtx.createOscillator();
+        const secGain = audioCtx.createGain();
+        secOsc.connect(secGain).connect(audioCtx.destination);
+        secOsc.type = 'sine';
+        
+        const secStart = now + 0.035; // 35ms遅らせて発音
+        const secDuration = duration * 0.6; // 短く弾ける音
+        const secBaseFreq = baseFreq * 1.6;
+        const secTargetFreq = baseFreq * 3.5;
+        
+        secOsc.frequency.setValueAtTime(secBaseFreq, secStart);
+        secOsc.frequency.exponentialRampToValueAtTime(secTargetFreq, secStart + secDuration * 0.85);
+        
+        secGain.gain.setValueAtTime(0, now);
+        secGain.gain.setValueAtTime(0, secStart);
+        secGain.gain.linearRampToValueAtTime(maxVol * 0.45, secStart + 0.002); // メイン音の45%の音量
+        secGain.gain.exponentialRampToValueAtTime(0.0001, secStart + secDuration);
+        
+        secOsc.start(secStart);
+        secOsc.stop(secStart + secDuration + 0.05);
+        
+        // --- 3. Click / Burst (膜がプチッと破れる瞬間の空気の抜け音) ---
         const clickOsc = audioCtx.createOscillator();
         const clickGain = audioCtx.createGain();
         clickOsc.connect(clickGain).connect(audioCtx.destination);
         
-        clickOsc.type = 'sine';
-        const clickFreq = 1800 + Math.min(combo - 1, 8) * 120;
+        clickOsc.type = 'triangle'; // より柔らかく抜け感のある波形
+        const clickFreq = 2200 + Math.min(combo - 1, 8) * 150;
         clickOsc.frequency.setValueAtTime(clickFreq, now);
+        // 急激にピッチを下げる（ピッチスイープ）ことで「プチッ」という空気の破裂感を生成
+        clickOsc.frequency.exponentialRampToValueAtTime(clickFreq * 0.4, now + 0.012);
         
         clickGain.gain.setValueAtTime(0, now);
-        clickGain.gain.linearRampToValueAtTime(0.12 * volumeSE, now + 0.001); // SEボリュームでスケール
+        clickGain.gain.linearRampToValueAtTime(0.14 * volumeSE, now + 0.001);
         clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
         
         clickOsc.start(now);
@@ -2402,6 +2427,8 @@ function playPopSound(combo = 1, originX) {
             try {
                 osc.disconnect();
                 soundGain.disconnect();
+                secOsc.disconnect();
+                secGain.disconnect();
                 clickOsc.disconnect();
                 clickGain.disconnect();
                 delay.disconnect();
