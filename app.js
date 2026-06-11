@@ -45,6 +45,7 @@ let targetGyroY = 0;
 let currentGyroX = 0;
 let currentGyroY = 0;
 let gyroActive = false;
+let gyroPermissionRequested = false;
 
 
 
@@ -557,9 +558,8 @@ function initShower() {
     window.addEventListener('mousedown', (e) => {
         if (isElementInUI(e.target)) return;
         isDragging = true;
-        initAudio(); // ユーザー操作の直下で確実に初期化
+        initAudio(); // ユーザー操作 of direct initialization
         startAmbientSound(); // 背景アンビエント音の開始
-        setTimeout(requestGyroPermission, 150); // ジャイロの許可要求を少し遅らせて音の起動と競合させない
         handleInteraction(e.clientX, e.clientY);
     });
 
@@ -574,9 +574,8 @@ function initShower() {
     window.addEventListener('touchstart', (e) => {
         if (isElementInUI(e.target)) return;
         isDragging = true;
-        initAudio(); // ユーザー操作の直下で確実に初期化
+        initAudio(); // ユーザー操作 of direct initialization
         startAmbientSound(); // 背景アンビエント音の開始
-        setTimeout(requestGyroPermission, 150); // ジャイロの許可要求を少し遅らせて音の起動と競合させない
         if (e.touches.length > 0) {
             handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
         }
@@ -1988,16 +1987,81 @@ function initApp() {
     // 初期化時にUIを更新
     updateBreathPatternUI();
     
+    // 音が鳴らない場合の案内ダイアログ制御
+    const btnSoundGuideOpen = document.getElementById('btn-sound-guide-open');
+    const btnSoundGuideClose = document.getElementById('btn-sound-guide-close');
+    const soundGuideDialog = document.getElementById('sound-guide-dialog');
+    
+    if (btnSoundGuideOpen && soundGuideDialog) {
+        btnSoundGuideOpen.addEventListener('click', (e) => {
+            e.stopPropagation();
+            soundGuideDialog.classList.add('active');
+        });
+    }
+    if (btnSoundGuideClose && soundGuideDialog) {
+        btnSoundGuideClose.addEventListener('click', () => {
+            soundGuideDialog.classList.remove('active');
+        });
+    }
+
+    // ジャイロ許可の確認フロー（唐突な表示を防ぐためのクッションダイアログ）
+    const handleGameStartWithGyroCheck = (startCallback) => {
+        const needsPermissionPrompt = (
+            typeof DeviceOrientationEvent !== 'undefined' && 
+            typeof DeviceOrientationEvent.requestPermission === 'function' &&
+            gyroEnabled && !gyroActive && !gyroPermissionRequested
+        );
+
+        if (needsPermissionPrompt) {
+            const dialog = document.getElementById('gyro-confirm-dialog');
+            if (dialog) {
+                dialog.classList.add('active');
+                
+                const handleAllow = () => {
+                    dialog.classList.remove('active');
+                    requestGyroPermission();
+                    gyroPermissionRequested = true;
+                    cleanup();
+                    startCallback();
+                };
+                
+                const handleDeny = () => {
+                    dialog.classList.remove('active');
+                    gyroEnabled = false;
+                    const chkGyro = document.getElementById('chk-gyro');
+                    if (chkGyro) chkGyro.checked = false;
+                    gyroPermissionRequested = true;
+                    cleanup();
+                    startCallback();
+                };
+                
+                const cleanup = () => {
+                    document.getElementById('btn-gyro-allow').removeEventListener('click', handleAllow);
+                    document.getElementById('btn-gyro-deny').removeEventListener('click', handleDeny);
+                };
+                
+                document.getElementById('btn-gyro-allow').addEventListener('click', handleAllow);
+                document.getElementById('btn-gyro-deny').addEventListener('click', handleDeny);
+                return;
+            }
+        }
+        
+        // ダイアログ不要（iOS以外、またはすでに選択済みなど）な場合はそのまま開始
+        startCallback();
+    };
+
     // 『スタート選択』画面: 通常Playボタン
     const btnPlayNormal = document.getElementById('btn-play-normal');
     if (btnPlayNormal) {
         const startNormal = () => {
-            initAudio();
-            meditationMode = false;
-            infiniteMode = false;
-            const startOverlay = document.getElementById('start-overlay');
-            if (startOverlay) startOverlay.classList.remove('active');
-            startGame();
+            handleGameStartWithGyroCheck(() => {
+                initAudio();
+                meditationMode = false;
+                infiniteMode = false;
+                const startOverlay = document.getElementById('start-overlay');
+                if (startOverlay) startOverlay.classList.remove('active');
+                startGame();
+            });
         };
         btnPlayNormal.addEventListener('click', startNormal);
         btnPlayNormal.addEventListener('touchend', (e) => {
@@ -2010,12 +2074,14 @@ function initApp() {
     const btnPlayInfinite = document.getElementById('btn-play-infinite');
     if (btnPlayInfinite) {
         const startInfinite = () => {
-            initAudio();
-            meditationMode = false;
-            infiniteMode = true;
-            const startOverlay = document.getElementById('start-overlay');
-            if (startOverlay) startOverlay.classList.remove('active');
-            startGame();
+            handleGameStartWithGyroCheck(() => {
+                initAudio();
+                meditationMode = false;
+                infiniteMode = true;
+                const startOverlay = document.getElementById('start-overlay');
+                if (startOverlay) startOverlay.classList.remove('active');
+                startGame();
+            });
         };
         btnPlayInfinite.addEventListener('click', startInfinite);
         btnPlayInfinite.addEventListener('touchend', (e) => {
@@ -2028,12 +2094,14 @@ function initApp() {
     const btnPlayMeditation = document.getElementById('btn-play-meditation');
     if (btnPlayMeditation) {
         const startMeditation = () => {
-            initAudio();
-            meditationMode = true;
-            infiniteMode = true;
-            const startOverlay = document.getElementById('start-overlay');
-            if (startOverlay) startOverlay.classList.remove('active');
-            startGame();
+            handleGameStartWithGyroCheck(() => {
+                initAudio();
+                meditationMode = true;
+                infiniteMode = true;
+                const startOverlay = document.getElementById('start-overlay');
+                if (startOverlay) startOverlay.classList.remove('active');
+                startGame();
+            });
         };
         btnPlayMeditation.addEventListener('click', startMeditation);
         btnPlayMeditation.addEventListener('touchend', (e) => {
