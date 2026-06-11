@@ -1385,10 +1385,10 @@ function createBubble() {
     const colorInfo = BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)];
     // スマホ（幅600px以下）では画面幅比でサイズをスケールダウン
     const isMobile = window.innerWidth <= 600;
-    // スマホかつ瞑想モードのときは、縮小率をさらに下げて 0.70倍にする。それ以外のスマホ時は0.72倍
-    const mobileScale = (isMobile && meditationMode) ? 0.70 : 0.72;
+    // スマホかつ瞑想モードのときは、倍率を0.75倍にする。それ以外のスマホ時は0.72倍
+    const mobileScale = (isMobile && meditationMode) ? 0.75 : 0.72;
     const sizeScale = isMobile ? Math.min(1, window.innerWidth / 600) * mobileScale : 1;
-    let radius = (22 + Math.random() * 22) * sizeScale; // 通常スマホ: 約16〜32px / 瞑想モードスマホ: 約15〜30px
+    let radius = (22 + Math.random() * 22) * sizeScale; // 通常スマホ: 約16〜32px / 瞑想モードスマホ: 約16.5〜33px
     
     let type = 'normal';
     // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
@@ -1411,8 +1411,8 @@ function createBubble() {
     // 浮遊速度の決定
     let vy = type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5);
     if (meditationMode) {
-        // 瞑想モードの速度をエンドレスプレイより「少しだけゆっくり」に調整
-        vy = -(0.22 + Math.random() * 0.28);
+        // 瞑想モードの速度をもう少しゆったりとした速度に調整
+        vy = -(0.16 + Math.random() * 0.22);
     }
     
     bubbles.push({
