@@ -2353,7 +2353,12 @@ function playPopSound(combo = 1, originX) {
         const delay = audioCtx.createDelay();
         const feedback = audioCtx.createGain();
         
-        soundGain.connect(audioCtx.destination);
+        // 左右のパン設定（画面の左右どちらでタップされたかで音の定位を変化させる）
+        const panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime((xRatio * 2) - 1, now);
+        panner.connect(audioCtx.destination);
+        
+        soundGain.connect(panner);
         soundGain.connect(delay);
         
         delay.delayTime.setValueAtTime(0.18, now);
@@ -2361,14 +2366,14 @@ function playPopSound(combo = 1, originX) {
         
         delay.connect(feedback);
         feedback.connect(delay);
-        delay.connect(audioCtx.destination);
+        delay.connect(panner);
         
         let duration = 0.08 + Math.min(combo - 1, 5) * 0.006;
         
         soundGain.gain.setValueAtTime(0, now);
         soundGain.gain.linearRampToValueAtTime(maxVol, now + 0.003); // 3msアタック
         
-        // --- 1. Water Droplet (メインの水滴音) ---
+        // --- 1. Water Droplet (メインの水滴音 - サイン波) ---
         const osc = audioCtx.createOscillator();
         osc.connect(soundGain);
         osc.type = 'sine';
@@ -2380,12 +2385,26 @@ function playPopSound(combo = 1, originX) {
         
         osc.start(now);
         osc.stop(now + duration + 0.05);
+
+        // --- 1b. Warm Droplet Body (弾力感を持たせるふくよかなボディ音 - 三角波のブレンド) ---
+        const oscBody = audioCtx.createOscillator();
+        const bodyGain = audioCtx.createGain();
+        oscBody.connect(bodyGain).connect(soundGain);
+        oscBody.type = 'triangle';
+        oscBody.frequency.setValueAtTime(baseFreq, now);
+        oscBody.frequency.exponentialRampToValueAtTime(targetFreq * 0.78, now + duration * 0.85);
         
-        // --- 2. Secondary Drip (跳ね返りの小水滴音) ---
+        bodyGain.gain.setValueAtTime(maxVol * 0.22, now); // サイン波ボディに対して22%ブレンドして豊かな丸みを出す
+        bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        
+        oscBody.start(now);
+        oscBody.stop(now + duration + 0.05);
+        
+        // --- 2. Secondary Drip (跳ね返りの小水滴音 - ステレオ出力) ---
         // メイン音からわずかに遅れて、より高い音程の水滴が弾けることで、本物の水のような「ピチャン」感を引き立てる
         const secOsc = audioCtx.createOscillator();
         const secGain = audioCtx.createGain();
-        secOsc.connect(secGain).connect(audioCtx.destination);
+        secOsc.connect(secGain).connect(panner); // 直接パンナーに接続
         secOsc.type = 'sine';
         
         const secStart = now + 0.035; // 35ms遅らせて発音
@@ -2404,10 +2423,10 @@ function playPopSound(combo = 1, originX) {
         secOsc.start(secStart);
         secOsc.stop(secStart + secDuration + 0.05);
         
-        // --- 3. Click / Burst (膜がプチッと破れる瞬間の空気の抜け音) ---
+        // --- 3. Click / Burst (膜がプチッと破れる瞬間の空気の抜け音 - 三角波) ---
         const clickOsc = audioCtx.createOscillator();
         const clickGain = audioCtx.createGain();
-        clickOsc.connect(clickGain).connect(audioCtx.destination);
+        clickOsc.connect(clickGain).connect(panner);
         
         clickOsc.type = 'triangle'; // より柔らかく抜け感のある波形
         const clickFreq = 2200 + Math.min(combo - 1, 8) * 150;
@@ -2421,16 +2440,49 @@ function playPopSound(combo = 1, originX) {
         
         clickOsc.start(now);
         clickOsc.stop(now + 0.03);
+
+        // --- 4. Splash Fizz (みずみずしさを引き立てる水飛沫ノイズ) ---
+        // バンドパスフィルターを通したホワイトノイズを重ねて、弾けた瞬間の微細な水飛沫（シュワッ）をシミュレート
+        const noiseBufferSize = audioCtx.sampleRate * 0.04; // 40msのノイズバッファ
+        const noiseBuffer = audioCtx.createBuffer(1, noiseBufferSize, audioCtx.sampleRate);
+        const noiseData = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseBufferSize; i++) {
+            noiseData[i] = Math.random() * 2 - 1;
+        }
+        
+        const noiseSource = audioCtx.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+        
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        const noiseFilterFreq = 3400 + Math.min(combo - 1, 8) * 120; // コンボ音程に追従する高周波
+        noiseFilter.frequency.setValueAtTime(noiseFilterFreq, now);
+        noiseFilter.Q.setValueAtTime(4.0, now); // Q値を少し高めにして金属質で涼しげな響きに
+        
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0, now);
+        noiseGain.gain.linearRampToValueAtTime(0.035 * volumeSE, now + 0.002);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+        
+        noiseSource.connect(noiseFilter).connect(noiseGain).connect(panner);
+        noiseSource.start(now);
+        noiseSource.stop(now + 0.04);
         
         // クリーンアップ
         setTimeout(() => {
             try {
                 osc.disconnect();
                 soundGain.disconnect();
+                oscBody.disconnect();
+                bodyGain.disconnect();
                 secOsc.disconnect();
                 secGain.disconnect();
                 clickOsc.disconnect();
                 clickGain.disconnect();
+                noiseSource.disconnect();
+                noiseFilter.disconnect();
+                noiseGain.disconnect();
+                panner.disconnect();
                 delay.disconnect();
                 feedback.disconnect();
             } catch (e) {}
