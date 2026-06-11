@@ -65,6 +65,7 @@ let gyroEnabled = false;
 let breathGuideEnabled = true;
 let breathCycleTime = 0;
 let breathState = 'inhale';
+let breathPattern = 'coherent'; // 'coherent' | '478' | 'box'
 
 // 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
 let refreshProgress = 0;
@@ -1887,6 +1888,26 @@ function initApp() {
         });
     }
     
+    const updateBreathPatternUI = () => {
+        const descEl = document.getElementById('breath-pattern-desc');
+        const container = document.getElementById('breath-pattern-container');
+        if (container) {
+            container.style.display = breathGuideEnabled ? '' : 'none';
+        }
+        
+        if (descEl) {
+            let desc = '';
+            if (breathPattern === 'coherent') {
+                desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。';
+            } else if (breathPattern === '478') {
+                desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。';
+            } else if (breathPattern === 'box') {
+                desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。';
+            }
+            descEl.innerHTML = desc;
+        }
+    };
+
     const chkBreath = document.getElementById('chk-breath');
     if (chkBreath) {
         chkBreath.checked = breathGuideEnabled;
@@ -1900,8 +1921,29 @@ function initApp() {
                     breathGuide.classList.remove('visible');
                 }
             }
+            updateBreathPatternUI();
         });
     }
+
+    const patternButtons = document.querySelectorAll('#breath-pattern-options .btn-option');
+    patternButtons.forEach(btn => {
+        const setPattern = () => {
+            patternButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            breathPattern = btn.getAttribute('data-pattern');
+            breathCycleTime = 0; // 切り替え時にサイクルを最初からやり直す
+            breathState = ''; // ステート変更を強制トリガー
+            updateBreathPatternUI();
+        };
+        btn.addEventListener('click', setPattern);
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            setPattern();
+        }, { passive: false });
+    });
+
+    // 初期化時にUIを更新
+    updateBreathPatternUI();
     
     // 『スタート選択』画面: 通常Playボタン
     const btnPlayNormal = document.getElementById('btn-play-normal');
@@ -3625,7 +3667,14 @@ function updateBreathGuide(timestamp) {
     const dt = timestamp - lastBreathUpdateTime;
     lastBreathUpdateTime = timestamp;
     
-    breathCycleTime = (breathCycleTime + dt) % 12000;
+    let cycleDuration = 10000; // デフォルト (coherent)
+    if (breathPattern === '478') {
+        cycleDuration = 19000;
+    } else if (breathPattern === 'box') {
+        cycleDuration = 16000;
+    }
+
+    breathCycleTime = (breathCycleTime + dt) % cycleDuration;
     
     const ring = document.querySelector('.breath-ring');
     const ringInner = document.querySelector('.breath-ring-inner');
@@ -3637,32 +3686,74 @@ function updateBreathGuide(timestamp) {
     let labelEn = '';
     let progress = 0;
     
-    if (breathCycleTime < 4000) {
-        // Inhale: 0 to 4000
-        state = 'inhale';
-        progress = breathCycleTime / 4000;
-        scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
-        labelJp = '吸って';
-        labelEn = 'Inhale';
-    } else if (breathCycleTime < 8000) {
-        // Hold: 4000 to 8000
-        state = 'hold';
-        scale = 1.6;
-        labelJp = '止めて';
-        labelEn = 'Hold';
-    } else {
-        // Exhale: 8000 to 12000
-        state = 'exhale';
-        progress = (breathCycleTime - 8000) / 4000;
-        scale = 1.6 - (1.6 - 0.9) * easeInOutQuad(progress);
-        labelJp = '吐いて';
-        labelEn = 'Exhale';
+    // パターンごとのステートとスケール判定
+    if (breathPattern === '478') {
+        if (breathCycleTime < 4000) {
+            state = 'inhale';
+            progress = breathCycleTime / 4000;
+            scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
+            labelJp = '吸って';
+            labelEn = 'Inhale';
+        } else if (breathCycleTime < 11000) {
+            state = 'hold';
+            progress = (breathCycleTime - 4000) / 7000;
+            scale = 1.6;
+            labelJp = '止めて';
+            labelEn = 'Hold';
+        } else {
+            state = 'exhale';
+            progress = (breathCycleTime - 11000) / 8000;
+            scale = 1.6 - (1.6 - 0.9) * easeInOutQuad(progress);
+            labelJp = '吐いて';
+            labelEn = 'Exhale';
+        }
+    } else if (breathPattern === 'box') {
+        if (breathCycleTime < 4000) {
+            state = 'inhale';
+            progress = breathCycleTime / 4000;
+            scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
+            labelJp = '吸って';
+            labelEn = 'Inhale';
+        } else if (breathCycleTime < 8000) {
+            state = 'hold'; // 満ちた状態でのキープ
+            progress = (breathCycleTime - 4000) / 4000;
+            scale = 1.6;
+            labelJp = '止めて';
+            labelEn = 'Hold';
+        } else if (breathCycleTime < 12000) {
+            state = 'exhale';
+            progress = (breathCycleTime - 8000) / 4000;
+            scale = 1.6 - (1.6 - 0.9) * easeInOutQuad(progress);
+            labelJp = '吐いて';
+            labelEn = 'Exhale';
+        } else {
+            state = 'hold-empty'; // 空の状態でのキープ
+            progress = (breathCycleTime - 12000) / 4000;
+            scale = 0.9;
+            labelJp = '止めて';
+            labelEn = 'Hold';
+        }
+    } else { // coherent
+        if (breathCycleTime < 5000) {
+            state = 'inhale';
+            progress = breathCycleTime / 5000;
+            scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
+            labelJp = '吸って';
+            labelEn = 'Inhale';
+        } else {
+            state = 'exhale';
+            progress = (breathCycleTime - 5000) / 5000;
+            scale = 1.6 - (1.6 - 0.9) * easeInOutQuad(progress);
+            labelJp = '吐いて';
+            labelEn = 'Exhale';
+        }
     }
     
     // Smooth color interpolation between states:
     // Inhale (Teal: 45, 212, 191)
     // Hold (Amber: 251, 191, 36)
     // Exhale (Indigo: 99, 102, 241)
+    // Hold-Empty (Purple/Dark Indigo: 139, 92, 246)
     let r = 129, g = 195, b = 215;
     let fill = 0.05;
     let glow = 0.1;
@@ -3670,23 +3761,32 @@ function updateBreathGuide(timestamp) {
     if (state === 'inhale') {
         fill = 0.02 + 0.16 * easeInOutQuad(progress);
         glow = 0.1 + scale * 0.15;
-        // Interpolate from Indigo (exhale end) to Teal
-        r = Math.round(99 + (45 - 99) * progress);
-        g = Math.round(102 + (212 - 102) * progress);
-        b = Math.round(241 + (191 - 241) * progress);
+        // 前の状態からTealへの変化
+        const startColor = breathPattern === 'box' ? {r: 139, g: 92, b: 246} : {r: 99, g: 102, b: 241};
+        r = Math.round(startColor.r + (45 - startColor.r) * progress);
+        g = Math.round(startColor.g + (212 - startColor.g) * progress);
+        b = Math.round(startColor.b + (191 - startColor.b) * progress);
     } else if (state === 'hold') {
         fill = 0.18;
         glow = 0.35;
         r = 251;
         g = 191;
         b = 36;
-    } else {
+    } else if (state === 'exhale') {
         fill = 0.18 - 0.16 * easeInOutQuad(progress);
         glow = 0.05 + scale * 0.2;
-        // Interpolate from Amber to Indigo
-        r = Math.round(251 + (99 - 251) * progress);
-        g = Math.round(191 + (102 - 191) * progress);
-        b = Math.round(36 + (241 - 36) * progress);
+        // AmberからIndigoへの変化
+        const startColor = (breathPattern === 'coherent') ? {r: 45, g: 212, b: 191} : {r: 251, g: 191, b: 36};
+        r = Math.round(startColor.r + (99 - startColor.r) * progress);
+        g = Math.round(startColor.g + (102 - startColor.g) * progress);
+        b = Math.round(startColor.b + (241 - startColor.b) * progress);
+    } else if (state === 'hold-empty') {
+        fill = 0.02;
+        glow = 0.08;
+        // IndigoからPurpleへの変化
+        r = Math.round(99 + (139 - 99) * progress);
+        g = Math.round(102 + (92 - 102) * progress);
+        b = Math.round(241 + (246 - 241) * progress);
     }
     
     if (ring) {
