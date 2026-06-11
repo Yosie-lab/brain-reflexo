@@ -1382,7 +1382,10 @@ function createBubble() {
     if (!showerCanvas || bubbles.length >= limit) return;
     
     const colorInfo = BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)];
-    let radius = 22 + Math.random() * 22; // 22〜44px
+    // スマホ（幅600px以下）では画面幅比でサイズをスケールダウン
+    const isMobile = window.innerWidth <= 600;
+    const sizeScale = isMobile ? Math.min(1, window.innerWidth / 600) * 0.72 : 1;
+    let radius = (22 + Math.random() * 22) * sizeScale; // 22〜44px (スマホでは約16〜32px)
     
     let type = 'normal';
     // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
