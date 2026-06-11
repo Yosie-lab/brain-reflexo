@@ -1385,8 +1385,10 @@ function createBubble() {
     const colorInfo = BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)];
     // スマホ（幅600px以下）では画面幅比でサイズをスケールダウン
     const isMobile = window.innerWidth <= 600;
-    const sizeScale = isMobile ? Math.min(1, window.innerWidth / 600) * 0.72 : 1;
-    let radius = (22 + Math.random() * 22) * sizeScale; // 22〜44px (スマホでは約16〜32px)
+    // スマホかつ瞑想モードのときは、縮小率を緩めて少し大きめ（0.95倍）にする。それ以外のスマホ時は0.72倍
+    const mobileScale = (isMobile && meditationMode) ? 0.95 : 0.72;
+    const sizeScale = isMobile ? Math.min(1, window.innerWidth / 600) * mobileScale : 1;
+    let radius = (22 + Math.random() * 22) * sizeScale; // 通常スマホ: 約16〜32px / 瞑想モードスマホ: 約21〜42px
     
     let type = 'normal';
     // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
