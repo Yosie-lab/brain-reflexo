@@ -805,6 +805,40 @@ body, html {
     box-shadow: 0 0 8px rgba(129, 195, 215, 0.6);
 }
 
+/* ナイトモード専用の大きめなトグルスタイル */
+.night-mode-item {
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 8px;
+}
+
+.night-mode-item .setting-label {
+    font-size: 13px !important; /* 文字サイズを大きめに */
+    font-weight: 700 !important;
+    color: #e2e8f0 !important; /* 明度を上げて目立たせる */
+    letter-spacing: 1.5px;
+}
+
+.night-mode-item .switch {
+    width: 52px; /* スイッチ全体の幅を大きく */
+    height: 28px; /* スイッチ全体の高さを大きく */
+}
+
+.night-mode-item .switch-slider {
+    border-radius: 28px;
+}
+
+.night-mode-item .switch-slider:before {
+    height: 20px; /* つまみボタンを大きく */
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+}
+
+.night-mode-item .switch input:checked + .switch-slider:before {
+    transform: translateX(24px); /* スライド距離の調整 */
+}
+
 /* =============================================================
    11. 呼吸ガイド (Zen Breath Guide)
    ============================================================= */
