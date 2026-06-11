@@ -1411,8 +1411,8 @@ function createBubble() {
     // 浮遊速度の決定
     let vy = type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5);
     if (meditationMode) {
-        // 瞑想モードの速度をもう少しゆったりとした速度に調整
-        vy = -(0.16 + Math.random() * 0.22);
+        // 瞑想モードの速度をご指定の速度に調整
+        vy = -(0.20 + Math.random() * 0.26);
     }
     
     bubbles.push({
