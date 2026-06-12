@@ -575,13 +575,16 @@ function initShower() {
 
     window.addEventListener('touchstart', (e) => {
         if (isElementInUI(e.target)) return;
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         isDragging = true;
         initAudio(); // ユーザー操作 of direct initialization
         startAmbientSound(); // 背景アンビエント音の開始
         if (e.touches.length > 0) {
             handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
         }
-    });
+    }, { passive: false });
 
     window.addEventListener('touchend', () => {
         isDragging = false;
@@ -590,6 +593,15 @@ function initShower() {
     window.addEventListener('touchcancel', () => {
         isDragging = false;
     });
+
+    // 2本指以上のマルチタッチ（ピンチズーム）を防止
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) {
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
 }
 
 function resizeShowerCanvas() {
@@ -1895,9 +1907,9 @@ function initApp() {
     initShower();
     applyTheme('starry');
     
-    // ナイトモードの初期化 (18:00〜05:59 は自動で有効化)
+    // ナイトモードの初期化 (20:00〜04:59 は自動で有効化)
     const currentHour = new Date().getHours();
-    const isNightTime = currentHour >= 18 || currentHour < 6;
+    const isNightTime = currentHour >= 20 || currentHour < 5;
     setNightMode(isNightTime);
     
     const chkNightMode = document.getElementById('chk-night-mode');
