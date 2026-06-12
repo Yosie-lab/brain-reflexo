@@ -3869,14 +3869,13 @@ const COMBO_PRAISES = [
 ];
 
 const SPECIAL_PRAISES = [
-    { jp: "頭スッキリクリア!", en: "Clear mind" },
+    { jp: "あたまスッキリ!", en: "Clear mind" },
     { jp: "究極の癒やし!", en: "Ultimate healing" },
     { jp: "超リフレッシュ!", en: "Mind and body feeling lighter" },
     { jp: "幸せいっぱい!", en: "Blissful time" },
     { jp: "心地よい広がり!", en: "Soothing spread" },
     { jp: "超リラックス!", en: "Ultimate relaxation" },
-    { jp: "極上の快感!", en: "Supreme pleasure" },
-    { jp: "超感動!", en: "Deeply moved" }
+    { jp: "極上の快感!", en: "Supreme pleasure" }
 ];
 
 const RESET_WORDS = [
