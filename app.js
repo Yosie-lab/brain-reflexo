@@ -1768,7 +1768,7 @@ function initAudio() {
             // 状態変化時の自動復旧リスナーを設定
             if (!audioCtx.onstatechange) {
                 audioCtx.onstatechange = () => {
-                    if (gameActive && audioCtx.state !== 'running') {
+                    if (gameActive && audioCtx.state === 'running') {
                         startAmbientSound();
                     }
                 };
@@ -2143,9 +2143,14 @@ function initApp() {
         });
     }
     if (btnSoundGuideClose && soundGuideDialog) {
-        btnSoundGuideClose.addEventListener('click', () => {
+        const closeGuide = () => {
             soundGuideDialog.classList.remove('active');
-        });
+        };
+        btnSoundGuideClose.addEventListener('click', closeGuide);
+        btnSoundGuideClose.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            closeGuide();
+        }, { passive: false });
     }
 
     // ジャイロ許可の確認フロー（唐突な表示を防ぐためのクッションダイアログ）
@@ -2158,7 +2163,10 @@ function initApp() {
 
         if (needsPermissionPrompt) {
             const dialog = document.getElementById('gyro-confirm-dialog');
-            if (dialog) {
+            const btnAllow = document.getElementById('btn-gyro-allow');
+            const btnDeny = document.getElementById('btn-gyro-deny');
+            
+            if (dialog && btnAllow && btnDeny) {
                 dialog.classList.add('active');
                 
                 const handleAllow = () => {
@@ -2179,13 +2187,27 @@ function initApp() {
                     startCallback();
                 };
                 
-                const cleanup = () => {
-                    document.getElementById('btn-gyro-allow').removeEventListener('click', handleAllow);
-                    document.getElementById('btn-gyro-deny').removeEventListener('click', handleDeny);
+                const onAllowTouch = (e) => {
+                    e.preventDefault();
+                    handleAllow();
                 };
                 
-                document.getElementById('btn-gyro-allow').addEventListener('click', handleAllow);
-                document.getElementById('btn-gyro-deny').addEventListener('click', handleDeny);
+                const onDenyTouch = (e) => {
+                    e.preventDefault();
+                    handleDeny();
+                };
+                
+                const cleanup = () => {
+                    btnAllow.removeEventListener('click', handleAllow);
+                    btnAllow.removeEventListener('touchend', onAllowTouch);
+                    btnDeny.removeEventListener('click', handleDeny);
+                    btnDeny.removeEventListener('touchend', onDenyTouch);
+                };
+                
+                btnAllow.addEventListener('click', handleAllow);
+                btnAllow.addEventListener('touchend', onAllowTouch, { passive: false });
+                btnDeny.addEventListener('click', handleDeny);
+                btnDeny.addEventListener('touchend', onDenyTouch, { passive: false });
                 return;
             }
         }
@@ -4188,6 +4210,7 @@ function startGame() {
     refreshProgress = 0;
     gameStartTime = performance.now();
     gameActive = true;
+    isResuming = false; // オーディオ復旧状態の初期化
     guideHidden = false;
     nextSpawnTime = performance.now() + 400; // 間隔を置いて開始させる
     
