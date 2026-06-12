@@ -2356,7 +2356,7 @@ function endGame(forceQuit = false) {
         if (sessionPops >= 80) {
             comment = "深い集中状態に入り、脳がすっきりとリフレッシュされました。素晴らしい癒しの時間です。";
         } else if (maxComboCount >= 15) {
-            comment = "心地よいリズムに乗って、素晴らしい連続タップでした。心がすっと軽くなっています。";
+            comment = "心地よいリズムに乗って、素晴らしいプレイでした。心がすっと軽くなっています。";
         } else if (timeElapsed > 60) {
             comment = "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。深呼吸を忘れずに。";
         } else {
