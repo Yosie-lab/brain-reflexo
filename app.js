@@ -1329,13 +1329,13 @@ function spawnBackgroundShootingStar() {
 
 // 豬∵弌縺ｮ迚ｩ逅嫌蜍墓峩譁ｰ
 function updateMeteors() {
-    // ランダムな間隔（平均20秒周期：5秒〜35秒の間）で自然な流れ星を流す
+    // ランダムな間隔（平均25秒周期：10秒〜40秒の間）で自然な流れ星を流す
     const now = Date.now();
     if (now - lastShootingStarTime >= nextShootingStarDelay) {
         spawnBackgroundShootingStar();
         lastShootingStarTime = now;
-        // 次回のディレイを5秒〜35秒のランダムな範囲（平均20秒：30秒に約2回ペース）に再設定
-        nextShootingStarDelay = 5000 + Math.random() * 30000;
+        // 次回のディレイを10秒〜40秒のランダムな範囲（平均25秒：50秒に約2回ペース）に再設定
+        nextShootingStarDelay = 10000 + Math.random() * 30000;
     }
 
     // 既存 of 流星はゲーム終了後も画面外に消えるまで更新を続ける
