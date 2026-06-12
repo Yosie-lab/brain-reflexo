@@ -911,7 +911,7 @@ function drawRealAuroraCurtain() {
             grad.addColorStop(0.35, "rgba( 14,  80,  35, " + (a * 0.15) + ")"); // 上部フェード（黄緑寄りを5%戻す）
             grad.addColorStop(0.68, "rgba( 20, 175,  85, " + (a * 1.10) + ")"); // エメラルドグリーン（黄緑寄りを5%戻す）
             grad.addColorStop(0.82, "rgba( 32, 235, 118, " + (a * 2.00) + ")"); // マイルドなネオングリーン（黄緑寄りを5%戻す）
-            grad.addColorStop(0.85, "rgba(228, 255, 238, " + (a * 3.08) + ")"); // 眩しさを抑えたホワイトコア（黄緑寄りを5%戻す）
+            grad.addColorStop(0.85, "rgba(228, 255, 238, " + (a * 2.30) + ")"); // 眩しさを抑えたホワイトコア（黄緑寄りを5%戻す）
             grad.addColorStop(0.88, "rgba( 32, 235, 118, " + (a * 1.80) + ")"); // 下部マイルドグリーン（黄緑寄りを5%戻す）
             grad.addColorStop(0.94, "rgba( 12, 120,  58, " + (a * 0.50) + ")"); // 下部フェード（黄緑寄りを5%戻す）
             grad.addColorStop(1.00, "rgba(  0,  20,  10, 0)"); // 最下部：透明
