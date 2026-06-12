@@ -1314,10 +1314,10 @@ body.night-mode::after {
     transition: background-color 0.5s ease;
 }
 
-/* スマホ版（画面幅768px以下）のみ背景Canvasの光量を80%に減らす */
+/* スマホ版（画面幅768px以下）のみ背景Canvasの光量を65%に減らす */
 @media (max-width: 768px) {
     #shower-canvas {
-        filter: brightness(0.8);
+        filter: brightness(0.65);
     }
 }
 
