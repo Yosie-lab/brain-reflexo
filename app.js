@@ -26,6 +26,7 @@ let tappedColorHistory = [];
 let popColorHistory = [];
 // 豬∵弌鄒､縺ｮ邂｡逅�
 let meteors = [];
+let lastShootingStarTime = Date.now() - 45000; // 初回は起動15秒後に流れるよう調整
 
 // フィーバータイム管理用
 let feverActive = false;
@@ -1283,8 +1284,66 @@ function createBigExplosionMeteor(hue, originX, originY) {
     });
 }
 
+// バックグラウンドで流れる自然な流れ星の生成（60秒に1回）
+function spawnBackgroundShootingStar() {
+    if (!showerCanvas) return;
+    
+    // 画面左上〜中央上部から発生し、右下方向へ流れる
+    const startFromLeft = Math.random() < 0.5;
+    let startX, startY;
+    
+    if (startFromLeft) {
+        // 左端からスタート（上半分）
+        startX = -100;
+        startY = Math.random() * showerCanvas.height * 0.45;
+    } else {
+        // 上端からスタート（左半分）
+        startX = Math.random() * showerCanvas.width * 0.55;
+        startY = -100;
+    }
+    
+    // 右下への角度（約 20度 〜 45度）
+    const angle = (20 + Math.random() * 25) * Math.PI / 180;
+    const speed = 6 + Math.random() * 4; // 6〜10px/フレーム（自然な速度）
+    
+    // テーマに合わせた色
+    let hue = 45; // デフォルトは金(星空)
+    if (currentTheme === 'ocean') {
+        hue = Math.random() < 0.5 ? 195 : 213; // 青〜水色
+    } else if (currentTheme === 'aurora') {
+        hue = Math.random() < 0.5 ? 140 : 262; // 緑〜紫
+    } else if (currentTheme === 'sakura') {
+        hue = Math.random() < 0.5 ? 330 : 0; // ピンク〜白
+    } else if (currentTheme === 'starry') {
+        hue = Math.random() < 0.5 ? 45 : 210; // 金〜銀
+    }
+    
+    meteors.push({
+        x: startX,
+        y: startY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        speed: speed,
+        angle: angle,
+        length: 220 + Math.random() * 150, // 長めのしっぽ
+        width: 1.0 + Math.random() * 1.0,  // 細めで繊細な光の線
+        hue: hue,
+        alpha: 0,
+        fadeSpeed: 0.015, // 緩やかにフェードイン
+        targetAlpha: 0.5 + Math.random() * 0.35, // 最大透明度
+        sparkleChance: 0.2 // 控えめできれいなきらめき
+    });
+}
+
 // 豬∵弌縺ｮ迚ｩ逅嫌蜍墓峩譁ｰ
 function updateMeteors() {
+    // 60秒に1回、バックグラウンドの自然な流れ星を流す
+    const now = Date.now();
+    if (now - lastShootingStarTime >= 60000) {
+        spawnBackgroundShootingStar();
+        lastShootingStarTime = now;
+    }
+
     // 既存 of 流星はゲーム終了後も画面外に消えるまで更新を続ける
     
     for (let i = meteors.length - 1; i >= 0; i--) {
