@@ -1305,7 +1305,7 @@ function spawnBackgroundShootingStar() {
     
     // 右下への角度（約 20度 〜 45度）
     const angle = (18 + Math.random() * 22) * Math.PI / 180;
-    const speed = 22 + Math.random() * 8; // 22〜30px/フレーム（実際の流れ星のように極めて高速に streaking する）
+    const speed = 14 + Math.random() * 6; // 14〜20px/フレーム（自然な高速感と視認性を両立）
     
     meteors.push({
         x: startX,
@@ -1314,14 +1314,14 @@ function spawnBackgroundShootingStar() {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 70 + Math.random() * 60, // 実際の見え方に合わせて少し短めのしっぽ（70〜130px）
-        width: 0.5 + Math.random() * 0.4,  // 非常に細く繊細な光条（0.5〜0.9px）
-        hue: 0, // isBackground描画のためダミー値
+        length: 120 + Math.random() * 80, // 目で追いやすいように尾の長さを少し延長（120〜200px）
+        width: 1.0 + Math.random() * 0.8,  // 線が細すぎて消えないよう少し太さを調整（1.0〜1.8px）
+        hue: 0, 
         alpha: 0,
-        fadeSpeed: 0.20, // 瞬時に現れるよう高速フェードイン
-        targetAlpha: 0.22 + Math.random() * 0.16, // 最大透明度も30%前後と控えめにして「地味さ・リアルさ」を再現
-        sparkleChance: 0, // 後方にカラフルなパーティクルを残さない（現実の流れ星仕様）
-        maxLife: 15 + Math.random() * 12, // 15〜27フレーム（約0.25〜0.45秒）で大気圏で燃え尽きて消滅する
+        fadeSpeed: 0.18, 
+        targetAlpha: 0.52 + Math.random() * 0.22, // 視認できるよう不透明度を50%〜74%程度に引き上げ
+        sparkleChance: 0, 
+        maxLife: 20 + Math.random() * 15, // 画面内を心地よく流れる適度な寿命（20〜35フレーム：約0.33〜0.6秒）
         life: 0,
         isBackground: true
     });
@@ -1405,12 +1405,12 @@ function drawMeteors() {
             // 自然な流れ星のグラデーション（ほぼ純白〜微かに淡い青白にフェード）
             grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
             grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
-            grad.addColorStop(0.3, `rgba(242, 246, 255, ${m.alpha * 0.7})`);
+            grad.addColorStop(0.3, `rgba(242, 246, 255, ${m.alpha * 0.85})`); // 透明度を少し引き上げ
             grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
             
-            // 周囲のグロー（光背）も極めて控えめにして馴染ませる
+            // 周囲のグロー（光背）も視認できるように少し強調
             glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.12})`);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.22})`);
             glowGrad.addColorStop(0.5, `rgba(240, 245, 255, 0)`);
         } else {
             grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
