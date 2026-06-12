@@ -3841,7 +3841,7 @@ const COMBO_PRAISES = [
     { jp: "もっと!", en: "More" },
     { jp: "とろける!", en: "Melt away" },
     { jp: "その感じ!", en: "Keep it up" },
-    { jp: "すてき!", en: "Lovely" },
+    { jp: "ステキ!", en: "Lovely" },
     { jp: "癒やされる!", en: "Feeling healed" },
     { jp: "感謝!", en: "Grateful" }
 ];
