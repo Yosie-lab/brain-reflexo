@@ -1303,20 +1303,8 @@ function spawnBackgroundShootingStar() {
     }
     
     // 右下への角度（約 20度 〜 45度）
-    const angle = (20 + Math.random() * 25) * Math.PI / 180;
-    const speed = 6 + Math.random() * 4; // 6〜10px/フレーム（自然な速度）
-    
-    // テーマに合わせた色
-    let hue = 45; // デフォルトは金(星空)
-    if (currentTheme === 'ocean') {
-        hue = Math.random() < 0.5 ? 195 : 213; // 青〜水色
-    } else if (currentTheme === 'aurora') {
-        hue = Math.random() < 0.5 ? 140 : 262; // 緑〜紫
-    } else if (currentTheme === 'sakura') {
-        hue = Math.random() < 0.5 ? 330 : 0; // ピンク〜白
-    } else if (currentTheme === 'starry') {
-        hue = Math.random() < 0.5 ? 45 : 210; // 金〜銀
-    }
+    const angle = (18 + Math.random() * 22) * Math.PI / 180;
+    const speed = 22 + Math.random() * 8; // 22〜30px/フレーム（実際の流れ星のように極めて高速に streaking する）
     
     meteors.push({
         x: startX,
@@ -1325,13 +1313,16 @@ function spawnBackgroundShootingStar() {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 220 + Math.random() * 150, // 長めのしっぽ
-        width: 1.0 + Math.random() * 1.0,  // 細めで繊細な光の線
-        hue: hue,
+        length: 70 + Math.random() * 60, // 実際の見え方に合わせて少し短めのしっぽ（70〜130px）
+        width: 0.5 + Math.random() * 0.4,  // 非常に細く繊細な光条（0.5〜0.9px）
+        hue: 0, // isBackground描画のためダミー値
         alpha: 0,
-        fadeSpeed: 0.015, // 緩やかにフェードイン
-        targetAlpha: 0.5 + Math.random() * 0.35, // 最大透明度
-        sparkleChance: 0.2 // 控えめできれいなきらめき
+        fadeSpeed: 0.20, // 瞬時に現れるよう高速フェードイン
+        targetAlpha: 0.22 + Math.random() * 0.16, // 最大透明度も30%前後と控えめにして「地味さ・リアルさ」を再現
+        sparkleChance: 0, // 後方にカラフルなパーティクルを残さない（現実の流れ星仕様）
+        maxLife: 15 + Math.random() * 12, // 15〜27フレーム（約0.25〜0.45秒）で大気圏で燃え尽きて消滅する
+        life: 0,
+        isBackground: true
     });
 }
 
@@ -1405,25 +1396,39 @@ function drawMeteors() {
         const tailX = m.x - m.vx * (m.length / m.speed);
         const tailY = m.y - m.vy * (m.length / m.speed);
         
-        const grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-        grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
-        grad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha})`);
-        grad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.6})`);
-        grad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+        let grad, glowGrad;
         
-        // 擬似的なグロー効果として、先に少し太い半透明の線を引く
-        const glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-        glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.3})`);
-        glowGrad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha * 0.3})`);
-        glowGrad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.18})`);
-        glowGrad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+        if (m.isBackground) {
+            // 自然な流れ星のグラデーション（ほぼ純白〜微かに淡い青白にフェード）
+            grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
+            grad.addColorStop(0.3, `rgba(242, 246, 255, ${m.alpha * 0.7})`);
+            grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+            
+            // 周囲のグロー（光背）も極めて控えめにして馴染ませる
+            glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.12})`);
+            glowGrad.addColorStop(0.5, `rgba(240, 245, 255, 0)`);
+        } else {
+            grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
+            grad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha})`);
+            grad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.6})`);
+            grad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+            
+            glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.3})`);
+            glowGrad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha * 0.3})`);
+            glowGrad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.18})`);
+            glowGrad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+        }
         
         showerCtx.save();
         showerCtx.lineCap = 'round';
         
         // グロー線
         showerCtx.strokeStyle = glowGrad;
-        showerCtx.lineWidth = m.width * 2.5;
+        showerCtx.lineWidth = m.isBackground ? m.width * 1.5 : m.width * 2.5;
         showerCtx.beginPath();
         showerCtx.moveTo(m.x, m.y);
         showerCtx.lineTo(tailX, tailY);
