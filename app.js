@@ -26,7 +26,8 @@ let tappedColorHistory = [];
 let popColorHistory = [];
 // 豬∵弌鄒､縺ｮ邂｡逅�
 let meteors = [];
-let lastShootingStarTime = Date.now() - Math.random() * 25000; // 初回は起動15秒〜40秒の間のランダムなタイミングで流れるよう調整
+let lastShootingStarTime = Date.now();
+let nextShootingStarDelay = 15000 + Math.random() * 25000; // 初回は起動15秒〜40秒の間のランダムなタイミングで流れるよう調整
 
 // フィーバータイム管理用
 let feverActive = false;
@@ -1328,11 +1329,13 @@ function spawnBackgroundShootingStar() {
 
 // 豬∵弌縺ｮ迚ｩ逅嫌蜍墓峩譁ｰ
 function updateMeteors() {
-    // 40秒に1回、バックグラウンドの自然な流れ星を流す
+    // ランダムな間隔（平均40秒周期：20秒〜60秒の間）で自然な流れ星を流す
     const now = Date.now();
-    if (now - lastShootingStarTime >= 40000) {
+    if (now - lastShootingStarTime >= nextShootingStarDelay) {
         spawnBackgroundShootingStar();
         lastShootingStarTime = now;
+        // 次回のディレイを20秒〜60秒のランダムな範囲（平均40秒）に再設定
+        nextShootingStarDelay = 20000 + Math.random() * 40000;
     }
 
     // 既存 of 流星はゲーム終了後も画面外に消えるまで更新を続ける
