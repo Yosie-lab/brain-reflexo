@@ -26,7 +26,7 @@ let tappedColorHistory = [];
 let popColorHistory = [];
 // 豬∵弌鄒､縺ｮ邂｡逅�
 let meteors = [];
-let lastShootingStarTime = Date.now() - 45000; // 初回は起動15秒後に流れるよう調整
+let lastShootingStarTime = Date.now() - Math.random() * 45000; // 初回は起動15秒〜60秒の間のランダムなタイミングで流れるよう調整
 
 // フィーバータイム管理用
 let feverActive = false;
