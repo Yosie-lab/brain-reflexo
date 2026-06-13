@@ -1298,7 +1298,7 @@ body.theme-sakura {
    15. ナイトモード (ブルーライトフィルター・明度調整)
    ============================================================= */
 body.night-mode {
-    filter: sepia(0.35) brightness(0.82) contrast(0.95);
+    filter: sepia(0.2) brightness(0.88) contrast(0.97);
 }
 
 body.night-mode::after {
@@ -1308,7 +1308,7 @@ body.night-mode::after {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(245, 158, 11, 0.05); /* マイルドな温かみのある琥珀色オーバーレイ */
+    background: rgba(245, 158, 11, 0.03); /* マイルドな温かみのある琥珀色オーバーレイ */
     pointer-events: none;
     z-index: 999999;
     transition: background-color 0.5s ease;
