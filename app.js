@@ -532,12 +532,41 @@ function initShower() {
     };
 
     let isDragging = false;
+    let lastDragX = null;
+    let lastDragY = null;
+
+    // 前回のドラッグ位置から現在の位置までの中間点を補間してポップ判定を行う（高速スワイプ時のすり抜け防止）
+    const handleDragPop = (clientX, clientY) => {
+        if (!gameActive) return;
+        if (lastDragX !== null && lastDragY !== null) {
+            const dx = clientX - lastDragX;
+            const dy = clientY - lastDragY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            // 距離が12px以上の場合は中間地点を生成して判定
+            if (dist > 12) {
+                const steps = Math.ceil(dist / 12);
+                for (let s = 1; s <= steps; s++) {
+                    const t = s / steps;
+                    const interX = lastDragX + dx * t;
+                    const interY = lastDragY + dy * t;
+                    tryPopBubble(interX, interY);
+                }
+            } else {
+                tryPopBubble(clientX, clientY);
+            }
+        } else {
+            tryPopBubble(clientX, clientY);
+        }
+        lastDragX = clientX;
+        lastDragY = clientY;
+    };
 
     window.addEventListener('mousemove', (e) => {
         if (isElementInUI(e.target)) return;
         addParticleFlow(e.clientX, e.clientY);
         if (isDragging && gameActive) {
-            tryPopBubble(e.clientX, e.clientY);
+            handleDragPop(e.clientX, e.clientY);
         }
     });
 
@@ -548,8 +577,8 @@ function initShower() {
             addParticleFlow(touch.clientX, touch.clientY);
             
             // ゲーム中ならなぞりポップを実行し、画面スクロールを防止する
-            if (gameActive) {
-                tryPopBubble(touch.clientX, touch.clientY);
+            if (gameActive && isDragging) {
+                handleDragPop(touch.clientX, touch.clientY);
                 if (e.cancelable) {
                     e.preventDefault();
                 }
@@ -560,6 +589,8 @@ function initShower() {
     window.addEventListener('mousedown', (e) => {
         if (isElementInUI(e.target)) return;
         isDragging = true;
+        lastDragX = e.clientX;
+        lastDragY = e.clientY;
         initAudio(); // ユーザー操作 of direct initialization
         startAmbientSound(); // 背景アンビエント音の開始
         handleInteraction(e.clientX, e.clientY);
@@ -567,10 +598,14 @@ function initShower() {
 
     window.addEventListener('mouseup', () => {
         isDragging = false;
+        lastDragX = null;
+        lastDragY = null;
     });
 
     window.addEventListener('mouseleave', () => {
         isDragging = false;
+        lastDragX = null;
+        lastDragY = null;
     });
 
     window.addEventListener('touchstart', (e) => {
@@ -582,16 +617,23 @@ function initShower() {
         initAudio(); // ユーザー操作 of direct initialization
         startAmbientSound(); // 背景アンビエント音の開始
         if (e.touches.length > 0) {
-            handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            const touch = e.touches[0];
+            lastDragX = touch.clientX;
+            lastDragY = touch.clientY;
+            handleInteraction(touch.clientX, touch.clientY);
         }
     }, { passive: false });
 
     window.addEventListener('touchend', () => {
         isDragging = false;
+        lastDragX = null;
+        lastDragY = null;
     });
 
     window.addEventListener('touchcancel', () => {
         isDragging = false;
+        lastDragX = null;
+        lastDragY = null;
     });
 
     // 2本指以上のマルチタッチ（ピンチズーム）を防止
@@ -3729,8 +3771,9 @@ function tryPopBubble(clientX, clientY) {
         const dy = clientY - (b.y + bOffsetY);
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        // 半径の1.2倍を判定範囲にして触りやすく
-        if (dist <= b.radius * 1.2) {
+        // 半径の1.4倍に加えて、最小タップ判定サイズとして32pxを保証（小さな泡でも触りやすくする）
+        const hitRadius = Math.max(b.radius * 1.4, 32);
+        if (dist <= hitRadius) {
             b.popping = true;
             
             // 瞑想モード時の静かなタップ処理
