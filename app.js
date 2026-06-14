@@ -60,7 +60,7 @@ let gameStartTime = 0;
 const COMBO_WINDOW = 1800; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
 
 // リラクゼーション設定（脳リフレクソ改用）
-let volumeBGM = 0.7;
+let volumeBGM = 0.55;
 let volumeSE = 0.8;
 let currentTheme = 'starry';
 let hapticEnabled = true;
