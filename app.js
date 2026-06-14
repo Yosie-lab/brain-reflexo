@@ -60,7 +60,7 @@ let gameStartTime = 0;
 const COMBO_WINDOW = 1800; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
 
 // リラクゼーション設定（脳リフレクソ改用）
-let volumeBGM = 0.55;
+let volumeBGM = 0.5;
 let volumeSE = 0.8;
 let currentTheme = 'starry';
 let hapticEnabled = true;
@@ -2505,7 +2505,7 @@ function playPopSound(combo = 1, originX) {
         soundGain.connect(delay);
         
         delay.delayTime.setValueAtTime(0.18, now);
-        feedback.gain.setValueAtTime(0.45, now);
+        feedback.gain.setValueAtTime(0.22, now);
         
         delay.connect(feedback);
         feedback.connect(delay);
