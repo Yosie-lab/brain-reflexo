@@ -2505,7 +2505,7 @@ function playPopSound(combo = 1, originX) {
         soundGain.connect(delay);
         
         delay.delayTime.setValueAtTime(0.18, now);
-        feedback.gain.setValueAtTime(0.22, now);
+        feedback.gain.setValueAtTime(0.45, now);
         
         delay.connect(feedback);
         feedback.connect(delay);
@@ -2964,9 +2964,9 @@ function startAmbientSound() {
         const revFeedback2 = audioCtx.createGain();
         
         revDelay1.delayTime.setValueAtTime(0.12, now); // 120ms驕ｻｶ
-        revFeedback1.gain.setValueAtTime(0.55, now);   // 55%繝輔ぅ繝ｼ繝峨ヰ繝け
+        revFeedback1.gain.setValueAtTime(0.70, now);   // 55%繝輔ぅ繝ｼ繝峨ヰ繝け
         revDelay2.delayTime.setValueAtTime(0.17, now); // 170ms驕ｻｶ
-        revFeedback2.gain.setValueAtTime(0.52, now);   // 52%繝輔ぅ繝ｼ繝峨ヰ繝け
+        revFeedback2.gain.setValueAtTime(0.65, now);   // 52%繝輔ぅ繝ｼ繝峨ヰ繝け
         
         // 繝輔ぅ繝ｼ繝峨ヰ繝け謗･邯
         revDelay1.connect(revFeedback1);
@@ -2975,7 +2975,7 @@ function startAmbientSound() {
         revFeedback2.connect(revDelay2);
         
         const revMix = audioCtx.createGain();
-        revMix.gain.setValueAtTime(0.62, now); // 繝ｪ繝舌繝夜㍼繧62%縺ｫ蠑輔″荳翫￡縲√ｈ繧頑ｮ矩涸縺ｫ蛹∪繧後ｋ諢溘§縺ｫ
+        revMix.gain.setValueAtTime(0.80, now); // 繝ｪ繝舌繝夜㍼繧62%縺ｫ蠑輔″荳翫￡縲√ｈ繧頑ｮ矩涸縺ｫ蛹∪繧後ｋ諢溘§縺ｫ
         
         ambientNodes.push(revDelay1, revFeedback1, revDelay2, revFeedback2, revMix);
         
