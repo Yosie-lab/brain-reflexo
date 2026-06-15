@@ -2429,9 +2429,9 @@ function endGame(forceQuit = false) {
     const reportMsg = document.getElementById('report-msg');
     if (reportMsg) {
         let comment = "あたまがサラッとクリアになりました。";
-        if (maxComboCount >= 40) {
+        if (maxComboCount >= 36) {
             comment = "圧倒的な集中力とリズムがシンクロし、脳内が完全にリセットされました！素晴らしい癒しの時間です。";
-        } else if (maxComboCount >= 25) {
+        } else if (maxComboCount >= 20) {
             comment = "心地よいリズムに乗って、素晴らしいプレイでした。心がすっと軽くなっています。";
         } else if (timeElapsed >= 120) {
             comment = "時間を忘れて深くリラックスできたようです。日常から離れた、上質な休息時間になりました。";
