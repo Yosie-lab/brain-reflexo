@@ -2433,9 +2433,9 @@ function endGame(forceQuit = false) {
             comment = "圧倒的な集中力とリズムがシンクロし、脳内が完全にリセットされました！素晴らしい癒しの時間です。";
         } else if (maxComboCount >= 25) {
             comment = "心地よいリズムに乗って、素晴らしいプレイでした。心がすっと軽くなっています。";
-        } else if (timeElapsed >= 120) {
+        } else if (timeElapsed >= 90) {
             comment = "時間を忘れて深くリラックスできたようです。日常から離れた、上質な休息時間になりました。";
-        } else if (timeElapsed >= 60) {
+        } else if (timeElapsed >= 40) {
             comment = "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。深呼吸を忘れずに。";
         } else {
             comment = "短い時間ながらも、脳の休息になりました。すっきりとした気持ちで次へ進みましょう。";
