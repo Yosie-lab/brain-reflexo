@@ -2429,7 +2429,7 @@ function endGame(forceQuit = false) {
     const reportMsg = document.getElementById('report-msg');
     if (reportMsg) {
         let comment = "あたまがサラッとクリアになりました。";
-        if (maxComboCount >= 22) {
+        if (maxComboCount >= 40) {
             comment = "圧倒的な集中力とリズムがシンクロし、脳内が完全にリセットされました！素晴らしい癒しの時間です。";
         } else if (maxComboCount >= 12) {
             comment = "心地よいリズムに乗って、素晴らしいプレイでした。心がすっと軽くなっています。";
