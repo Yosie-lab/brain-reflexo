@@ -1883,10 +1883,8 @@ function initApp() {
     initShower();
     applyTheme('starry');
     
-    // ナイトモードの初期化 (20:00〜04:59 は自動で有効化)
-    const currentHour = new Date().getHours();
-    const isNightTime = currentHour >= 20 || currentHour < 5;
-    setNightMode(isNightTime);
+    // ナイトモードの初期化 (デフォルトはオフ)
+    setNightMode(false);
     
     const chkNightMode = document.getElementById('chk-night-mode');
     if (chkNightMode) {
