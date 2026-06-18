@@ -111,6 +111,20 @@ const particleSpriteCache = {};
 const bubbleTemplateCache = {};
 let carbonatedBufferCache = null;
 
+// モバイル判定（ユーザーエージェント基準）
+const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+// フレームレート制限（モバイルは30fps、PCは60fps）
+let _lastFrameTime = 0;
+const TARGET_FPS = IS_MOBILE ? 30 : 60;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
+
+// 背景グラデーションキャッシュ（毎フレーム再生成を避ける）
+let _bgGradientCache = null;
+let _bgGradientTheme = null;
+let _bgGradientW = 0;
+let _bgGradientH = 0;
+
 // パーティクルスプライトの事前レンダリング
 function getParticleSprite(hue) {
     const roundedHue = Math.round((hue % 360) / 10) * 10;
@@ -995,29 +1009,37 @@ function drawRealAuroraCurtain() {
 }
 
 function getThemeClearColor(ctx, width, height, alpha) {
-    const grad = ctx.createRadialGradient(
-        width / 2, height * 0.3, 0,
-        width / 2, height * 0.3, Math.max(width, height)
-    );
-    
-    if (currentTheme === 'aurora') {
-        grad.addColorStop(0, `rgba(6, 25, 23, ${alpha})`);
-        grad.addColorStop(0.6, `rgba(3, 8, 11, ${alpha})`);
-        grad.addColorStop(1, `rgba(0, 2, 4, ${alpha})`);
-    } else if (currentTheme === 'starry') {
-        grad.addColorStop(0, `rgba(0, 0, 0, ${alpha})`);
-        grad.addColorStop(0.6, `rgba(0, 0, 0, ${alpha})`);
-        grad.addColorStop(1, `rgba(0, 0, 0, ${alpha})`);
-    } else if (currentTheme === 'sakura') {
-        grad.addColorStop(0, `rgba(26, 15, 24, ${alpha})`);
-        grad.addColorStop(0.6, `rgba(10, 5, 13, ${alpha})`);
-        grad.addColorStop(1, `rgba(3, 1, 6, ${alpha})`);
-    } else { // ocean / deepsea
-        grad.addColorStop(0, `rgba(11, 21, 40, ${alpha})`);
-        grad.addColorStop(0.6, `rgba(5, 8, 17, ${alpha})`);
-        grad.addColorStop(1, `rgba(1, 2, 5, ${alpha})`);
+    // サイズ・テーマが変わった時だけ再生成（毎フレームのグラデーション生成を廃止）
+    if (_bgGradientCache === null || _bgGradientTheme !== currentTheme ||
+        _bgGradientW !== width || _bgGradientH !== height) {
+        const grad = ctx.createRadialGradient(
+            width / 2, height * 0.3, 0,
+            width / 2, height * 0.3, Math.max(width, height)
+        );
+        // alphaを1.0で生成し、後でglobalAlphaで調整する方式に変更
+        if (currentTheme === 'aurora') {
+            grad.addColorStop(0, 'rgb(6, 25, 23)');
+            grad.addColorStop(0.6, 'rgb(3, 8, 11)');
+            grad.addColorStop(1, 'rgb(0, 2, 4)');
+        } else if (currentTheme === 'starry') {
+            grad.addColorStop(0, 'rgb(0, 0, 0)');
+            grad.addColorStop(0.6, 'rgb(0, 0, 0)');
+            grad.addColorStop(1, 'rgb(0, 0, 0)');
+        } else if (currentTheme === 'sakura') {
+            grad.addColorStop(0, 'rgb(26, 15, 24)');
+            grad.addColorStop(0.6, 'rgb(10, 5, 13)');
+            grad.addColorStop(1, 'rgb(3, 1, 6)');
+        } else { // ocean / deepsea
+            grad.addColorStop(0, 'rgb(11, 21, 40)');
+            grad.addColorStop(0.6, 'rgb(5, 8, 17)');
+            grad.addColorStop(1, 'rgb(1, 2, 5)');
+        }
+        _bgGradientCache = grad;
+        _bgGradientTheme = currentTheme;
+        _bgGradientW = width;
+        _bgGradientH = height;
     }
-    return grad;
+    return _bgGradientCache;
 }
 
 function drawShower() {
@@ -1028,9 +1050,11 @@ function drawShower() {
     const activeCombo = (now - lastPopTime < COMBO_WINDOW) ? comboCount : 0;
     const clearAlpha = Math.max(0.06, 0.12 - activeCombo * 0.006);
 
-    // 谿句ワ縺ｮ縺ゅｋ繧ｯ繝ｪ繧｢
+    // 残像のあるクリア（キャッシュされたグラデーションを使用）
+    showerCtx.globalAlpha = clearAlpha;
     showerCtx.fillStyle = getThemeClearColor(showerCtx, showerCanvas.width, showerCanvas.height, clearAlpha);
     showerCtx.fillRect(0, 0, showerCanvas.width, showerCanvas.height);
+    showerCtx.globalAlpha = 1.0;
     
     // 夜空のまたたく星屑を描画
     drawStars();
@@ -1099,40 +1123,13 @@ function drawShower() {
         }
     });
     
-    // カーソルトレイル（星屑トレイル）の描画
+    // カーソルトレイル（星屑トレイル）の描画 - 軽量化: グラデーション生成を廃止しスプライト流用
     cursorTrailParticles.forEach(p => {
-        showerCtx.save();
-        showerCtx.translate(p.x, p.y);
-        showerCtx.rotate(p.angle);
-        
+        const sprite = getParticleSprite(p.hue);
         const size = p.size;
-        const alpha = p.alpha;
-        
-        // 4点星型のパス
-        showerCtx.fillStyle = `hsla(${p.hue}, 100%, 90%, ${alpha})`;
-        showerCtx.beginPath();
-        showerCtx.moveTo(0, -size * 2.2);
-        showerCtx.lineTo(size * 0.3, 0);
-        showerCtx.lineTo(size * 2.2, 0);
-        showerCtx.lineTo(0, size * 0.3);
-        showerCtx.lineTo(0, size * 2.2);
-        showerCtx.lineTo(-size * 0.3, 0);
-        showerCtx.lineTo(-size * 2.2, 0);
-        showerCtx.lineTo(0, -size * 0.3);
-        showerCtx.closePath();
-        showerCtx.fill();
-        
-        // センターのグロー効果
-        const glowGrad = showerCtx.createRadialGradient(0, 0, 0, 0, 0, size * 1.6);
-        glowGrad.addColorStop(0, `hsla(${p.hue}, 100%, 95%, ${alpha})`);
-        glowGrad.addColorStop(0.4, `hsla(${p.hue}, 90%, 75%, ${alpha * 0.4})`);
-        glowGrad.addColorStop(1, `hsla(${p.hue}, 90%, 75%, 0)`);
-        showerCtx.fillStyle = glowGrad;
-        showerCtx.beginPath();
-        showerCtx.arc(0, 0, size * 1.6, 0, Math.PI * 2);
-        showerCtx.fill();
-        
-        showerCtx.restore();
+        const dSize = size * 4.0;
+        showerCtx.globalAlpha = p.alpha;
+        showerCtx.drawImage(sprite, p.x - dSize / 2, p.y - dSize / 2, dSize, dSize);
     });
     
     // グローバルアルファを元に戻す
@@ -1504,10 +1501,64 @@ function drawMeteors() {
 }
 
 // =============================================================
-// 3. 蜈峨豕｡繧ｷ繧ｹ繝Β
+// 3. 泡のシステム
 // =============================================================
 
-// 譁ｰ縺励＞豕｡繧剃ｸ€縺､逕滓縺吶ｋ
+// AudioContextの初期化（ユーザー操作時に都度呼び出し）
+function initAudio() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (audioCtx && audioCtx.state === 'closed') {
+            audioCtx = null;
+            carbonatedBufferCache = null; // クローズ時はバッファもリセット
+        }
+        if (!audioCtx && AudioContextClass) {
+            audioCtx = new AudioContextClass();
+        }
+        
+        if (audioCtx) {
+            // suspended / interrupted（iOS固有）の場合は resume() を試みる
+            if (audioCtx.state !== 'running') {
+                audioCtx.resume().then(() => {
+                    // resume完了後に炭酸バッファを生成（suspended解除後でないと生成できない場合がある）
+                    pregenerateCarbonatedBuffer();
+                }).catch((err) => {
+                    console.warn("AudioContextのresumeに失敗しました:", err);
+                });
+            } else {
+                pregenerateCarbonatedBuffer();
+            }
+            
+            // 状態変化時の自動復旧リスナーを設定（バックグラウンドから戻った時など）
+            if (!audioCtx._stateChangeListenerAdded) {
+                audioCtx._stateChangeListenerAdded = true;
+                audioCtx.onstatechange = () => {
+                    if (audioCtx.state === 'running') {
+                        pregenerateCarbonatedBuffer();
+                        if (gameActive) {
+                            startAmbientSound();
+                        }
+                    }
+                };
+            }
+            
+            // ロック解除のためのダミー無音再生（Safari向けのスロー対策として優先）
+            try {
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            } catch (err) {
+                console.warn("ダミー音声再生に失敗しました:", err);
+            }
+        }
+    } catch (e) {
+        console.warn("Web Audio APIの初期化に失敗しました。無音で動作します:", e);
+    }
+}
+
+// 泡を一つ生成する
 function createBubble() {
     let limit = feverActive ? 60 : MAX_BUBBLES;
     if (meditationMode) {
@@ -1703,147 +1754,28 @@ function drawBubbles() {
             const size = 128 * (drawRadius / 30);
             showerCtx.drawImage(template, -size / 2, -size / 2, size, size);
         } else if (b.type === 'chain') {
-            // 連鎖バブルの外光（ネオンオーラ）
-            const glowGrad = showerCtx.createRadialGradient(
-                0, 0, drawRadius * 0.4,
-                0, 0, drawRadius * 2.2
-            );
-            glowGrad.addColorStop(0, 'rgba(226, 232, 240, 0.3)');
-            glowGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.08)');
-            glowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
-            showerCtx.fillStyle = glowGrad;
-            showerCtx.beginPath();
-            showerCtx.arc(0, 0, drawRadius * 2.2, 0, Math.PI * 2);
-            showerCtx.fill();
+            // 連鎖バブルは事前キャッシュされたシルバーテンプレートを流用して軽量描画
+            const template = getBubbleTemplate('silver', 210, '#cbd5e1');
+            const size = 128 * (drawRadius / 30);
+            showerCtx.drawImage(template, -size / 2, -size / 2, size, size);
             
-            // メインの球体（シルバーのグラデーション）
-            const bodyGrad = showerCtx.createRadialGradient(
-                -drawRadius * 0.2, -drawRadius * 0.2, drawRadius * 0.05,
-                0, 0, drawRadius
-            );
-            bodyGrad.addColorStop(0, '#ffffff'); // 発光する中心
-            bodyGrad.addColorStop(0.3, 'rgba(248, 250, 252, 0.95)');
-            bodyGrad.addColorStop(0.75, 'rgba(226, 232, 240, 0.55)');
-            bodyGrad.addColorStop(1, 'rgba(148, 163, 184, 0.18)');
-            showerCtx.fillStyle = bodyGrad;
-            showerCtx.beginPath();
-            showerCtx.arc(0, 0, drawRadius, 0, Math.PI * 2);
-            showerCtx.fill();
-            
-            // 輪郭リング
-            showerCtx.strokeStyle = 'rgba(226, 232, 240, 0.7)';
-            showerCtx.lineWidth = 1.8;
-            showerCtx.beginPath();
-            showerCtx.arc(0, 0, drawRadius - 0.5, 0, Math.PI * 2);
-            showerCtx.stroke();
-            
-            // パルス発光コア
-            const pulse = 1.0 + 0.18 * Math.sin(b.time * 0.15);
-            const coreR = Math.max(2, drawRadius * 0.25 * pulse);
-            const coreGrad = showerCtx.createRadialGradient(
-                0, 0, 0,
-                0, 0, coreR
-            );
-            coreGrad.addColorStop(0, '#ffffff');
-            coreGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.95)');
-            coreGrad.addColorStop(1, 'rgba(148, 163, 184, 0)');
-            showerCtx.fillStyle = coreGrad;
-            showerCtx.beginPath();
-            showerCtx.arc(0, 0, coreR, 0, Math.PI * 2);
-            showerCtx.fill();
-            
-            // 二重回転リング（時計回りと反時計回り）
-            showerCtx.save();
-            
-            // リング1 (時計回り)
+            // 回転リングのみ追加描画（グラデーション生成なし）
             showerCtx.save();
             showerCtx.rotate(b.time * 0.025);
-            showerCtx.strokeStyle = 'rgba(226, 232, 240, 0.6)';
+            showerCtx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
             showerCtx.lineWidth = 1.5;
             showerCtx.setLineDash([4, 6]);
             showerCtx.beginPath();
             showerCtx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
             showerCtx.stroke();
             showerCtx.restore();
-            
-            // リング2 (反時計回り)
-            showerCtx.save();
-            showerCtx.rotate(-b.time * 0.018);
-            showerCtx.strokeStyle = 'rgba(203, 213, 225, 0.5)';
-            showerCtx.lineWidth = 1.0;
-            showerCtx.setLineDash([5, 8]);
-            showerCtx.beginPath();
-            showerCtx.arc(0, 0, drawRadius * 1.28, 0, Math.PI * 2);
-            showerCtx.stroke();
-            showerCtx.restore();
-            
-            showerCtx.restore(); // 元の座標系に戻す
-            
-            // ハイライト
-            const hlX = -drawRadius * 0.3;
-            const hlY = -drawRadius * 0.3;
-            const hlR = drawRadius * 0.22;
-            const hlGrad = showerCtx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-            hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
-            hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            showerCtx.fillStyle = hlGrad;
-            showerCtx.beginPath();
-            showerCtx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
-            showerCtx.fill();
         }
         
         showerCtx.restore();
     });
 }
 
-// =============================================================
-// 3.5 蜉ｹ譫憺浹繧ｷ繧ｹ繝Β (Web Audio API)
-// =============================================================
 
-// AudioContext縺ｮ蛻晄悄蛹厄ｼ医Θ繝ｼ繧ｶ繝ｼ謫堺ｽ懈凾縺ｫ驕ｻｶ螳溯｡鯉ｼ
-function initAudio() {
-    try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (audioCtx && audioCtx.state === 'closed') {
-            audioCtx = null;
-        }
-        if (!audioCtx && AudioContextClass) {
-            audioCtx = new AudioContextClass();
-        }
-        
-        if (audioCtx) {
-            // 縺吶〒縺ｫ繧ｳ繝ｳ繝く繧ｹ繝医′縺ゅｋ蝣ｴ蜷医〒繧ゅ€《uspended縺ｧ縺ゅｌ縺ｰ譏守､ｺ逧↓蜀埼幕繧定ｩｦ縺ｿ繧具ｼ育音縺ｫSafari繧ヰ繝け繧ｰ繝ｩ繧ｦ繝ｳ繝牙ｾｩ蟶ｰ蟇ｾ遲厄ｼ
-            if (audioCtx.state !== 'running') {
-                audioCtx.resume().catch((err) => {
-                    console.warn("AudioContext縺ｮ蜀埼幕縺ｫ螟ｱ謨励＠縺ｾ縺励◆:", err);
-                });
-            }
-            
-            // 状態変化時の自動復旧リスナーを設定
-            if (!audioCtx.onstatechange) {
-                audioCtx.onstatechange = () => {
-                    if (gameActive && audioCtx.state === 'running') {
-                        startAmbientSound();
-                    }
-                };
-            }
-            
-            // 繝ｭ繝け隗｣髯､縺ｮ縺溘ａ縺ｮ繝€繝溘辟｡髻ｳ蜀咲函域ｯ主屓縺ｮ繧､繝ｳ繧ｿ繝ｩ繧ｯ繧ｷ繝ｧ繝ｳ縺ｧ螳溯｡後＠縺ｦ繝ｭ繝け隗｣髯､繧堤｢ｺ螳溘↓縺吶ｋ縲∽ｾ句､悶せ繝ｭ繝ｼ蟇ｾ遲悶→縺励※菫晁ｭｷ
-            try {
-                const buffer = audioCtx.createBuffer(1, 1, 22050);
-                const source = audioCtx.createBufferSource();
-                source.buffer = buffer;
-                source.connect(audioCtx.destination);
-                source.start(0);
-            } catch (err) {
-                console.warn("繝€繝溘髻ｳ貅舌蜀咲函縺ｫ螟ｱ謨励＠縺ｾ縺励◆:", err);
-            }
-            pregenerateCarbonatedBuffer();
-        }
-    } catch (e) {
-        console.warn("Web Audio API縺ｮ蛻晄悄蛹悶↓螟ｱ謨励＠縺ｾ縺励◆縲ら┌髻ｳ縺ｧ螳溯｡後＠縺ｾ縺:", e);
-    }
-}
 
 const THEME_BUBBLE_COLORS = {
     ocean: [
@@ -1912,6 +1844,8 @@ function applyTheme(themeName) {
     for (let key in particleSpriteCache) {
         delete particleSpriteCache[key];
     }
+    // 背景グラデーションキャッシュもリセット
+    _bgGradientCache = null;
     
     // Re-init templates and particles
     initBubbleTemplates();
@@ -3626,6 +3560,14 @@ function playCarbonatedBubbleSound(originX) {
 // =============================================================
 
 function mainLoop(timestamp) {
+    // フレームレート制限（モバイルは30fps、PCは60fps）
+    const elapsed = timestamp - _lastFrameTime;
+    if (elapsed < FRAME_INTERVAL) {
+        requestAnimationFrame(mainLoop);
+        return;
+    }
+    _lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+    
     // iOS Safari等のロードタイミングによるサイズズレ対策: 毎フレーム確認して一致していない場合リサイズ
     if (showerCanvas && (showerCanvas.width !== window.innerWidth || showerCanvas.height !== window.innerHeight)) {
         resizeShowerCanvas();
