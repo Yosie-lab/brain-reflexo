@@ -57,7 +57,7 @@ let comboCount = 0;
 let maxComboCount = 0;
 let lastPopTime = 0;
 let gameStartTime = 0;
-const COMBO_WINDOW = 2000; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
+const COMBO_WINDOW = 1900; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
 
 // リラクゼーション設定（脳リフレクソ改用）
 let volumeBGM = 0.5;
