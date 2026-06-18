@@ -1233,7 +1233,7 @@ function triggerMeteorBigExplosion(originX, originY) {
     // 1. メインの巨大大輪花火 (レッドとブルーを主体にし、シルバーを削減)
     createShowerParticles(x, y, 20, 210, true); // シルバー (40 -> 20に減量)
     createShowerParticles(x, y, 50, 349, true); // レッド (30 -> 50に大幅増量)
-    createShowerRipple(x, y, 270, 3.2, 349, 0.4986); // 特大波紋をシルバーからレッド(349)に変更 (さらに発光量0.9倍、0.554 * 0.9 = 0.4986)
+    createShowerRipple(x, y, 270, 3.2, 349, 0.42); // 特大波紋をシルバーからレッド(349)に変更 (発光量を0.42に微減)
     launchExplosionMeteors(x, y, 50, 60); // 50本の流星
     
     // 2. クライマックスの多重連鎖爆発 (時間差で色彩豊かな大輪が重なり合う)
@@ -1245,7 +1245,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         playFeverStartSound(cx); // チャイムスイープ音
         createShowerParticles(cx, cy, 20, 262, true); // 紫 (25 -> 20に減量)
         createShowerParticles(cx, cy, 35, 213, true); // 青 (20 -> 35に増量)
-        createShowerRipple(cx, cy, 180, 3.8, 213, 0.4986); // 波紋を青(213)に変更 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 180, 3.8, 213, 0.42); // 波紋を青(213)に変更 (発光量を0.42に微減)
         launchExplosionMeteors(cx, cy, 25, 45);
     }, 120);
     
@@ -1256,7 +1256,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         playFeverStartSound(cx);
         createShowerParticles(cx, cy, 20, 148, true); // 緑 (25 -> 20に減量)
         createShowerParticles(cx, cy, 35, 213, true); // 青 (20 -> 35に増量)
-        createShowerRipple(cx, cy, 180, 3.8, 213, 0.4986); // 波紋を青(213)に変更 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 180, 3.8, 213, 0.42); // 波紋を青(213)に変更 (発光量を0.42に微減)
         launchExplosionMeteors(cx, cy, 25, 45);
     }, 260);
     
@@ -1267,7 +1267,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         playFeverStartSound(cx);
         createShowerParticles(cx, cy, 35, 349, true); // 赤 (25 -> 35に増量)
         createShowerParticles(cx, cy, 20, 262, true); // 紫 (20枚維持)
-        createShowerRipple(cx, cy, 190, 4.0, 349, 0.4986); // 波紋は赤(349) (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 190, 4.0, 349, 0.42); // 波紋は赤(349) (発光量を0.42に微減)
         launchExplosionMeteors(cx, cy, 25, 45);
     }, 400);
     
@@ -1279,7 +1279,7 @@ function triggerMeteorBigExplosion(originX, originY) {
         createShowerParticles(cx, cy, 10, 210, true); // シルバー (25 -> 10に大幅減量)
         createShowerParticles(cx, cy, 20, 213, true); // 青 (20本追加)
         createShowerParticles(cx, cy, 15, 148, true); // 緑 (20 -> 15に減量)
-        createShowerRipple(cx, cy, 160, 4.0, 213, 0.4986); // 波紋を青(213)に変更 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 160, 4.0, 213, 0.42); // 波紋を青(213)に変更 (発光量を0.42に微減)
         launchExplosionMeteors(cx, cy, 20, 40);
     }, 520);
     
@@ -1289,9 +1289,9 @@ function triggerMeteorBigExplosion(originX, originY) {
         const cy = y - 120 + (Math.random() - 0.5) * 40;
         playMeteorBigExplosionSound(cx); // 2回目の大爆発音でクライマックスの轟音を再現！
         createShowerParticles(cx, cy, 100, 'multi', true); // 豪華マルチカラー星屑 (重み付け適用で赤・青増量)
-        createShowerRipple(cx, cy, 310, 4.5, 213, 0.4986); // 特大の波紋をシルバーからブルー(213)に変更してシルバーの支配度を低下 (さらに発光量0.9倍)
-        createShowerRipple(cx, cy, 225, 5.2, 262, 0.4986); // 中サイズ波紋: 紫 (さらに発光量0.9倍)
-        createShowerRipple(cx, cy, 170, 6.0, 210, 0.4986); // 小サイズ波紋をシルバー(210)に設定 (さらに発光量0.9倍)
+        createShowerRipple(cx, cy, 310, 4.5, 213, 0.42); // 特大の波紋をシルバーからブルー(213)に変更してシルバーの支配度を低下 (発光量を0.42に微減)
+        createShowerRipple(cx, cy, 225, 5.2, 262, 0.42); // 中サイズ波紋: 紫 (発光量を0.42に微減)
+        createShowerRipple(cx, cy, 170, 6.0, 210, 0.42); // 小サイズ波紋をシルバー(210)に設定 (発光量を0.42に微減)
         launchExplosionMeteors(cx, cy, 50, 70); // 最後の錦冠の火花
     }, 680);
 }
