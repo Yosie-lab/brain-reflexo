@@ -472,7 +472,7 @@ body, html {
 .btn-primary {
     background: linear-gradient(135deg, #81c3d7, #60a5fa);
     border: none;
-    color: #ffffff;
+    color: #07111e; /* 視認性を大幅に高めるためのディープネイビー */
     padding: 12px 20px;
     border-radius: 30px;
     font-size: 11px;
@@ -521,6 +521,7 @@ body, html {
 .btn-infinite {
     background: linear-gradient(135deg, #c2aff0, #96e6b3);
     box-shadow: 0 4px 15px rgba(194, 175, 240, 0.35);
+    color: #120e24; /* 視認性を高めるための濃いパープルネイビー */
 }
 
 .btn-infinite:hover {
@@ -531,6 +532,7 @@ body, html {
 .btn-meditation {
     background: linear-gradient(135deg, #81c3d7, #a7f3d0);
     box-shadow: 0 4px 15px rgba(129, 195, 215, 0.35);
+    color: #05161c; /* 視認性を高めるための濃いグリーンネイビー */
 }
 
 .btn-meditation:hover {
@@ -1187,8 +1189,8 @@ body.theme-sakura {
 
 .btn-mode-detail {
     font-size: 9.5px;
-    font-weight: 400;
-    opacity: 0.7;
+    font-weight: 500; /* 文字の視認性を高めるために少し太く */
+    opacity: 0.85; /* コントラストを高めるために透明度を下げる */
     letter-spacing: 0.3px;
     display: block;
     line-height: 1.4;
@@ -1199,7 +1201,7 @@ body.theme-sakura {
     opacity: 1;
 }
 .btn-mode:hover .btn-mode-detail {
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
 /* モバイル小画面対応（iPhone SE: 667px、iPhone 12: 844px 等） */
