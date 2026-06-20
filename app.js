@@ -4031,7 +4031,7 @@ const ABSTRACT_PATTERNS = [
 let lastPraiseIdx = -1;
 let lastSpecialPraiseIdx = -1;
 
-// コンボ数に応じて褒める言葉（日本語＋英語）または記号・リセット語を画面中央に表示
+// コンボ数に応じて褒める言葉（日本語＋英語）または記号・やわらかコメントを画面中央に表示
 function showCombo(count) {
     if (meditationMode) return;
     const el = document.getElementById('combo-display');
