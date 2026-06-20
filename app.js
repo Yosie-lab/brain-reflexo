@@ -1982,6 +1982,18 @@ function applyLangMode(mode) {
     if (window.updateBreathPatternUI) {
         window.updateBreathPatternUI();
     }
+
+    // ガイドテキスト（ゲーム開始前）の初期表示切り替え
+    const guide = document.getElementById('guide-text');
+    if (guide && !gameActive) {
+        if (mode === 'en') {
+            guide.innerHTML = '<span class="en-text">Gently tap while watching the swaying spheres</span>';
+        } else if (mode === 'ja') {
+            guide.innerHTML = '<span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span>';
+        } else {
+            guide.innerHTML = '<span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span><br class="lang-divider"><span class="en-text">Gently tap while watching the swaying spheres</span>';
+        }
+    }
 }
 
 
@@ -4407,30 +4419,38 @@ function startGame() {
         guide.style.opacity = '';
         guide.replaceChildren();
         if (meditationMode) {
-            if (langMode !== 'en') {
+            if (langMode === 'en') {
+                const enSpan = document.createElement("span");
+                enSpan.className = "en-text";
+                enSpan.textContent = "Slowly breathe in and out with the guide";
+                guide.appendChild(enSpan);
+            } else if (langMode === 'ja') {
                 const jpText = document.createTextNode("ガイドに合わせてゆっくりと呼吸をしてみてください");
                 guide.appendChild(jpText);
-            }
-            if (langMode !== 'ja') {
-                if (langMode !== 'en') {
-                    const br = document.createElement("br");
-                    guide.appendChild(br);
-                }
+            } else {
+                const jpText = document.createTextNode("ガイドに合わせてゆっくりと呼吸をしてみてください");
+                guide.appendChild(jpText);
+                const br = document.createElement("br");
+                guide.appendChild(br);
                 const enSpan = document.createElement("span");
                 enSpan.className = "en-text";
                 enSpan.textContent = "Slowly breathe in and out with the guide";
                 guide.appendChild(enSpan);
             }
         } else {
-            if (langMode !== 'en') {
+            if (langMode === 'en') {
+                const enSpan = document.createElement("span");
+                enSpan.className = "en-text";
+                enSpan.textContent = "Gently tap while watching the swaying spheres";
+                guide.appendChild(enSpan);
+            } else if (langMode === 'ja') {
                 const jpText = document.createTextNode("揺れる球をながめながらゆっくりとタップしてみてください");
                 guide.appendChild(jpText);
-            }
-            if (langMode !== 'ja') {
-                if (langMode !== 'en') {
-                    const br = document.createElement("br");
-                    guide.appendChild(br);
-                }
+            } else {
+                const jpText = document.createTextNode("揺れる球をながめながらゆっくりとタップしてみてください");
+                guide.appendChild(jpText);
+                const br = document.createElement("br");
+                guide.appendChild(br);
                 const enSpan = document.createElement("span");
                 enSpan.className = "en-text";
                 enSpan.textContent = "Gently tap while watching the swaying spheres";

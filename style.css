@@ -1367,10 +1367,17 @@ body.lang-en .lang-divider {
     display: none !important;
 }
 
-/* 英語モードのスタートタイトル微調整 */
+/* 英語モードのスタートタイトル微調整 (脳リフレクソと同サイズかつ同じ美しいグラデーション) */
 body.lang-en .start-title .en-text {
-    font-size: 1em;
+    font-size: 24px !important;
+    font-weight: 800;
     opacity: 1;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #81c3d7, #c2aff0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block !important;
 }
 
 /* 英語モードでは combo-jp を非表示にして combo-en を大きく表示 */
@@ -1388,11 +1395,19 @@ body.lang-en .combo-en {
     }
 }
 
-/* 英語モードでは logo-en (英語ロゴ) を表示 */
+/* 英語モードでは logo-en (英語ロゴ) を表示し、サイズを大きくしてグラデーション化 */
 body.lang-en .logo-en {
-    display: block;
-    font-size: 12px;
-    color: #81c3d7;
+    display: block !important;
+    font-size: 26px !important;
+    font-weight: 800;
+    color: #e2e8f0;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #81c3d7, #c2aff0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 15px rgba(129, 195, 215, 0.3);
+    margin-top: 0;
 }
 
 /* 英語モードの呼吸ガイド: 英語サブを大きく表示 */
@@ -1443,4 +1458,15 @@ body.lang-en .report-label .en-text {
     font-size: 12px !important;
     font-weight: 600;
     opacity: 0.9;
+}
+
+/* 英語モードのゲーム画面UI（終了ボタン・モードバッジ）のサイズと可読性向上 */
+body.lang-en .btn-quit {
+    font-size: 13px !important;
+    font-weight: 600;
+}
+
+body.lang-en .play-mode-badge {
+    font-size: 12px !important;
+    font-weight: 600;
 }
