@@ -1406,3 +1406,41 @@ body.lang-en .breath-text .en-sub {
 body.lang-en .breath-text .ja-only {
     display: none !important;
 }
+
+/* ─────────────────────────────────────────
+   英語モードでの文字サイズ・見やすさ調整
+───────────────────────────────────────── */
+body.lang-en .btn-option .en-sub {
+    font-size: 10.5px !important;
+    font-weight: 600;
+    opacity: 0.9;
+    letter-spacing: 0.2px;
+    text-transform: none; /* 大文字固定を解除 */
+    margin-top: 2px;
+}
+
+body.lang-en .how-to-label .en-sub {
+    font-size: 11px !important;
+    font-weight: 600;
+    opacity: 0.9;
+    letter-spacing: 0.2px;
+    text-transform: none;
+    margin-top: 1px;
+}
+
+body.lang-en #breath-pattern-desc {
+    font-size: 11.5px !important;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+body.lang-en .en-text {
+    font-size: 0.95em !important;
+    opacity: 0.9 !important;
+}
+
+body.lang-en .report-label .en-text {
+    font-size: 12px !important;
+    font-weight: 600;
+    opacity: 0.9;
+}

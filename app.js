@@ -1978,6 +1978,10 @@ function applyLangMode(mode) {
 
     // 呼吸ガイドテキストを即時反映（breathStateを強制リセットして再描画を促す）
     breathState = '';
+    
+    if (window.updateBreathPatternUI) {
+        window.updateBreathPatternUI();
+    }
 }
 
 
@@ -2188,16 +2192,36 @@ function initApp() {
         
         if (descEl) {
             let desc = '';
-            if (breathPattern === 'coherent') {
-                desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。';
-            } else if (breathPattern === '478') {
-                desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。';
-            } else if (breathPattern === 'box') {
-                desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。';
+            if (langMode === 'en') {
+                if (breathPattern === 'coherent') {
+                    desc = '<strong>[Coherent Breathing] Inhale 5s / Exhale 5s</strong><br>Synchronizes breath with heart rhythm to balance the autonomic nervous system. The fundamental method for deepest relaxation.';
+                } else if (breathPattern === '478') {
+                    desc = '<strong>[4-7-8 Method] Inhale 4s / Hold 7s / Exhale 8s</strong><br>Strongly calms the nervous system. Blocks excess thoughts, ideal for relieving anxiety and easing into restful sleep.';
+                } else if (breathPattern === 'box') {
+                    desc = '<strong>[Box Breathing] Inhale 4s / Hold 4s / Exhale 4s / Hold 4s</strong><br>Releases tension while maintaining clear focus. Resets the nervous system and enhances concentration.';
+                }
+            } else if (langMode === 'ja') {
+                if (breathPattern === 'coherent') {
+                    desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。';
+                } else if (breathPattern === '478') {
+                    desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。';
+                } else if (breathPattern === 'box') {
+                    desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。';
+                }
+            } else {
+                // Bilingual
+                if (breathPattern === 'coherent') {
+                    desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[Coherent Breathing] Inhale 5s / Exhale 5s - Synchronizes breath with heart rhythm to balance the autonomic nervous system.</span>';
+                } else if (breathPattern === '478') {
+                    desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[4-7-8 Method] Inhale 4s / Hold 7s / Exhale 8s - Strongly calms the nervous system and blocks excess thoughts.</span>';
+                } else if (breathPattern === 'box') {
+                    desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[Box Breathing] Inhale 4s / Hold 4s / Exhale 4s / Hold 4s - Releases tension while maintaining clear focus.</span>';
+                }
             }
             descEl.innerHTML = desc;
         }
     };
+    window.updateBreathPatternUI = updateBreathPatternUI;
 
     const chkBreath = document.getElementById('chk-breath');
     if (chkBreath) {
