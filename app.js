@@ -70,6 +70,7 @@ let breathCycleTime = 0;
 let breathState = 'inhale';
 let breathPattern = 'coherent'; // 'coherent' | '478' | 'box'
 let nightModeEnabled = false;
+let langMode = 'bilingual'; // 'bilingual' | 'ja' | 'en'
 
 // 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
 let refreshProgress = 0;
@@ -1877,6 +1878,108 @@ function setNightMode(enabled) {
     }
 }
 
+// ──────────────────────────────────────────────
+// 言語モード切り替え
+// mode: 'bilingual' | 'ja' | 'en'
+// ──────────────────────────────────────────────
+function applyLangMode(mode) {
+    langMode = mode;
+
+    // body クラスを切り替え
+    document.body.classList.remove('lang-ja', 'lang-en', 'lang-bilingual');
+    if (mode === 'ja') {
+        document.body.classList.add('lang-ja');
+    } else if (mode === 'en') {
+        document.body.classList.add('lang-en');
+    } else {
+        document.body.classList.add('lang-bilingual');
+    }
+
+    // 設定ボタンのアクティブ状態を更新
+    const langBtns = document.querySelectorAll('#lang-options .btn-option');
+    langBtns.forEach(btn => {
+        if (btn.getAttribute('data-lang') === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // ────────────────────────────────────────────
+    // 英語モード専用: テキストが日英混在している
+    // 要素を書き換える（CSSで隠せない箇所）
+    // ────────────────────────────────────────────
+    const langTexts = {
+        // [selector, bilingual, ja, en]
+        '#btn-quit-active':     ['終了する / Quit', '終了する', 'Quit'],
+        '#btn-settings':        null, // 絵文字のみなので変更なし
+        '#btn-sound-guide-open': ['🔊 音が鳴らないときは / If there is no sound', '🔊 音が鳴らないときは', '🔊 If there is no sound'],
+    };
+
+    Object.entries(langTexts).forEach(([sel, texts]) => {
+        if (!texts) return;
+        const el = document.querySelector(sel);
+        if (!el) return;
+        if (mode === 'bilingual') el.textContent = texts[0];
+        else if (mode === 'ja')   el.textContent = texts[1];
+        else                       el.textContent = texts[2];
+    });
+
+    // スタート画面のモードカードの説明テキスト (btn-mode-detail)
+    const modeDetails = {
+        'btn-play-normal': {
+            bilingual: '泡を80個つぶしてゴール ／ 約3〜5分',
+            ja:        '泡を80個つぶしてゴール ／ 約3〜5分',
+            en:        'Pop 80 bubbles to finish · 3–5 min'
+        },
+        'btn-play-infinite': {
+            bilingual: 'ゴールなく自由に楽しむ ／ 時間無制限',
+            ja:        'ゴールなく自由に楽しむ ／ 時間無制限',
+            en:        'Play freely without a goal · No time limit'
+        },
+        'btn-play-meditation': {
+            bilingual: '呼吸ガイドに合わせて深くリラックス',
+            ja:        '呼吸ガイドに合わせて深くリラックス',
+            en:        'Deep relaxation with breath guide'
+        }
+    };
+
+    Object.entries(modeDetails).forEach(([btnId, texts]) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        const detail = btn.querySelector('.btn-mode-detail');
+        if (detail) detail.textContent = texts[mode] || texts['bilingual'];
+    });
+
+    // スタート画面バッジテキスト
+    const badgeNormal = document.querySelector('#mode-card-normal .mode-badge');
+    if (badgeNormal) {
+        if (mode === 'en') badgeNormal.textContent = '✦ Recommended for beginners';
+        else               badgeNormal.textContent = '✦ はじめての方におすすめ';
+    }
+    const badgeMeditation = document.querySelector('#mode-card-meditation .mode-badge');
+    if (badgeMeditation) {
+        if (mode === 'en') badgeMeditation.textContent = '✦ Recommended for mental fatigue';
+        else               badgeMeditation.textContent = '✦ 脳疲労の強い方におすすめ';
+    }
+
+    // how-to-guide の説明テキスト
+    const howToDescs = document.querySelectorAll('.how-to-desc');
+    const howToDescTexts = [
+        { bilingual: '揺れる泡を\nゆっくり眺める', ja: '揺れる泡を\nゆっくり眺める', en: 'Watch the swaying\nbubbles slowly' },
+        { bilingual: '気になった泡を\nそっとタップ',   ja: '気になった泡を\nそっとタップ',   en: 'Gently tap a bubble\nthat catches your eye' },
+        { bilingual: 'あたまが\nクリアになる',       ja: 'あたまが\nクリアになる',       en: 'Your mind becomes\nclear and refreshed' }
+    ];
+    howToDescs.forEach((el, i) => {
+        if (howToDescTexts[i]) {
+            el.textContent = howToDescTexts[i][mode] || howToDescTexts[i]['bilingual'];
+        }
+    });
+
+    // 呼吸ガイドテキストを即時反映（breathStateを強制リセットして再描画を促す）
+    breathState = '';
+}
+
 
 function initApp() {
     // 初回起動時はゲームを開始せずスタート画面を表示する
@@ -1892,6 +1995,22 @@ function initApp() {
             setNightMode(e.target.checked);
         });
     }
+
+    // 言語モードの初期化 (デフォルトはBilingual)
+    applyLangMode('bilingual');
+
+    const langButtons = document.querySelectorAll('#lang-options .btn-option');
+    langButtons.forEach(btn => {
+        const setLang = () => {
+            const lang = btn.getAttribute('data-lang');
+            applyLangMode(lang);
+        };
+        btn.addEventListener('click', setLang);
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            setLang();
+        }, { passive: false });
+    });
     
     // 設定関連UIの初期化
     const btnSettings = document.getElementById('btn-settings');
@@ -2360,19 +2479,31 @@ function endGame(forceQuit = false) {
     
     const reportMsg = document.getElementById('report-msg');
     if (reportMsg) {
-        let comment = "あたまがサラッとクリアになりました。";
-        if (maxComboCount >= 31) {
-            comment = "圧倒的な集中力とリズムがシンクロし、脳内が完全にリセットされました！素晴らしい癒しの時間です。";
-        } else if (maxComboCount >= 25) {
-            comment = "心地よいリズムに乗って、素晴らしいプレイでした。心がすっと軽くなっています。";
-        } else if (timeElapsed >= 90) {
-            comment = "時間を忘れて深くリラックスできたようです。日常から離れた、上質な休息時間になりました。";
-        } else if (timeElapsed >= 40) {
-            comment = "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。深呼吸を忘れずに。";
-        } else {
-            comment = "短い時間ながらも、脳の休息になりました。すっきりとした気持ちで次へ進みましょう。";
-        }
-        reportMsg.textContent = comment;
+        const comments = {
+            bilingual: [
+                "あたまがサラッとクリアになりました。",
+                "圧倒的な集中力とリズムがシンクロし、脳内が完全にリセットされました！素晴らしい癒しの時間です。",
+                "心地よいリズムに乗って、素晴らしいプレイでした。心がすっと軽くなっています。",
+                "時間を忘れて深くリラックスできたようです。日常から離れた、上質な休息時間になりました。",
+                "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。深呼吸を忘れずに。"
+            ],
+            en: [
+                "Your mind feels clear and refreshed.",
+                "Incredible focus and rhythm — your mind has been fully reset. A wonderful healing session!",
+                "Riding a comfortable rhythm — your heart feels light and free.",
+                "You found deep relaxation, forgetting the time. A quality moment of rest from everyday life.",
+                "Even in a short time, your brain got a well-deserved rest. Move forward with a clear mind."
+            ]
+        };
+
+        let idx = 0;
+        if (maxComboCount >= 31) idx = 1;
+        else if (maxComboCount >= 25) idx = 2;
+        else if (timeElapsed >= 90) idx = 3;
+        else if (timeElapsed >= 40) idx = 4;
+
+        const lang = (langMode === 'en') ? 'en' : 'bilingual';
+        reportMsg.textContent = comments[lang][idx];
     }
     
     // リフレッシュ完了画面を表示
@@ -4044,7 +4175,7 @@ function updateBreathGuide(timestamp) {
             state = 'inhale';
             progress = breathCycleTime / 4000;
             scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
-            labelJp = '吸って';
+            labelJp = '息を吸って';
             labelEn = 'Inhale';
         } else if (breathCycleTime < 11000) {
             state = 'hold';
@@ -4064,7 +4195,7 @@ function updateBreathGuide(timestamp) {
             state = 'inhale';
             progress = breathCycleTime / 4000;
             scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
-            labelJp = '吸って';
+            labelJp = '息を吸って';
             labelEn = 'Inhale';
         } else if (breathCycleTime < 8000) {
             state = 'hold'; // 満ちた状態でのキープ
@@ -4090,7 +4221,7 @@ function updateBreathGuide(timestamp) {
             state = 'inhale';
             progress = breathCycleTime / 5000;
             scale = 0.9 + (1.6 - 0.9) * easeInOutQuad(progress);
-            labelJp = '吸って';
+            labelJp = '息を吸って';
             labelEn = 'Inhale';
         } else {
             state = 'exhale';
@@ -4154,8 +4285,21 @@ function updateBreathGuide(timestamp) {
     }
     if (textEl && breathState !== state) {
         breathState = state;
-        textEl.innerHTML = `${labelJp}<br><span class="en-sub">${labelEn}</span>`;
-        
+
+        // 言語モードに合わせてテキストを構築
+        let breathHtml = '';
+        if (langMode === 'en') {
+            // 英語のみ: en-sub を大きく表示するため span を使わず直接
+            breathHtml = `<span class="en-sub">${labelEn}</span>`;
+        } else if (langMode === 'ja') {
+            // 日本語のみ
+            breathHtml = `<span class="ja-only">${labelJp}</span>`;
+        } else {
+            // Bilingual (デフォルト)
+            breathHtml = `<span class="ja-only">${labelJp}</span><br><span class="en-sub">${labelEn}</span>`;
+        }
+        textEl.innerHTML = breathHtml;
+
         textEl.style.transition = 'none';
         textEl.style.opacity = '0';
         void textEl.offsetWidth; // reflow
@@ -4217,17 +4361,60 @@ function startGame() {
     const modeBadge = document.getElementById('play-mode-badge');
     if (modeBadge) {
         if (meditationMode) {
-            modeBadge.innerHTML = '🧘 <span>Meditation / 瞑想</span>';
+            if (langMode === 'en') modeBadge.innerHTML = '🧘 <span>Meditation</span>';
+            else if (langMode === 'ja') modeBadge.innerHTML = '🧘 <span>瞑想</span>';
+            else modeBadge.innerHTML = '🧘 <span>Meditation / 瞑想</span>';
             modeBadge.className = 'play-mode-badge mode-meditation';
         } else if (infiniteMode) {
-            modeBadge.innerHTML = '∞ <span>Endless / エンドレス</span>';
+            if (langMode === 'en') modeBadge.innerHTML = '∞ <span>Endless</span>';
+            else if (langMode === 'ja') modeBadge.innerHTML = '∞ <span>エンドレス</span>';
+            else modeBadge.innerHTML = '∞ <span>Endless / エンドレス</span>';
             modeBadge.className = 'play-mode-badge mode-infinite';
         } else {
-            modeBadge.innerHTML = '✦ <span>Play / 通常</span>';
+            if (langMode === 'en') modeBadge.innerHTML = '✦ <span>Play</span>';
+            else if (langMode === 'ja') modeBadge.innerHTML = '✦ <span>通常プレイ</span>';
+            else modeBadge.innerHTML = '✦ <span>Play / 通常</span>';
             modeBadge.className = 'play-mode-badge mode-normal';
         }
     }
     
+    const guide = document.getElementById('guide-text');
+    if (guide) {
+        guide.style.opacity = '';
+        guide.replaceChildren();
+        if (meditationMode) {
+            if (langMode !== 'en') {
+                const jpText = document.createTextNode("ガイドに合わせてゆっくりと呼吸をしてみてください");
+                guide.appendChild(jpText);
+            }
+            if (langMode !== 'ja') {
+                if (langMode !== 'en') {
+                    const br = document.createElement("br");
+                    guide.appendChild(br);
+                }
+                const enSpan = document.createElement("span");
+                enSpan.className = "en-text";
+                enSpan.textContent = "Slowly breathe in and out with the guide";
+                guide.appendChild(enSpan);
+            }
+        } else {
+            if (langMode !== 'en') {
+                const jpText = document.createTextNode("揺れる球をながめながらゆっくりとタップしてみてください");
+                guide.appendChild(jpText);
+            }
+            if (langMode !== 'ja') {
+                if (langMode !== 'en') {
+                    const br = document.createElement("br");
+                    guide.appendChild(br);
+                }
+                const enSpan = document.createElement("span");
+                enSpan.className = "en-text";
+                enSpan.textContent = "Gently tap while watching the swaying spheres";
+                guide.appendChild(enSpan);
+            }
+        }
+    }
+
     const refreshGauge = document.getElementById('refresh-gauge');
     if (refreshGauge) {
         if (meditationMode) {
@@ -4253,35 +4440,8 @@ function startGame() {
         }
     }
     
-    const guide = document.getElementById('guide-text');
-    if (guide) {
-        guide.style.opacity = '';
-        guide.replaceChildren();
-        if (meditationMode) {
-            const jpText = document.createTextNode("ガイドに合わせてゆっくりと呼吸をしてみてください");
-            guide.appendChild(jpText);
-            
-            const br = document.createElement("br");
-            guide.appendChild(br);
-            
-            const enSpan = document.createElement("span");
-            enSpan.className = "en-text";
-            enSpan.textContent = "Slowly breathe in and out with the guide";
-            guide.appendChild(enSpan);
-        } else {
-            const jpText = document.createTextNode("揺れる球をながめながらゆっくりとタップしてみてください");
-            guide.appendChild(jpText);
-            
-            const br = document.createElement("br");
-            guide.appendChild(br);
-            
-            const enSpan = document.createElement("span");
-            enSpan.className = "en-text";
-            enSpan.textContent = "Gently tap while watching the swaying spheres";
-            guide.appendChild(enSpan);
-        }
-    }
-    
+
+
     const comboEl = document.getElementById('combo-display');
     if (comboEl) {
         comboEl.classList.remove('show');
