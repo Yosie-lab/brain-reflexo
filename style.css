@@ -1347,7 +1347,8 @@ body.night-mode::after {
 body.lang-ja .en-text,
 body.lang-ja .en-sub,
 body.lang-ja .logo-en,
-body.lang-ja .combo-en {
+body.lang-ja .combo-en,
+body.lang-ja .lang-divider {
     display: none !important;
 }
 
@@ -1358,16 +1359,21 @@ body.lang-ja .breath-text .en-sub {
 
 /* ─────────────────────────────────────────
    英語モード: 日本語のみ要素を非表示
-   .ja-only クラスをJavaScriptで付与した要素が対象
 ───────────────────────────────────────── */
-body.lang-en .ja-only {
+body.lang-en .ja-text,
+body.lang-en .ja-only,
+body.lang-en .combo-jp,
+body.lang-en .lang-divider {
     display: none !important;
 }
 
-/* 英語モードでは combo-jp を非表示にして combo-en を大きく表示 */
-body.lang-en .combo-jp {
-    display: none !important;
+/* 英語モードのスタートタイトル微調整 */
+body.lang-en .start-title .en-text {
+    font-size: 1em;
+    opacity: 1;
 }
+
+/* 英語モードでは combo-jp を非表示にして combo-en を大きく表示 */
 body.lang-en .combo-en {
     font-size: 36px;
     font-weight: 800;

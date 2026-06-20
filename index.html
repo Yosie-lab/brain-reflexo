@@ -29,11 +29,11 @@
     <div class="app-container">
         <!-- ヘッダー -->
         <header class="app-header">
-            <h1 class="logo">脳<span>リフレクソ</span><span class="logo-en">Brain Reflexo</span></h1>
-            <p class="subtitle">ピチョンと弾ける音と光で、あたまをサラッとクリアに<br><span class="en-text">Clear your mind with soothing popping sounds and light</span></p>
+            <h1 class="logo"><span class="ja-text">脳<span>リフレクソ</span></span><span class="logo-en">Brain Reflexo</span></h1>
+            <p class="subtitle"><span class="ja-text">ピチョンと弾ける音と光で、あたまをサラッとクリアに</span><br class="lang-divider"><span class="en-text">Clear your mind with soothing popping sounds and light</span></p>
         </header>
         <!-- ガイドテキスト（初回のみ表示） -->
-        <p class="guide-text" id="guide-text">揺れる球をながめながらゆっくりとタップしてみてください<br><span class="en-text">Gently tap while watching the swaying spheres</span></p>
+        <p class="guide-text" id="guide-text"><span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span><br class="lang-divider"><span class="en-text">Gently tap while watching the swaying spheres</span></p>
     </div>
 
     <!-- いつでもゲームを終了できるボタン -->
@@ -49,10 +49,10 @@
     <div id="settings-panel" class="settings-panel">
         <div class="settings-content">
             <button id="btn-settings-close" class="btn-settings-close" aria-label="閉じる / Close">&times;</button>
-            <h3>設定 / Settings</h3>
+            <h3><span class="ja-text">設定</span><span class="lang-divider"> / </span><span class="en-text">Settings</span></h3>
             
             <div class="setting-item toggle-item night-mode-item" style="border-top: none; padding-top: 0; margin-top: 0;">
-                <span class="setting-label">ナイトモード / Night Mode</span>
+                <span class="setting-label"><span class="ja-text">ナイトモード</span><span class="lang-divider"> / </span><span class="en-text">Night Mode</span></span>
                 <label class="switch">
                     <input type="checkbox" id="chk-night-mode">
                     <span class="switch-slider"></span>
@@ -60,16 +60,16 @@
             </div>
 
             <div class="setting-item lang-mode-item">
-                <div class="setting-label">言語表示 / Language</div>
+                <div class="setting-label"><span class="ja-text">言語表示</span><span class="lang-divider"> / </span><span class="en-text">Language</span></div>
                 <div class="options-grid lang-options-grid" id="lang-options">
-                    <button class="btn-option active" data-lang="bilingual" id="lang-btn-bilingual">Bilingual<span class="en-sub">二ヶ国語</span></button>
-                    <button class="btn-option" data-lang="ja" id="lang-btn-ja">日本語<span class="en-sub">Japanese</span></button>
-                    <button class="btn-option" data-lang="en" id="lang-btn-en">English<span class="en-sub">英語</span></button>
+                    <button class="btn-option active" data-lang="bilingual" id="lang-btn-bilingual">Bilingual<span class="ja-text en-sub">二ヶ国語</span></button>
+                    <button class="btn-option" data-lang="ja" id="lang-btn-ja"><span class="ja-text">日本語</span><span class="en-sub">Japanese</span></button>
+                    <button class="btn-option" data-lang="en" id="lang-btn-en"><span class="en-text">English</span><span class="ja-text en-sub">英語</span></button>
                 </div>
             </div>
             
             <div class="setting-item">
-                <div class="setting-label">環境音 (BGM) 音量 / BGM Vol</div>
+                <div class="setting-label"><span class="ja-text">環境音 (BGM) 音量</span><span class="lang-divider"> / </span><span class="en-text">BGM Vol</span></div>
                 <div class="slider-container">
                     <input type="range" id="slider-vol-bgm" min="0" max="1" step="0.05" value="0.50">
                     <span id="label-vol-bgm">50%</span>
@@ -77,7 +77,7 @@
             </div>
 
             <div class="setting-item">
-                <div class="setting-label">効果音 (SE) 音量 / SE Vol</div>
+                <div class="setting-label"><span class="ja-text">効果音 (SE) 音量</span><span class="lang-divider"> / </span><span class="en-text">SE Vol</span></div>
                 <div class="slider-container">
                     <input type="range" id="slider-vol-se" min="0" max="1" step="0.05" value="0.50">
                     <span id="label-vol-se">50%</span>
@@ -86,31 +86,31 @@
 
             <!-- 音が鳴らない場合の案内リンク -->
             <button id="btn-sound-guide-open" style="background: none; border: none; color: #81c3d7; font-size: 10px; text-decoration: underline; cursor: pointer; text-align: left; align-self: flex-start; margin-top: -16px; margin-bottom: 8px;">
-                🔊 音が鳴らないときは / If there is no sound
+                <span class="ja-text">🔊 音が鳴らないときは</span><span class="lang-divider"> / </span><span class="en-text">🔊 If there is no sound</span>
             </button>
 
             <div class="setting-item">
-                <div class="setting-label">テーマ選択 / Visual Theme</div>
+                <div class="setting-label"><span class="ja-text">テーマ選択</span><span class="lang-divider"> / </span><span class="en-text">Visual Theme</span></div>
                 <div class="options-grid" id="theme-options">
-                    <button class="btn-option active" data-theme="starry">星空空間<span class="en-sub">Starry</span></button>
-                    <button class="btn-option" data-theme="ocean">深海空間<span class="en-sub">Ocean</span></button>
-                    <button class="btn-option" data-theme="aurora">極光空間<span class="en-sub">Aurora</span></button>
-                    <button class="btn-option" data-theme="sakura">桜風空間<span class="en-sub">Sakura</span></button>
+                    <button class="btn-option active" data-theme="starry"><span class="ja-text">星空空間</span><span class="en-sub">Starry</span></button>
+                    <button class="btn-option" data-theme="ocean"><span class="ja-text">深海空間</span><span class="en-sub">Ocean</span></button>
+                    <button class="btn-option" data-theme="aurora"><span class="ja-text">極光空間</span><span class="en-sub">Aurora</span></button>
+                    <button class="btn-option" data-theme="sakura"><span class="ja-text">桜風空間</span><span class="en-sub">Sakura</span></button>
                 </div>
             </div>
 
             <div class="setting-item">
-                <div class="setting-label">ポップエフェクト / Pop Effect</div>
+                <div class="setting-label"><span class="ja-text">ポップエフェクト</span><span class="lang-divider"> / </span><span class="en-text">Pop Effect</span></div>
                 <div class="options-grid" id="pop-effect-options">
-                    <button class="btn-option active" data-effect="praise">快感コメント<span class="en-sub">Praise</span></button>
-                    <button class="btn-option" data-effect="reset">やわらかコメント<span class="en-sub">Reset Word</span></button>
-                    <button class="btn-option" data-effect="pattern">光の紋様<span class="en-sub">Pattern</span></button>
-                    <button class="btn-option" data-effect="none">非表示<span class="en-sub">None</span></button>
+                    <button class="btn-option active" data-effect="praise"><span class="ja-text">快感コメント</span><span class="en-sub">Praise</span></button>
+                    <button class="btn-option" data-effect="reset"><span class="ja-text">やわらかコメント</span><span class="en-sub">Reset Word</span></button>
+                    <button class="btn-option" data-effect="pattern"><span class="ja-text">光の紋様</span><span class="en-sub">Pattern</span></button>
+                    <button class="btn-option" data-effect="none"><span class="ja-text">非表示</span><span class="en-sub">None</span></button>
                 </div>
             </div>
 
             <div class="setting-item toggle-item">
-                <span class="setting-label">ジャイロ視差効果 / Parallax</span>
+                <span class="setting-label"><span class="ja-text">ジャイロ視差効果</span><span class="lang-divider"> / </span><span class="en-text">Parallax</span></span>
                 <label class="switch">
                     <input type="checkbox" id="chk-gyro" checked>
                     <span class="switch-slider"></span>
@@ -118,7 +118,7 @@
             </div>
 
             <div class="setting-item toggle-item">
-                <span class="setting-label">振動フィードバック / Haptics</span>
+                <span class="setting-label"><span class="ja-text">振動フィードバック</span><span class="lang-divider"> / </span><span class="en-text">Haptics</span></span>
                 <label class="switch">
                     <input type="checkbox" id="chk-haptic" checked>
                     <span class="switch-slider"></span>
@@ -126,21 +126,19 @@
             </div>
 
             <div class="setting-item toggle-item">
-                <span class="setting-label">呼吸ガイド / Breath Guide</span>
+                <span class="setting-label"><span class="ja-text">呼吸ガイド</span><span class="lang-divider"> / </span><span class="en-text">Breath Guide</span></span>
                 <label class="switch">
                     <input type="checkbox" id="chk-breath" checked>
                     <span class="switch-slider"></span>
                 </label>
             </div>
 
-
-
             <div class="setting-item" id="breath-pattern-container">
-                <div class="setting-label">呼吸パターン / Breath Pattern</div>
+                <div class="setting-label"><span class="ja-text">呼吸パターン</span><span class="lang-divider"> / </span><span class="en-text">Breath Pattern</span></div>
                 <div class="options-grid" id="breath-pattern-options">
-                    <button class="btn-option active" data-pattern="coherent">コヒーレント<span class="en-sub">Coherent</span></button>
-                    <button class="btn-option" data-pattern="478">4-7-8呼吸<span class="en-sub">4-7-8</span></button>
-                    <button class="btn-option" data-pattern="box">ボックス<span class="en-sub">Box</span></button>
+                    <button class="btn-option active" data-pattern="coherent"><span class="ja-text">コヒーレント</span><span class="en-sub">Coherent</span></button>
+                    <button class="btn-option" data-pattern="478"><span class="ja-text">4-7-8呼吸</span><span class="en-sub">4-7-8</span></button>
+                    <button class="btn-option" data-pattern="box"><span class="ja-text">ボックス</span><span class="en-sub">Box</span></button>
                 </div>
                 <div id="breath-pattern-desc" style="font-size: 10px; color: #94a3b8; line-height: 1.4; margin-top: 6px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                     <!-- JavaScriptで切り替わる説明 -->
@@ -170,32 +168,32 @@
         <div class="overlay-content start-overlay-content">
 
             <!-- タイトル -->
-            <h2 class="start-title">脳リフレクソ</h2>
-            <p class="start-subtitle">音と光の泡つぶしで、あたまをサラッとクリアに<br><span class="en-text">Pop bubbles to clear your mind with sound &amp; light</span></p>
+            <h2 class="start-title"><span class="ja-text">脳リフレクソ</span><span class="en-text">Brain Reflexo</span></h2>
+            <p class="start-subtitle"><span class="ja-text">音と光の泡つぶしで、あたまをサラッとクリアに</span><br class="lang-divider"><span class="en-text">Pop bubbles to clear your mind with sound &amp; light</span></p>
 
             <!-- はじめての方向け 3ステップガイド -->
             <div class="how-to-guide">
                 <div class="how-to-step">
                     <div class="how-to-icon">👀</div>
-                    <div class="how-to-label">眺める<span class="en-sub">Watch</span></div>
+                    <div class="how-to-label"><span class="ja-text">眺める</span><span class="en-sub">Watch</span></div>
                     <div class="how-to-desc">揺れる泡を<br>ゆっくり眺める</div>
                 </div>
                 <div class="how-to-arrow">→</div>
                 <div class="how-to-step">
                     <div class="how-to-icon">👆</div>
-                    <div class="how-to-label">タップ<span class="en-sub">Tap</span></div>
+                    <div class="how-to-label"><span class="ja-text">タップ</span><span class="en-sub">Tap</span></div>
                     <div class="how-to-desc">気になった泡を<br>そっとタップ</div>
                 </div>
                 <div class="how-to-arrow">→</div>
                 <div class="how-to-step">
                     <div class="how-to-icon">✨</div>
-                    <div class="how-to-label">スッキリ<span class="en-sub">Refresh</span></div>
+                    <div class="how-to-label"><span class="ja-text">スッキリ</span><span class="en-sub">Refresh</span></div>
                     <div class="how-to-desc">あたまが<br>クリアになる</div>
                 </div>
             </div>
 
             <!-- モード選択ラベル -->
-            <p class="mode-select-label">モードを選んでスタート<br><span class="en-text">Choose your mode</span></p>
+            <p class="mode-select-label"><span class="ja-text">モードを選んでスタート</span><br class="lang-divider"><span class="en-text">Choose your mode</span></p>
 
             <!-- Play ボタン（初めての方おすすめ） -->
             <div class="mode-card" id="mode-card-normal">
@@ -226,7 +224,7 @@
                 <button id="btn-play-meditation" class="btn-primary btn-meditation btn-mode">
                     <span class="btn-mode-icon">🧘</span>
                     <span class="btn-mode-body">
-                        <span class="btn-mode-title">Meditation / 瞑想</span>
+                        <span class="btn-mode-title"><span class="en-text">Meditation</span><span class="lang-divider"> / </span><span class="ja-text">瞑想</span></span>
                         <span class="btn-mode-detail">呼吸ガイドに合わせて深くリラックス</span>
                     </span>
                 </button>
@@ -239,20 +237,20 @@
     <div id="gameover-overlay" class="overlay">
         <div class="overlay-content">
             <h2>REFRESH COMPLETE</h2>
-            <p>脳が心地よくリフレッシュされました<br><span class="en-text">Your mind has been pleasantly refreshed</span></p>
+            <p><span class="ja-text">脳が心地よくリフレッシュされました</span><br class="lang-divider"><span class="en-text">Your mind has been pleasantly refreshed</span></p>
             
             <!-- 統計レポート -->
             <div class="relax-report" id="relax-report">
                 <div class="report-row">
-                    <span class="report-label">リフレッシュ時間 / Time</span>
+                    <span class="report-label"><span class="ja-text">リフレッシュ時間</span><span class="lang-divider"> / </span><span class="en-text">Time</span></span>
                     <strong id="report-time" class="report-val">0s</strong>
                 </div>
                 <div class="report-row">
-                    <span class="report-label">弾けた泡 / Bubbles Popped</span>
+                    <span class="report-label"><span class="ja-text">弾けた泡</span><span class="lang-divider"> / </span><span class="en-text">Bubbles Popped</span></span>
                     <strong id="report-pops" class="report-val">0</strong>
                 </div>
                 <div class="report-row">
-                    <span class="report-label">最大コンボ / Max Combo</span>
+                    <span class="report-label"><span class="ja-text">最大コンボ</span><span class="lang-divider"> / </span><span class="en-text">Max Combo</span></span>
                     <strong id="report-combo" class="report-val">0</strong>
                 </div>
                 <div class="report-msg" id="report-msg">
@@ -260,26 +258,26 @@
                 </div>
             </div>
             
-            <button id="btn-restart" class="btn-primary">もう一度あたまをクリアに / Restart</button>
+            <button id="btn-restart" class="btn-primary"><span class="ja-text">もう一度あたまをクリアに</span><span class="lang-divider"> / </span><span class="en-text">Restart</span></button>
         </div>
     </div>
 
     <!-- ジャイロ許可説明ダイアログ -->
     <div id="gyro-confirm-dialog" class="overlay">
         <div class="overlay-content" style="max-width: 380px;">
-            <h3 style="font-size: 16px; font-weight: 800; letter-spacing: 2px; color: #e2e8f0; margin-bottom: 12px;">ジャイロセンサーの有効化<br><span style="font-size: 10px; color: #94a3b8; font-weight: 400; letter-spacing: 1px; text-transform: uppercase;">Gyroscope Parallax Effect</span></h3>
+            <h3 style="font-size: 16px; font-weight: 800; letter-spacing: 2px; color: #e2e8f0; margin-bottom: 12px;"><span class="ja-text">ジャイロセンサーの有効化</span><span class="en-text">Enable Gyroscope Sensor</span><br><span style="font-size: 10px; color: #94a3b8; font-weight: 400; letter-spacing: 1px; text-transform: uppercase;">Gyroscope Parallax Effect</span></h3>
             <p style="margin-top: 10px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; color: #cbd5e1; text-align: left;">
-                スマートフォンの傾きに合わせて泡が心地よく揺れる「視差効果」を使用しますか？<br>
-                <span class="en-text" style="font-size: 10px; margin-top: 4px; display: block; color: #94a3b8;">
+                <span class="ja-text">スマートフォンの傾きに合わせて泡が心地よく揺れる「視差効果」を使用しますか？</span>
+                <span class="en-text" style="font-size: 11px; margin-top: 4px; display: block; color: #cbd5e1; line-height: 1.5;">
                     Would you like to enable the parallax effect where bubbles sway with your phone's tilt? (You can still play without allowing it)
                 </span>
             </p>
             <div style="display: flex; gap: 12px;">
                 <button id="btn-gyro-deny" class="btn-primary" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; box-shadow: none;">
-                    使わない / No
+                    <span class="ja-text">使わない</span><span class="en-text">No</span>
                 </button>
                 <button id="btn-gyro-allow" class="btn-primary">
-                    使う / Yes
+                    <span class="ja-text">使う</span><span class="en-text">Yes</span>
                 </button>
             </div>
         </div>
@@ -288,25 +286,25 @@
     <!-- 音声トラブルシューティングダイアログ -->
     <div id="sound-guide-dialog" class="overlay">
         <div class="overlay-content" style="max-width: 380px; text-align: left;">
-            <h3 style="text-align: center; margin-bottom: 15px; font-size: 16px; font-weight: 800; letter-spacing: 2px;">音が鳴らない場合 / Sound Help</h3>
+            <h3 style="text-align: center; margin-bottom: 15px; font-size: 16px; font-weight: 800; letter-spacing: 2px;"><span class="ja-text">音が鳴らない場合</span><span class="lang-divider"> / </span><span class="en-text">Sound Help</span></h3>
             <div style="font-size: 11.5px; line-height: 1.6; color: #cbd5e1; display: flex; flex-direction: column; gap: 14px;">
                 <div>
-                    <strong style="color: #81c3d7; display: block; margin-bottom: 2px;">1. 消音（マナー）モードの解除 (iOS)</strong>
-                    iPhoneなどの側面の消音スイッチがONになっていると、Web Audioが消音されます。スイッチをOFF（オレンジ色が見えない状態）にしてください。
-                    <span class="en-text" style="font-size: 9.5px; color: #94a3b8;">Check if your device's physical silent switch is turned ON. Turn it OFF to play sound.</span>
+                    <strong style="color: #81c3d7; display: block; margin-bottom: 2px;"><span class="ja-text">1. 消音（マナー）モードの解除 (iOS)</span><span class="en-text">1. Unmute Silent Mode (iOS)</span></strong>
+                    <span class="ja-text">iPhoneなどの側面の消音スイッチがONになっていると、Web Audioが消音されます。スイッチをOFF（オレンジ色が見えない状態）にしてください。</span>
+                    <span class="en-text" style="font-size: 9.5px; display: block; color: #94a3b8; line-height: 1.4;">Check if your device's physical silent switch is turned ON. Turn it OFF to play sound.</span>
                 </div>
                 <div>
-                    <strong style="color: #81c3d7; display: block; margin-bottom: 2px;">2. 端末本体・ブラウザの音量確認</strong>
-                    スマートフォンの本体音量が下がっていないか、またブラウザの音量設定や本設定の音量スライダーが0になっていないかご確認ください。
-                    <span class="en-text" style="font-size: 9.5px; color: #94a3b8;">Make sure your device volume is turned up and BGM/SE volume is not 0%.</span>
+                    <strong style="color: #81c3d7; display: block; margin-bottom: 2px;"><span class="ja-text">2. 端末本体・ブラウザの音量確認</span><span class="en-text">2. Check Device &amp; Browser Volume</span></strong>
+                    <span class="ja-text">スマートフォンの本体音量が下がっていないか、またブラウザの音量設定や本設定の音量スライダーが0になっていないかご確認ください。</span>
+                    <span class="en-text" style="font-size: 9.5px; display: block; color: #94a3b8; line-height: 1.4;">Make sure your device volume is turned up and BGM/SE volume is not 0%.</span>
                 </div>
                 <div>
-                    <strong style="color: #81c3d7; display: block; margin-bottom: 2px;">3. ページの再読み込み</strong>
-                    ブラウザの仕様により音声処理が一時的にブロックされる場合があります。その場合はページを再読み込み（リロード）してください。
-                    <span class="en-text" style="font-size: 9.5px; color: #94a3b8;">If the issue persists, try reloading the page to re-initialize audio.</span>
+                    <strong style="color: #81c3d7; display: block; margin-bottom: 2px;"><span class="ja-text">3. ページの再読み込み</span><span class="en-text">3. Reload the Page</span></strong>
+                    <span class="ja-text">ブラウザの仕様により音声処理が一時的にブロックされる場合があります。その場合はページを再読み込み（リロード）してください。</span>
+                    <span class="en-text" style="font-size: 9.5px; display: block; color: #94a3b8; line-height: 1.4;">If the issue persists, try reloading the page to re-initialize audio.</span>
                 </div>
             </div>
-            <button id="btn-sound-guide-close" class="btn-primary" style="margin-top: 20px;">閉じる / Close</button>
+            <button id="btn-sound-guide-close" class="btn-primary" style="margin-top: 20px;"><span class="ja-text">閉じる</span><span class="lang-divider"> / </span><span class="en-text">Close</span></button>
         </div>
     </div>
 
