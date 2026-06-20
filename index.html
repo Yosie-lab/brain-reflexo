@@ -67,6 +67,26 @@
                     <button class="btn-option" data-lang="en" id="lang-btn-en"><span class="en-text">English</span><span class="ja-text en-sub">英語</span></button>
                 </div>
             </div>
+
+            <div class="setting-item toggle-item">
+                <span class="setting-label"><span class="ja-text">呼吸ガイド</span><span class="lang-divider"> / </span><span class="en-text">Breath Guide</span></span>
+                <label class="switch">
+                    <input type="checkbox" id="chk-breath" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item" id="breath-pattern-container">
+                <div class="setting-label"><span class="ja-text">呼吸パターン</span><span class="lang-divider"> / </span><span class="en-text">Breath Pattern</span></div>
+                <div class="options-grid" id="breath-pattern-options">
+                    <button class="btn-option active" data-pattern="coherent"><span class="ja-text">コヒーレント</span><span class="en-sub">Coherent</span></button>
+                    <button class="btn-option" data-pattern="478"><span class="ja-text">4-7-8呼吸</span><span class="en-sub">4-7-8</span></button>
+                    <button class="btn-option" data-pattern="box"><span class="ja-text">ボックス</span><span class="en-sub">Box</span></button>
+                </div>
+                <div id="breath-pattern-desc" style="font-size: 10px; color: #94a3b8; line-height: 1.4; margin-top: 6px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                    <!-- JavaScriptで切り替わる説明 -->
+                </div>
+            </div>
             
             <div class="setting-item">
                 <div class="setting-label"><span class="ja-text">環境音 (BGM) 音量</span><span class="lang-divider"> / </span><span class="en-text">BGM Vol</span></div>
@@ -123,26 +143,6 @@
                     <input type="checkbox" id="chk-haptic" checked>
                     <span class="switch-slider"></span>
                 </label>
-            </div>
-
-            <div class="setting-item toggle-item">
-                <span class="setting-label"><span class="ja-text">呼吸ガイド</span><span class="lang-divider"> / </span><span class="en-text">Breath Guide</span></span>
-                <label class="switch">
-                    <input type="checkbox" id="chk-breath" checked>
-                    <span class="switch-slider"></span>
-                </label>
-            </div>
-
-            <div class="setting-item" id="breath-pattern-container">
-                <div class="setting-label"><span class="ja-text">呼吸パターン</span><span class="lang-divider"> / </span><span class="en-text">Breath Pattern</span></div>
-                <div class="options-grid" id="breath-pattern-options">
-                    <button class="btn-option active" data-pattern="coherent"><span class="ja-text">コヒーレント</span><span class="en-sub">Coherent</span></button>
-                    <button class="btn-option" data-pattern="478"><span class="ja-text">4-7-8呼吸</span><span class="en-sub">4-7-8</span></button>
-                    <button class="btn-option" data-pattern="box"><span class="ja-text">ボックス</span><span class="en-sub">Box</span></button>
-                </div>
-                <div id="breath-pattern-desc" style="font-size: 10px; color: #94a3b8; line-height: 1.4; margin-top: 6px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
-                    <!-- JavaScriptで切り替わる説明 -->
-                </div>
             </div>
         </div>
     </div>
