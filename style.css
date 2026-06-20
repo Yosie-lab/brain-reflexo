@@ -28,6 +28,7 @@ body, html {
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
     color: #f8fafc;
     touch-action: none; /* ダブルタップズームやピンチズーム、スクロールによるレイアウト崩れを防ぐ */
+    filter: brightness(0.80);
     transition: filter 0.5s ease;
 }
 
@@ -1298,7 +1299,7 @@ body.theme-sakura {
    15. ナイトモード (ブルーライトフィルター・明度調整)
    ============================================================= */
 body.night-mode {
-    filter: sepia(0.2) brightness(0.88) contrast(0.97);
+    filter: sepia(0.2) brightness(0.70) contrast(0.97);
 }
 
 body.night-mode::after {
