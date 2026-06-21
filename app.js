@@ -3173,18 +3173,18 @@ function startAmbientSound() {
         solfeggioDelayR.delayTime.setValueAtTime(0.38, now); // 380ms
         ambientNodes.push(solfeggioDelayL, solfeggioDelayR);
 
-        // フィードバックゲイン (強め: 0.82)
+        // フィードバックゲイン (安全な減衰設計: 0.50)
         const solfeggioFeedbackL = audioCtx.createGain();
         const solfeggioFeedbackR = audioCtx.createGain();
-        solfeggioFeedbackL.gain.setValueAtTime(0.82, now);
-        solfeggioFeedbackR.gain.setValueAtTime(0.82, now);
+        solfeggioFeedbackL.gain.setValueAtTime(0.50, now);
+        solfeggioFeedbackR.gain.setValueAtTime(0.50, now);
         ambientNodes.push(solfeggioFeedbackL, solfeggioFeedbackR);
 
-        // 交差フィードバック（ピンポンディレイ効果）
+        // 交差フィードバック（ピンポンディレイ効果: 0.20）
         const solfeggioCrossL = audioCtx.createGain();
         const solfeggioCrossR = audioCtx.createGain();
-        solfeggioCrossL.gain.setValueAtTime(0.25, now);
-        solfeggioCrossR.gain.setValueAtTime(0.25, now);
+        solfeggioCrossL.gain.setValueAtTime(0.20, now);
+        solfeggioCrossR.gain.setValueAtTime(0.20, now);
         ambientNodes.push(solfeggioCrossL, solfeggioCrossR);
 
         // ソルフェジオ出力ミックスゲイン
