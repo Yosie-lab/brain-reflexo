@@ -3228,57 +3228,21 @@ function startAmbientSound() {
         solfeggioDelayR.connect(solfeggioRevMix);
         solfeggioRevMix.connect(audioCtx.destination); // 独立出力
 
-        // 528Hz オシレーター (デチューンを施したペア)
-        const osc528_1 = audioCtx.createOscillator();
-        osc528_1.type = 'sine';
-        osc528_1.frequency.setValueAtTime(528, now);
-        osc528_1.connect(solfeggioGain528);
-        osc528_1.start(now);
-        solfeggioOscs.push(osc528_1);
+        // 528Hz オシレーター (ピュアなサイン波)
+        const osc528 = audioCtx.createOscillator();
+        osc528.type = 'sine';
+        osc528.frequency.setValueAtTime(528, now);
+        osc528.connect(solfeggioGain528);
+        osc528.start(now);
+        solfeggioOscs.push(osc528);
 
-        const osc528_2 = audioCtx.createOscillator();
-        osc528_2.type = 'sine';
-        osc528_2.frequency.setValueAtTime(528.3, now); // 0.3Hzデチューン
-        osc528_2.connect(solfeggioGain528);
-        osc528_2.start(now);
-        solfeggioOscs.push(osc528_2);
-
-        // 396Hz オシレーター (デチューンを施したペア)
-        const osc396_1 = audioCtx.createOscillator();
-        osc396_1.type = 'sine';
-        osc396_1.frequency.setValueAtTime(396, now);
-        osc396_1.connect(solfeggioGain396);
-        osc396_1.start(now);
-        solfeggioOscs.push(osc396_1);
-
-        const osc396_2 = audioCtx.createOscillator();
-        osc396_2.type = 'sine';
-        osc396_2.frequency.setValueAtTime(396.2, now); // 0.2Hzデチューン
-        osc396_2.connect(solfeggioGain396);
-        osc396_2.start(now);
-        solfeggioOscs.push(osc396_2);
-
-        // 528Hz 用ボリューム LFO (うねり)
-        const lfo528 = audioCtx.createOscillator();
-        lfo528.frequency.setValueAtTime(0.06, now); // 約16.6秒周期
-        const lfo528Gain = audioCtx.createGain();
-        lfo528Gain.gain.setValueAtTime(0.002 * volumeSolfeggio, now);
-        lfo528.connect(lfo528Gain);
-        lfo528Gain.connect(solfeggioGain528.gain);
-        lfo528.start(now);
-        solfeggioOscs.push(lfo528);
-        ambientNodes.push(lfo528Gain);
-
-        // 396Hz 用ボリューム LFO (うねり)
-        const lfo396 = audioCtx.createOscillator();
-        lfo396.frequency.setValueAtTime(0.05, now); // 20秒周期
-        const lfo396Gain = audioCtx.createGain();
-        lfo396Gain.gain.setValueAtTime(0.002 * volumeSolfeggio, now);
-        lfo396.connect(lfo396Gain);
-        lfo396Gain.connect(solfeggioGain396.gain);
-        lfo396.start(now);
-        solfeggioOscs.push(lfo396);
-        ambientNodes.push(lfo396Gain);
+        // 396Hz オシレーター (ピュアなサイン波)
+        const osc396 = audioCtx.createOscillator();
+        osc396.type = 'sine';
+        osc396.frequency.setValueAtTime(396, now);
+        osc396.connect(solfeggioGain396);
+        osc396.start(now);
+        solfeggioOscs.push(osc396);
 
     } catch (e) {
         console.warn("アンビエント音の開始エラー:", e);
