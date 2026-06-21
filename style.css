@@ -28,7 +28,7 @@ body, html {
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
     color: #f8fafc;
     touch-action: none; /* ダブルタップズームやピンチズーム、スクロールによるレイアウト崩れを防ぐ */
-    filter: brightness(0.94) contrast(0.98) sepia(0.02);
+    filter: brightness(0.99) contrast(0.98) sepia(0.02);
     transition: filter 0.5s ease;
 }
 
@@ -1305,7 +1305,7 @@ body.theme-sakura {
    15. ナイトモード (ブルーライトフィルター・明度調整)
    ============================================================= */
 body.night-mode {
-    filter: sepia(0.22) brightness(0.83) contrast(0.95);
+    filter: sepia(0.22) brightness(0.88) contrast(0.95);
 }
 
 body.night-mode::after {
@@ -1324,7 +1324,7 @@ body.night-mode::after {
 /* スマホ版（画面幅768px以下）の表示調整（眩しさを抑え、眼疲労を低減） */
 @media (max-width: 768px) {
     #shower-canvas {
-        filter: brightness(0.556) contrast(0.95);
+        filter: brightness(0.606) contrast(0.95);
         transition: filter 0.5s ease;
     }
 }
