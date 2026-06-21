@@ -61,6 +61,7 @@ const COMBO_WINDOW = 1900; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
 
 // リラクゼーション設定（脳リフレクソ改用）
 let volumeBGM = 0.5;
+let volumeSolfeggio = 0.3;
 let volumeSE = 0.8;
 let currentTheme = 'starry';
 let hapticEnabled = true;
@@ -85,14 +86,17 @@ let infiniteMode = false; // true = Endless Play（終わらないモード）
 let meditationMode = false; // true = 瞑想モード（タップ無効、低速、呼吸ガイド強制）
 let popEffectMode = 'praise'; // 'praise' | 'reset' | 'pattern' | 'none'
 
-// 髻ｳ螢ｰ髢｢騾｣
+// 音声関連
 let audioCtx = null;
 let isResuming = false;
 let ambientOscs = [];
-let ambientNodes = []; // 繧ｨ繝輔ぉ繧ｯ繝育ｭ峨荳ｭ髢薙ヮ繝ｼ繝我ｸ€諡ｬ邂｡逅畑
+let ambientNodes = []; // エフェクト等中間ノード一括管理用
 let ambientGain = null;
 let ambientFilter = null;
 let ambientLFO = null;
+let solfeggioOscs = []; // 528Hz, 396Hz のオシレーター格納用
+let solfeggioGain528 = null;
+let solfeggioGain396 = null;
 
 
 // =============================================================
@@ -2136,6 +2140,25 @@ function initApp() {
             }
         });
     }
+
+    const sliderVolSolfeggio = document.getElementById('slider-vol-solfeggio');
+    const labelVolSolfeggio = document.getElementById('label-vol-solfeggio');
+    if (sliderVolSolfeggio) {
+        sliderVolSolfeggio.value = volumeSolfeggio;
+        if (labelVolSolfeggio) labelVolSolfeggio.textContent = Math.round(volumeSolfeggio * 100) + '%';
+        sliderVolSolfeggio.addEventListener('input', (e) => {
+            volumeSolfeggio = parseFloat(e.target.value);
+            if (labelVolSolfeggio) labelVolSolfeggio.textContent = Math.round(volumeSolfeggio * 100) + '%';
+            if (solfeggioGain528 && solfeggioGain396 && audioCtx) {
+                const now = audioCtx.currentTime;
+                solfeggioGain528.gain.setValueAtTime(solfeggioGain528.gain.value, now);
+                solfeggioGain528.gain.linearRampToValueAtTime(0.006 * volumeSolfeggio, now + 0.1);
+                
+                solfeggioGain396.gain.setValueAtTime(solfeggioGain396.gain.value, now);
+                solfeggioGain396.gain.linearRampToValueAtTime(0.009 * volumeSolfeggio, now + 0.1);
+            }
+        });
+    }
     
     const sliderVolSE = document.getElementById('slider-vol-se');
     const labelVolSE = document.getElementById('label-vol-se');
@@ -3105,17 +3128,15 @@ function startAmbientSound() {
         // 蜈ｨ菴薙譛€邨ょ蜉帙ｒ繧ｹ繝斐繧ｫ繝ｼ縺ｸ
         ambientGain.connect(audioCtx.destination);
         
-        // 5. 豬ｮ驕頑─縺ｮ讌ｵ縺ｿ縺ｨ縺ｪ繧狗ｾ弱＠縺ユ繝ｳ繧ｷ繝ｧ繝ｳ蜥碁浹 (C4, G4, B4, D5, G5)
+        // 5. 浮遊感の極みとなる美しいテンション和音 (C4, G4, B4, D5, G5)
         const freqs = [261.63, 392.00, 493.88, 587.33, 783.99];
         
         freqs.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
-            osc.type = 'sine'; // 貔ｓ縺縺繧翫ｒ蜃ｺ縺吶◆繧√↓繧ｵ繧､繝ｳ豕｢繧剃ｽｿ逕ｨ
+            osc.type = 'sine'; // 響きをまろやかにするためにサイン波を使用
             
-            osc.type = 'sine'; // 貔ｓ縺縺繧翫ｒ蜃ｺ縺吶◆繧√↓繧ｵ繧､繝ｳ豕｢繧剃ｽｿ逕ｨ
-            
-            // 繧上★縺九↓繝メ繝･繝ｼ繝ｳ縺励※縲√さ繝ｼ繝ｩ繧ｹ縺ｨ蜷医ｏ縺輔▲纎繧ｧ讌ｵ荳翫繧ｷ繝･繝ｯ繝ｼ諢溘ｒ菴懊ｋ
-            const detuneOffset = (idx % 2 === 0 ? 2 : -2) + (Math.random() - 0.5) * 1; // 邏ｱ2繧ｻ繝ｳ繝
+            // わずかにチューンして、コーラスと合わさった極上のシャワー感を作る
+            const detuneOffset = (idx % 2 === 0 ? 2 : -2) + (Math.random() - 0.5) * 1; // 約2セント
             osc.detune.setValueAtTime(detuneOffset, now);
             
             osc.frequency.setValueAtTime(freq, now);
@@ -3124,6 +3145,141 @@ function startAmbientSound() {
             
             ambientOscs.push(osc);
         });
+
+        // --- ソルフェジオ周波数 (528Hz / 396Hz) の追加 ---
+        // 528Hz ゲインノード作成と初期フェードイン (528Hzは聴こえやすいため 0.006倍率)
+        solfeggioGain528 = audioCtx.createGain();
+        solfeggioGain528.gain.setValueAtTime(0, now);
+        solfeggioGain528.gain.linearRampToValueAtTime(0.006 * volumeSolfeggio, now + 3.5);
+        ambientNodes.push(solfeggioGain528);
+
+        // 396Hz ゲインノード作成と初期フェードイン (396Hzは 0.009倍率でしっかりと)
+        solfeggioGain396 = audioCtx.createGain();
+        solfeggioGain396.gain.setValueAtTime(0, now);
+        solfeggioGain396.gain.linearRampToValueAtTime(0.009 * volumeSolfeggio, now + 3.5);
+        ambientNodes.push(solfeggioGain396);
+
+        // ソルフェジオ専用の深リバーブ（ディレイフィードバック）回路の構築
+        // 音を空間的にマイルドにするローパスフィルター（高音のキンキン感を和らげる）
+        const solfeggioFilter = audioCtx.createBiquadFilter();
+        solfeggioFilter.type = 'lowpass';
+        solfeggioFilter.frequency.setValueAtTime(650, now); // 650Hz
+        ambientNodes.push(solfeggioFilter);
+
+        // 左右のステレオディレイ
+        const solfeggioDelayL = audioCtx.createDelay();
+        const solfeggioDelayR = audioCtx.createDelay();
+        solfeggioDelayL.delayTime.setValueAtTime(0.28, now); // 280ms
+        solfeggioDelayR.delayTime.setValueAtTime(0.38, now); // 380ms
+        ambientNodes.push(solfeggioDelayL, solfeggioDelayR);
+
+        // フィードバックゲイン (強め: 0.82)
+        const solfeggioFeedbackL = audioCtx.createGain();
+        const solfeggioFeedbackR = audioCtx.createGain();
+        solfeggioFeedbackL.gain.setValueAtTime(0.82, now);
+        solfeggioFeedbackR.gain.setValueAtTime(0.82, now);
+        ambientNodes.push(solfeggioFeedbackL, solfeggioFeedbackR);
+
+        // 交差フィードバック（ピンポンディレイ効果）
+        const solfeggioCrossL = audioCtx.createGain();
+        const solfeggioCrossR = audioCtx.createGain();
+        solfeggioCrossL.gain.setValueAtTime(0.25, now);
+        solfeggioCrossR.gain.setValueAtTime(0.25, now);
+        ambientNodes.push(solfeggioCrossL, solfeggioCrossR);
+
+        // ソルフェジオ出力ミックスゲイン
+        const solfeggioDirectGain = audioCtx.createGain();
+        solfeggioDirectGain.gain.setValueAtTime(0.35, now); // 直接音は控えめ
+        ambientNodes.push(solfeggioDirectGain);
+
+        const solfeggioRevMix = audioCtx.createGain();
+        solfeggioRevMix.gain.setValueAtTime(0.95, now); // リバーブ音を強めにかける (95%)
+        ambientNodes.push(solfeggioRevMix);
+
+        // 接続
+        // 528Hz と 396Hz のゲインをフィルターへ
+        solfeggioGain528.connect(solfeggioFilter);
+        solfeggioGain396.connect(solfeggioFilter);
+
+        // 直接音の接続
+        solfeggioFilter.connect(solfeggioDirectGain);
+        solfeggioDirectGain.connect(audioCtx.destination); // BGM音量に影響されず独立して出力
+
+        // リバーブループ接続
+        solfeggioFilter.connect(solfeggioDelayL);
+        solfeggioFilter.connect(solfeggioDelayR);
+
+        // Lチャンネルフィードバックループ
+        solfeggioDelayL.connect(solfeggioFeedbackL);
+        solfeggioFeedbackL.connect(solfeggioDelayL);
+
+        // Rチャンネルフィードバックループ
+        solfeggioDelayR.connect(solfeggioFeedbackR);
+        solfeggioFeedbackR.connect(solfeggioDelayR);
+
+        // 交差フィードバックループ (立体感を広げる)
+        solfeggioDelayL.connect(solfeggioCrossL);
+        solfeggioCrossL.connect(solfeggioDelayR);
+        solfeggioDelayR.connect(solfeggioCrossR);
+        solfeggioCrossR.connect(solfeggioDelayL);
+
+        // リバーブミックス接続
+        solfeggioDelayL.connect(solfeggioRevMix);
+        solfeggioDelayR.connect(solfeggioRevMix);
+        solfeggioRevMix.connect(audioCtx.destination); // 独立出力
+
+        // 528Hz オシレーター (デチューンを施したペア)
+        const osc528_1 = audioCtx.createOscillator();
+        osc528_1.type = 'sine';
+        osc528_1.frequency.setValueAtTime(528, now);
+        osc528_1.connect(solfeggioGain528);
+        osc528_1.start(now);
+        solfeggioOscs.push(osc528_1);
+
+        const osc528_2 = audioCtx.createOscillator();
+        osc528_2.type = 'sine';
+        osc528_2.frequency.setValueAtTime(528.3, now); // 0.3Hzデチューン
+        osc528_2.connect(solfeggioGain528);
+        osc528_2.start(now);
+        solfeggioOscs.push(osc528_2);
+
+        // 396Hz オシレーター (デチューンを施したペア)
+        const osc396_1 = audioCtx.createOscillator();
+        osc396_1.type = 'sine';
+        osc396_1.frequency.setValueAtTime(396, now);
+        osc396_1.connect(solfeggioGain396);
+        osc396_1.start(now);
+        solfeggioOscs.push(osc396_1);
+
+        const osc396_2 = audioCtx.createOscillator();
+        osc396_2.type = 'sine';
+        osc396_2.frequency.setValueAtTime(396.2, now); // 0.2Hzデチューン
+        osc396_2.connect(solfeggioGain396);
+        osc396_2.start(now);
+        solfeggioOscs.push(osc396_2);
+
+        // 528Hz 用ボリューム LFO (うねり)
+        const lfo528 = audioCtx.createOscillator();
+        lfo528.frequency.setValueAtTime(0.06, now); // 約16.6秒周期
+        const lfo528Gain = audioCtx.createGain();
+        lfo528Gain.gain.setValueAtTime(0.002 * volumeSolfeggio, now);
+        lfo528.connect(lfo528Gain);
+        lfo528Gain.connect(solfeggioGain528.gain);
+        lfo528.start(now);
+        solfeggioOscs.push(lfo528);
+        ambientNodes.push(lfo528Gain);
+
+        // 396Hz 用ボリューム LFO (うねり)
+        const lfo396 = audioCtx.createOscillator();
+        lfo396.frequency.setValueAtTime(0.05, now); // 20秒周期
+        const lfo396Gain = audioCtx.createGain();
+        lfo396Gain.gain.setValueAtTime(0.002 * volumeSolfeggio, now);
+        lfo396.connect(lfo396Gain);
+        lfo396Gain.connect(solfeggioGain396.gain);
+        lfo396.start(now);
+        solfeggioOscs.push(lfo396);
+        ambientNodes.push(lfo396Gain);
+
     } catch (e) {
         console.warn("アンビエント音の開始エラー:", e);
     }
@@ -3131,7 +3287,7 @@ function startAmbientSound() {
 
 // 柔らかな環境背景音の停止（2秒のフェードアウト）
 function stopAmbientSound(immediate = false) {
-    if (ambientOscs.length === 0) return;
+    if (ambientOscs.length === 0 && solfeggioOscs.length === 0) return;
     
     try {
         const now = audioCtx.currentTime;
@@ -3147,15 +3303,49 @@ function stopAmbientSound(immediate = false) {
                 ambientGain.gain.setValueAtTime(0, now);
             }
         }
+
+        if (solfeggioGain528) {
+            try {
+                solfeggioGain528.gain.cancelScheduledValues(now);
+                const currentVal = Math.max(0, Math.min(0.015, solfeggioGain528.gain.value));
+                solfeggioGain528.gain.setValueAtTime(currentVal, now);
+                solfeggioGain528.gain.linearRampToValueAtTime(0, now + fadeTime);
+            } catch (err) {
+                solfeggioGain528.gain.setValueAtTime(0, now);
+            }
+        }
+
+        if (solfeggioGain396) {
+            try {
+                solfeggioGain396.gain.cancelScheduledValues(now);
+                const currentVal = Math.max(0, Math.min(0.015, solfeggioGain396.gain.value));
+                solfeggioGain396.gain.setValueAtTime(currentVal, now);
+                solfeggioGain396.gain.linearRampToValueAtTime(0, now + fadeTime);
+            } catch (err) {
+                solfeggioGain396.gain.setValueAtTime(0, now);
+            }
+        }
         
         const currentOscs = [...ambientOscs];
         const currentNodes = [...ambientNodes];
+        const currentSolfeggioOscs = [...solfeggioOscs];
+        
         ambientOscs = [];
         ambientNodes = [];
+        solfeggioOscs = [];
+        solfeggioGain528 = null;
+        solfeggioGain396 = null;
         
         setTimeout(() => {
             // オシレーターの完全停止と接続解除
             currentOscs.forEach(osc => {
+                try {
+                    osc.stop();
+                    osc.disconnect();
+                } catch (e) {}
+            });
+            // ソルフェジオオシレーターの完全停止と接続解除
+            currentSolfeggioOscs.forEach(osc => {
                 try {
                     osc.stop();
                     osc.disconnect();
