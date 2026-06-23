@@ -84,6 +84,8 @@ body, html {
     letter-spacing: 4px;
     color: #e2e8f0;
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    line-height: 1.25;
+    text-align: center;
 }
 
 .logo span {
