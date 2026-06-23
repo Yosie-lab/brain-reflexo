@@ -4675,8 +4675,10 @@ function startGame() {
     // 最初の柔らかなアンビエント音を開始
     startAmbientSound();
 
-    // 最初の1個目の泡として、確実に「白い球 (silver)」を1個生成する
-    createBubble('silver');
+    // 最初の1個目の泡として、瞑想モード時のみ確実に「白い球 (silver)」を1個生成する
+    if (meditationMode) {
+        createBubble('silver');
+    }
 }
 
 
