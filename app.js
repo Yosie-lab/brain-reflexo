@@ -783,7 +783,10 @@ function updateShower() {
     if (showerCanvas) {
         const baseChance = feverActive ? 0.020 : 0.008;
         const comboBonus = Math.min(activeCombo * 0.002, 0.010);
-        const spawnChance = baseChance + comboBonus;
+        let spawnChance = baseChance + comboBonus;
+        if (meditationMode) {
+            spawnChance *= 1.2; // 瞑想モード時は波紋20%増し
+        }
 
         if (Math.random() < spawnChance) {
             const rx = Math.random() * showerCanvas.width;
@@ -933,7 +936,7 @@ function drawAuroraParticles(scale) {
 }
 
 function drawRealAuroraCurtain() {
-    if (!showerCtx || !showerCanvas) return;
+    if (!showerCtx || !showerCanvas || meditationMode) return;
     auroraTime += 0.0055;
 
     const scale = 0.25 / 1.2; // ぼかし量を1.2倍にするため、解像度スケールを調整 (約0.2083)
@@ -1064,8 +1067,8 @@ function drawShower() {
     // 夜空のまたたく星屑を描画
     drawStars();
     
-    // フィーバー中はリアルな緑のオーロラカーテンを描画
-    if (feverActive) {
+    // フィーバー中はリアルな緑のオーロラカーテンを描画（ただし瞑想モード時は描画しない）
+    if (feverActive && !meditationMode) {
         drawRealAuroraCurtain();
     }
     
@@ -1390,8 +1393,12 @@ function updateMeteors() {
     if (now - lastShootingStarTime >= nextShootingStarDelay) {
         spawnBackgroundShootingStar();
         lastShootingStarTime = now;
-        // 次回のディレイを10秒〜40秒のランダムな範囲（平均25秒：50秒に約2回ペース）に再設定
-        nextShootingStarDelay = 10000 + Math.random() * 30000;
+        // 次回のディレイを10秒〜40秒 of ランダムな範囲（平均25秒：50秒に約2回ペース）に再設定
+        let delay = 10000 + Math.random() * 30000;
+        if (meditationMode) {
+            delay /= 1.2; // 瞑想モード時はディレイを短縮して流れ星20%増しにする
+        }
+        nextShootingStarDelay = delay;
     }
 
     // 既存 of 流星はゲーム終了後も画面外に消えるまで更新を続ける
@@ -1581,7 +1588,13 @@ function createBubble() {
     
     let type = 'normal';
     // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
-    if (!meditationMode) {
+    if (meditationMode) {
+        // 瞑想モード時は20個に1個（5%）の確率で銀色（白い球）が発生
+        if (Math.random() < 0.05) {
+            type = 'silver';
+            radius *= 1.25;
+        }
+    } else {
         if (!feverActive) {
             if (Math.random() < 0.03) { // 3%の確率
                 type = 'silver';
