@@ -1571,7 +1571,7 @@ function initAudio() {
 }
 
 // 泡を一つ生成する
-function createBubble() {
+function createBubble(forceType) {
     let limit = feverActive ? 60 : MAX_BUBBLES;
     if (meditationMode) {
         limit = Math.floor(limit / 2);
@@ -1587,25 +1587,32 @@ function createBubble() {
     let radius = (22 + Math.random() * 22) * sizeScale; // スマホ: 約16〜32px
     
     let type = 'normal';
-    // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
-    if (meditationMode) {
-        // 瞑想モード時は20個に1個（5%）の確率で銀色（白い球）が発生
-        if (Math.random() < 0.05) {
-            type = 'silver';
+    if (forceType) {
+        type = forceType;
+        if (type === 'silver') {
             radius *= 1.25;
         }
     } else {
-        if (!feverActive) {
-            if (Math.random() < 0.03) { // 3%の確率
+        // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
+        if (meditationMode) {
+            // 瞑想モード時は20個に1個（5%）の確率で銀色（白い球）が発生
+            if (Math.random() < 0.05) {
                 type = 'silver';
-                radius *= 1.25; // 銀色の泡は少し大きく
+                radius *= 1.25;
             }
         } else {
-            // 画面上にすでに連鎖バブルが存在するかチェック（破裂中や予約中のものも含め、画面上に1つだけに制限する）
-            const hasChain = bubbles.some(b => b.type === 'chain');
-            if (!hasChain && Math.random() < 0.35) { // 35%の確率で連鎖バブルが発生
-                type = 'chain';
-                radius *= 1.15; // 連鎖バブルは少し大きく
+            if (!feverActive) {
+                if (Math.random() < 0.03) { // 3%の確率
+                    type = 'silver';
+                    radius *= 1.25; // 銀色の泡は少し大きく
+                }
+            } else {
+                // 画面上にすでに連鎖バブルが存在するかチェック（破裂中や予約中のものも含め、画面上に1つだけに制限する）
+                const hasChain = bubbles.some(b => b.type === 'chain');
+                if (!hasChain && Math.random() < 0.35) { // 35%の確率で連鎖バブルが発生
+                    type = 'chain';
+                    radius *= 1.15; // 連鎖バブルは少し大きく
+                }
             }
         }
     }
@@ -4668,6 +4675,8 @@ function startGame() {
     // 最初の柔らかなアンビエント音を開始
     startAmbientSound();
 
+    // 最初の1個目の泡として、確実に「白い球 (silver)」を1個生成する
+    createBubble('silver');
 }
 
 
