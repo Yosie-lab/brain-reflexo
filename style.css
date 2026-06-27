@@ -234,14 +234,10 @@ body, html {
     .btn-quit {
         padding: 6px 12px;
         font-size: 9px;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
     }
     .play-mode-badge {
         padding: 5px 10px;
         font-size: 9px;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
     }
     .btn-settings {
         top: calc(10px + env(safe-area-inset-top));
@@ -249,12 +245,6 @@ body, html {
         width: 32px;
         height: 32px;
         font-size: 14px;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-    }
-    .refresh-gauge {
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
     }
 }
 
@@ -1341,10 +1331,10 @@ body.night-mode::after {
     transition: background-color 0.5s ease;
 }
 
-/* スマホ版（画面幅768px以下）の表示調整（眩しさを抑え、眼疲労を低減） */
+/* スマホ版（画面幅768px以下）の表示調整（PC表示と同じクリアな明るさにするためフィルターを解除） */
 @media (max-width: 768px) {
     #shower-canvas {
-        filter: brightness(0.606) contrast(0.95);
+        filter: none;
         transition: filter 0.5s ease;
     }
 }
