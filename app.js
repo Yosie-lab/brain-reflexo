@@ -66,7 +66,7 @@ let volumeSE = 0.8;
 let currentTheme = 'starry';
 let hapticEnabled = true;
 let gyroEnabled = false;
-let breathGuideEnabled = true;
+let breathGuideEnabled = false;
 let breathCycleTime = 0;
 let breathState = 'inhale';
 let breathPattern = 'coherent'; // 'coherent' | '478' | 'box'
@@ -84,7 +84,7 @@ let gameActive = false;
 let guideHidden = false;
 let infiniteMode = false; // true = Endless Play（終わらないモード）
 let meditationMode = false; // true = 瞑想モード（タップ無効、低速、呼吸ガイド強制）
-let popEffectMode = 'none'; // デフォルト非表示
+let popEffectMode = 'praise'; // デフォルト快感コメント
 
 // 音声関連
 let audioCtx = null;
@@ -2421,8 +2421,8 @@ function initApp() {
                 initAudio();
                 meditationMode = false;
                 infiniteMode = false;
-                if (window.updatePopEffectUI) window.updatePopEffectUI('none');
-                if (window.updateBreathGuideUI) window.updateBreathGuideUI(true); // 通常Playはオン
+                if (window.updatePopEffectUI) window.updatePopEffectUI('praise'); // 通常Playは快感コメント
+                if (window.updateBreathGuideUI) window.updateBreathGuideUI(false); // 通常Playはオフ
                 const startOverlay = document.getElementById('start-overlay');
                 if (startOverlay) startOverlay.classList.remove('active');
                 startGame();
