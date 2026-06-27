@@ -84,7 +84,7 @@ let gameActive = false;
 let guideHidden = false;
 let infiniteMode = false; // true = Endless Play（終わらないモード）
 let meditationMode = false; // true = 瞑想モード（タップ無効、低速、呼吸ガイド強制）
-let popEffectMode = 'praise'; // 'praise' | 'reset' | 'pattern' | 'none'
+let popEffectMode = 'none'; // デフォルト非表示
 
 // 音声関連
 let audioCtx = null;
@@ -2191,6 +2191,18 @@ function initApp() {
         });
     }
     
+    window.updatePopEffectUI = function(effect) {
+        popEffectMode = effect;
+        const effectButtons = document.querySelectorAll('#pop-effect-options .btn-option');
+        effectButtons.forEach(b => {
+            if (b.getAttribute('data-effect') === effect) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+    };
+    
     const themeButtons = document.querySelectorAll('#theme-options .btn-option');
     themeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -2203,16 +2215,7 @@ function initApp() {
     effectButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const effect = btn.getAttribute('data-effect');
-            popEffectMode = effect;
-            
-            // UI classes active
-            effectButtons.forEach(b => {
-                if (b.getAttribute('data-effect') === effect) {
-                    b.classList.add('active');
-                } else {
-                    b.classList.remove('active');
-                }
-            });
+            updatePopEffectUI(effect);
         });
     });
     
@@ -2278,20 +2281,30 @@ function initApp() {
     };
     window.updateBreathPatternUI = updateBreathPatternUI;
 
+    window.updateBreathGuideUI = function(enabled) {
+        breathGuideEnabled = enabled;
+        const chkBreath = document.getElementById('chk-breath');
+        if (chkBreath) {
+            chkBreath.checked = enabled;
+        }
+        const breathGuide = document.getElementById('breath-guide');
+        if (breathGuide) {
+            if (enabled && gameActive) {
+                breathGuide.classList.add('visible');
+            } else {
+                breathGuide.classList.remove('visible');
+            }
+        }
+        if (typeof updateBreathPatternUI === 'function') {
+            updateBreathPatternUI();
+        }
+    };
+
     const chkBreath = document.getElementById('chk-breath');
     if (chkBreath) {
         chkBreath.checked = breathGuideEnabled;
         chkBreath.addEventListener('change', (e) => {
-            breathGuideEnabled = e.target.checked;
-            const breathGuide = document.getElementById('breath-guide');
-            if (breathGuide) {
-                if (breathGuideEnabled && gameActive) {
-                    breathGuide.classList.add('visible');
-                } else {
-                    breathGuide.classList.remove('visible');
-                }
-            }
-            updateBreathPatternUI();
+            updateBreathGuideUI(e.target.checked);
         });
     }
 
@@ -2408,6 +2421,8 @@ function initApp() {
                 initAudio();
                 meditationMode = false;
                 infiniteMode = false;
+                if (window.updatePopEffectUI) window.updatePopEffectUI('none');
+                if (window.updateBreathGuideUI) window.updateBreathGuideUI(true); // 通常Playはオン
                 const startOverlay = document.getElementById('start-overlay');
                 if (startOverlay) startOverlay.classList.remove('active');
                 startGame();
@@ -2428,6 +2443,8 @@ function initApp() {
                 initAudio();
                 meditationMode = false;
                 infiniteMode = true;
+                if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
+                if (window.updateBreathGuideUI) window.updateBreathGuideUI(false); // エンドレスはオフ
                 const startOverlay = document.getElementById('start-overlay');
                 if (startOverlay) startOverlay.classList.remove('active');
                 startGame();
@@ -2448,6 +2465,8 @@ function initApp() {
                 initAudio();
                 meditationMode = true;
                 infiniteMode = true;
+                if (window.updatePopEffectUI) window.updatePopEffectUI('none');
+                if (window.updateBreathGuideUI) window.updateBreathGuideUI(true); // 瞑想はオン
                 const startOverlay = document.getElementById('start-overlay');
                 if (startOverlay) startOverlay.classList.remove('active');
                 startGame();
@@ -4196,24 +4215,21 @@ const COMBO_PRAISES = [
     { jp: "スッキリ!", en: "Clear" },
     { jp: "快感!", en: "Pleasure!" },
     { jp: "気持ちいい!", en: "Feels great" },
-    { jp: "心地いい!", en: "Comfortable" },
     { jp: "そっと!", en: "Softly" },
-    { jp: "もっと!", en: "More" },
+    { jp: "やさしい!", en: "Gentle" },
     { jp: "とろける!", en: "Melt away" },
     { jp: "その感じ!", en: "Keep it up" },
-    { jp: "ステキ!", en: "Lovely" },
+    { jp: "爽快!", en: "Refreshing" },
     { jp: "癒やされる!", en: "Feeling healed" },
     { jp: "感謝!", en: "Grateful" }
 ];
 
 const SPECIAL_PRAISES = [
     { jp: "あたまスッキリ!", en: "Clear mind" },
-    { jp: "究極の癒やし!", en: "Ultimate healing" },
     { jp: "超リフレッシュ!", en: "Mind and body feeling lighter" },
     { jp: "幸せいっぱい!", en: "Blissful time" },
     { jp: "心地よい広がり!", en: "Soothing spread" },
-    { jp: "超リラックス!", en: "Ultimate relaxation" },
-    { jp: "極上の快感!", en: "Supreme pleasure" }
+    { jp: "超リラックス!", en: "Ultimate relaxation" }
 ];
 
 const RESET_WORDS = [
@@ -4642,20 +4658,10 @@ function startGame() {
         }
     }
     
-    const breathGuide = document.getElementById('breath-guide');
-    if (breathGuide) {
-        if (meditationMode) {
-            breathGuideEnabled = true;
-            breathGuide.classList.add('visible');
-            const chkBreath = document.getElementById('chk-breath');
-            if (chkBreath) chkBreath.checked = true;
-        } else {
-            if (breathGuideEnabled) {
-                breathGuide.classList.add('visible');
-            } else {
-                breathGuide.classList.remove('visible');
-            }
-        }
+    if (meditationMode) {
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(true);
+    } else {
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(breathGuideEnabled);
     }
     
 

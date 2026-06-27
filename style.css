@@ -234,10 +234,14 @@ body, html {
     .btn-quit {
         padding: 6px 12px;
         font-size: 9px;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
     }
     .play-mode-badge {
         padding: 5px 10px;
         font-size: 9px;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
     }
     .btn-settings {
         top: calc(10px + env(safe-area-inset-top));
@@ -245,6 +249,12 @@ body, html {
         width: 32px;
         height: 32px;
         font-size: 14px;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+    .refresh-gauge {
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
     }
 }
 
