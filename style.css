@@ -1331,11 +1331,23 @@ body.night-mode::after {
     transition: background-color 0.5s ease;
 }
 
-/* スマホ版（画面幅768px以下）の表示調整（PC表示と同じクリアな明るさにするためフィルターを解除） */
+/* スマホ版（画面幅768px以下）の表示調整 */
 @media (max-width: 768px) {
     #shower-canvas {
         filter: none;
         transition: filter 0.5s ease;
+    }
+    /* 泡のクッキリした輪郭はそのままに、眩しさのみを抑えるための極薄の温かみ（琥珀色）をオーバーレイ */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(245, 158, 11, 0.028); /* 目に優しい極薄のアンバー */
+        pointer-events: none;
+        z-index: 999998; /* ナイトモード(999999)の背後に配置 */
     }
 }
 
