@@ -820,37 +820,45 @@ body, html {
     box-shadow: 0 0 8px rgba(129, 195, 215, 0.6);
 }
 
-/* ナイトモード専用の大きめなトグルスタイル */
-.night-mode-item {
+/* ナイトモード・呼吸ガイド・ポップエフェクト用の強調表示スタイル */
+.night-mode-item,
+.breath-guide-item,
+.pop-effect-item {
     padding-bottom: 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     margin-bottom: 8px;
 }
 
-.night-mode-item .setting-label {
+.night-mode-item .setting-label,
+.breath-guide-item .setting-label,
+.pop-effect-item .setting-label {
     font-size: 13px !important; /* 文字サイズを大きめに */
     font-weight: 700 !important;
     color: #e2e8f0 !important; /* 明度を上げて目立たせる */
     letter-spacing: 1.5px;
 }
 
-.night-mode-item .switch {
+.night-mode-item .switch,
+.breath-guide-item .switch {
     width: 52px; /* スイッチ全体の幅を大きく */
     height: 28px; /* スイッチ全体の高さを大きく */
 }
 
-.night-mode-item .switch-slider {
+.night-mode-item .switch-slider,
+.breath-guide-item .switch-slider {
     border-radius: 28px;
 }
 
-.night-mode-item .switch-slider:before {
+.night-mode-item .switch-slider:before,
+.breath-guide-item .switch-slider:before {
     height: 20px; /* つまみボタンを大きく */
     width: 20px;
     left: 3px;
     bottom: 3px;
 }
 
-.night-mode-item .switch input:checked + .switch-slider:before {
+.night-mode-item .switch input:checked + .switch-slider:before,
+.breath-guide-item .switch input:checked + .switch-slider:before {
     transform: translateX(24px); /* スライド距離の調整 */
 }
 
