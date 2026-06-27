@@ -1331,10 +1331,10 @@ body.night-mode::after {
     transition: background-color 0.5s ease;
 }
 
-/* スマホ版（画面幅768px以下）の表示調整（PC表示と同じクリアな明るさにするためフィルターを解除） */
+/* スマホ版（画面幅768px以下）の表示調整（明るさをわずかにマイルドにし、クッキリ感を保ちつつ目に優しく） */
 @media (max-width: 768px) {
     #shower-canvas {
-        filter: none;
+        filter: brightness(0.88);
         transition: filter 0.5s ease;
     }
 }
