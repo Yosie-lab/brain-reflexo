@@ -184,14 +184,12 @@ function getBubbleTemplate(type, hue, colorHex) {
         const drawRadius = templateRadius;
         
         // 1. Glow
-        const glowRadius = IS_MOBILE ? drawRadius * 1.4 : drawRadius * 2.0;
-        const glowAlpha = IS_MOBILE ? 0.18 : 0.3;
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.5, 0, 0, glowRadius);
-        glowGrad.addColorStop(0, `rgba(226, 232, 240, ${glowAlpha})`);
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.5, 0, 0, drawRadius * 2.0);
+        glowGrad.addColorStop(0, 'rgba(226, 232, 240, 0.3)');
         glowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 2.0, 0, Math.PI * 2);
         ctx.fill();
         
         // 2. Body
@@ -227,14 +225,12 @@ function getBubbleTemplate(type, hue, colorHex) {
         const drawRadius = templateRadius;
         
         // 1. Glow
-        const glowRadius = IS_MOBILE ? drawRadius * 1.3 : drawRadius * 1.8;
-        const glowAlpha = IS_MOBILE ? 0.08 : 0.12;
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.5, 0, 0, glowRadius);
-        glowGrad.addColorStop(0, `hsla(${hue}, 70%, 75%, ${glowAlpha})`);
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.5, 0, 0, drawRadius * 1.8);
+        glowGrad.addColorStop(0, `hsla(${hue}, 70%, 75%, 0.12)`);
         glowGrad.addColorStop(1, `hsla(${hue}, 70%, 75%, 0)`);
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.8, 0, Math.PI * 2);
         ctx.fill();
         
         // 2. Body
