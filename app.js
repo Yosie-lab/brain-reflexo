@@ -706,7 +706,10 @@ function createShowerParticles(x, y, count, hueBase, isSpecialEvent = false) {
             maxLife: Math.random() * (isSpecialEvent ? 55 : 45) + (isSpecialEvent ? 35 : 20),
             life: 0,
             hue: particleHue,
-            alpha: isSpecialEvent ? 0.592 : 0.95, // 大爆発の花火は発光量をさらに0.9倍にする (元の0.6578 * 0.9 = 0.592)
+            // モバイル時は爆発・通常粒子ともに輝度を下げて目に優しく（クッキリ感は維持）
+            alpha: isSpecialEvent
+                ? (IS_MOBILE ? 0.42 : 0.592)
+                : (IS_MOBILE ? 0.68 : 0.95),
             type: pType,
             angle: Math.random() * Math.PI * 2,
             spin: isSpecialEvent ? (Math.random() - 0.5) * 0.12 : 0,
@@ -921,7 +924,9 @@ function drawAuroraParticles(scale) {
         // 全体をもっと透けたグラデーションにするためのフェード計算
         const fade = Math.pow(1.0 - p.yRatio, 2.0); // 2乗にして上部ほどより早く、かつ滑らかに透明に溶け込ませる
         const twinkle = 0.4 + 0.6 * Math.sin(p.phase);
-        const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * 0.6595; // さらに発光量を0.9倍にする (元の0.7328 * 0.9 = 0.6595)
+        // モバイル時は霧状粒子の輝度も抑えるＨ0.6595 → 0.46）
+        const auroraParticleAlphaMod = IS_MOBILE ? 0.46 : 0.6595;
+        const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * auroraParticleAlphaMod;
 
         if (finalAlpha <= 0) continue;
 
@@ -977,7 +982,9 @@ function drawRealAuroraCurtain() {
             // 画像の右上のように、太く柔らかい光の柱（Rays）が縦に広がるような質感を作る（細かな縦筋にはならない）
             const rayVal = Math.sin(rx * 0.008 + globalT * 0.30) * Math.cos(rx * 0.003 - globalT * 0.12);
             const curtainRays = 0.70 + 0.30 * Math.abs(rayVal);
-            const midAlpha = 0.02052 * globalAlphaMod * curtainRays; // さらに発光量を0.9倍にする (元の0.0228 * 0.9 = 0.02052)
+            // モバイル時はオーロラカーテンの輝度を抑えて眩しくない表示に（0.02052 → 0.014）
+            const baseAuroraAlpha = IS_MOBILE ? 0.014 : 0.02052;
+            const midAlpha = baseAuroraAlpha * globalAlphaMod * curtainRays;
 
             const grad = auroraOffCtx.createLinearGradient(ox, oyBase, ox, oyBase + ocurtainHeight);
             const a = midAlpha * oz;
@@ -1337,7 +1344,8 @@ function createBigExplosionMeteor(hue, originX, originY) {
         hue: hue,
         alpha: 0,
         fadeSpeed: 0.45, // 1縲2繝輔Ξ繝ｼ繝縺ｧ荳€迸ｬ縺ｫ縺励※譛€鬮倩ｼ晏ｺｦ縺ｫ遶九■荳翫￡繧
-        targetAlpha: (0.9 + Math.random() * 0.1) * 0.623, // 大爆発の流星は発光量をさらに0.9倍にする (元の0.6925 * 0.9 = 0.623)
+        // モバイル時は大爆発流星の最大輝度を抑えて眩しくしない（0.623 → 0.44）
+        targetAlpha: (0.9 + Math.random() * 0.1) * (IS_MOBILE ? 0.44 : 0.623),
         sparkleChance: 0.8, // 繧ｹ繝代う繧ｯ医″繧峨ａ縺搾ｼ臥匱逕溽｢ｺ邇ｒ螟ｧ蟷↓蠑輔″荳翫￡
         life: 0,
         maxLife: 8 + Math.random() * 8 // 8縲16繝輔Ξ繝ｼ繝 (邏0.13縲0.26遘) 縺ｮ讌ｵ髯舌遏ｭ蟇ｿ蜻ｽ

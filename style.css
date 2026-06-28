@@ -1345,7 +1345,7 @@ body.night-mode::after {
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(245, 158, 11, 0.028); /* 目に優しい極薄のアンバー */
+        background: rgba(245, 158, 11, 0.055); /* 目に優しいアンバー（0.028→0.055 に強化：爆発・オーロラの眩しさを緩和） */
         pointer-events: none;
         z-index: 999998; /* ナイトモード(999999)の背後に配置 */
     }
