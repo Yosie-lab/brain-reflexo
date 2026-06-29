@@ -4234,7 +4234,7 @@ const COMBO_PRAISES = [
 const SPECIAL_PRAISES = [
     { jp: "あたまスッキリ!", en: "Clear mind" },
     { jp: "超リフレッシュ!", en: "Mind and body feeling lighter" },
-    { jp: "幸せいっぱい!", en: "Blissful time" },
+    { jp: "ホッと一息!", en: "Take a breath!" },
     { jp: "心地よい広がり!", en: "Soothing spread" },
     { jp: "超リラックス!", en: "Ultimate relaxation" }
 ];
