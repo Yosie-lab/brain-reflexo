@@ -273,14 +273,14 @@ body, html {
 }
 
 .combo-jp {
-    font-size: 36px;
+    font-size: 24px;
     font-weight: 800;
     line-height: 1.1;
     transition: font-size 0.3s ease;
 }
 
 .combo-en {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 2px;
     opacity: 0.8;
@@ -310,10 +310,10 @@ body, html {
 /* モバイル画面でのコンボテキスト表示切れ防止 */
 @media (max-width: 600px) {
     .combo-jp {
-        font-size: 5.8vw;
+        font-size: 3.8vw;
     }
     .combo-en {
-        font-size: 3.6vw;
+        font-size: 2.4vw;
         letter-spacing: 1.8px;
     }
     .combo-display.special .combo-en {

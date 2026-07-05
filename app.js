@@ -2603,7 +2603,7 @@ function endGame(forceQuit = false) {
         };
 
         let idx = 0;
-        if (maxComboCount >= 31) idx = 1;
+        if (maxComboCount >= 36) idx = 1;
         else if (maxComboCount >= 25) idx = 2;
         else if (timeElapsed >= 90) idx = 3;
         else if (timeElapsed >= 40) idx = 4;
@@ -4226,7 +4226,7 @@ const COMBO_PRAISES = [
     { jp: "そっと!", en: "Softly" },
     { jp: "やさしい!", en: "Gentle" },
     { jp: "とろける!", en: "Melt away" },
-    { jp: "その感じ!", en: "Keep it up" },
+    { jp: "落ちつく!", en: "Calming" },
     { jp: "爽快!", en: "Refreshing" },
     { jp: "癒やされる!", en: "Feeling healed" }
 ];
@@ -4344,12 +4344,12 @@ function showCombo(count) {
     // モバイル画面（幅600px以下）の場合のみ、文字数に応じてフォントサイズを動的に調整する
     if (window.innerWidth <= 600) {
         if (popEffectMode === 'pattern') {
-            jpDiv.style.fontSize = '12vw';
+            jpDiv.style.fontSize = '8vw';
         } else {
-            const fsJp = Math.min(5.8, 75 / praise.jp.length);
+            const fsJp = Math.min(3.8, 50 / praise.jp.length);
             jpDiv.style.fontSize = fsJp + 'vw';
             if (enDiv) {
-                const fsEn = Math.min(3.6, 80 / praise.en.length);
+                const fsEn = Math.min(2.4, 55 / praise.en.length);
                 enDiv.style.fontSize = fsEn + 'vw';
             }
         }
