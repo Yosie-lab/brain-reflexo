@@ -2657,12 +2657,7 @@ function playPopSound(combo = 1, originX) {
     if (!audioCtx) return;
     
     // ブラウザの自動再生ブロック対策
-    if (audioCtx.state !== 'running') {
-        audioCtx.resume().then(() => {
-            playPopSound(combo, originX);
-        }).catch(() => {});
-        return;
-    }
+    if (audioCtx.state !== 'running') return;
     
     try {
         const now = audioCtx.currentTime;
@@ -2845,12 +2840,7 @@ function playFeverStartSound(originX) {
     initAudio();
     if (!audioCtx) return;
     
-    if (audioCtx.state !== 'running') {
-        audioCtx.resume().then(() => {
-            playFeverStartSound(originX);
-        }).catch(() => {});
-        return;
-    }
+    if (audioCtx.state !== 'running') return;
     
     try {
         const now = audioCtx.currentTime;
@@ -3027,12 +3017,7 @@ function playClearSound() {
     initAudio();
     if (!audioCtx) return;
     
-    if (audioCtx.state !== 'running') {
-        audioCtx.resume().then(() => {
-            playClearSound();
-        }).catch(() => {});
-        return;
-    }
+    if (audioCtx.state !== 'running') return;
     
     try {
         const now = audioCtx.currentTime;
@@ -3411,12 +3396,7 @@ function playMeteorSound(originX) {
     initAudio();
     if (!audioCtx) return;
     
-    if (audioCtx.state !== 'running') {
-        audioCtx.resume().then(() => {
-            playMeteorSound(originX);
-        }).catch(() => {});
-        return;
-    }
+    if (audioCtx.state !== 'running') return;
     
     try {
         const now = audioCtx.currentTime;
@@ -3524,12 +3504,7 @@ function playMeteorBigExplosionSound(originX) {
     if (!audioCtx) return;
     
     // Web Audio APIの初期化/レジューム試行
-    if (audioCtx.state !== 'running') {
-        audioCtx.resume().then(() => {
-            // 再起呼び出しを避けるためここでは再生しない
-        }).catch(() => {});
-        return;
-    }
+    if (audioCtx.state !== 'running') return;
     
     try {
         const now = audioCtx.currentTime;
@@ -3802,12 +3777,7 @@ function playCarbonatedBubbleSound(originX) {
     initAudio();
     if (!audioCtx) return;
 
-    if (audioCtx.state !== 'running') {
-        audioCtx.resume().then(() => {
-            playCarbonatedBubbleSound(originX);
-        }).catch(() => {});
-        return;
-    }
+    if (audioCtx.state !== 'running') return;
 
     // キャッシュが生成されていなければ生成を試みる
     if (!carbonatedBufferCache) {
