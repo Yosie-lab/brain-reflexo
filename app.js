@@ -1574,23 +1574,19 @@ function initAudio() {
                     // エラーは無視
                 }
 
-                // resume() を1回だけキックする（二重実行防止）
-                if (!isResuming) {
-                    isResuming = true;
-                    audioCtx.resume().then(() => {
-                        isResuming = false;
-                        // onstatechange が 'running' を検知して音を再生する
-                        // 検知されなかった場合のフォールバック
-                        pregenerateCarbonatedBuffer();
-                        if (gameActive) {
-                            stopAmbientSound(true);
-                            startAmbientSound();
-                        }
-                    }).catch((err) => {
-                        isResuming = false;
-                        console.warn("AudioContextのresumeに失敗しました:", err);
-                    });
-                }
+                // ★isResumingガードを廃止: 非ユーザー操作でのiOSデッドロックを防ぐため、
+                // ここはユーザー操作コールスタック内なので毎回確実にresume()を実行する
+                audioCtx.resume().then(() => {
+                    // onstatechange が 'running' を検知して音を再生する
+                    // 検知されなかった場合のフォールバック
+                    pregenerateCarbonatedBuffer();
+                    if (gameActive) {
+                        stopAmbientSound(true);
+                        startAmbientSound();
+                    }
+                }).catch((err) => {
+                    console.warn("AudioContextのresumeに失敗しました:", err);
+                });
             } else {
                 // すでに running なら即座に音を再生
                 pregenerateCarbonatedBuffer();
@@ -2552,14 +2548,16 @@ function initApp() {
     }
     
     // ページ視認性変更やフォーカス時にオーディオコンテキストを復旧する
+    // ★重要: visibilitychange は「ユーザー操作」とみなされないため、
+    // ここから initAudio() や resume() を呼ぶと isResuming フラグがiOS上でデッドロックする。
+    // 実際の resume() はユーザーが次にタッチした瞬間の capture フェーズ initAudio() に委ねる。
     const handleVisibilityOrFocus = () => {
-        if (gameActive) {
-            initAudio();
-            if (audioCtx) {
-                if (audioCtx.state !== 'running' || ambientOscs.length === 0) {
-                    startAmbientSound();
-                }
+        if (gameActive && audioCtx) {
+            // すでに running かつ ambient が消えている場合のみ再開（非resume処理のみ）
+            if (audioCtx.state === 'running' && ambientOscs.length === 0) {
+                startAmbientSound();
             }
+            // running でない場合は、次のユーザータップで capture フェーズの initAudio が resume する
         }
     };
     document.addEventListener('visibilitychange', () => {
