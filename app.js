@@ -1549,9 +1549,10 @@ function initAudio() {
         if (audioCtx) {
             // suspended / interrupted（iOS固有）の場合は resume() を試みる
             if (audioCtx.state !== 'running') {
-                // 同期的に即座に発音ノードの生成を走らせる（iOS Safariのイベントスタックロック解除対策）
+                // 同期的に即座に発音ノードの生成を走らせる（iOS Safari of event stack lock release measure）
                 pregenerateCarbonatedBuffer();
                 if (gameActive) {
+                    stopAmbientSound(true); // 古いフリーズしたノードを確実に破棄
                     startAmbientSound();
                 }
 
@@ -1559,6 +1560,7 @@ function initAudio() {
                     // resume完了後に炭酸バッファを生成（suspended解除後でないと生成できない場合がある）
                     pregenerateCarbonatedBuffer();
                     if (gameActive) {
+                        stopAmbientSound(true); // 古いフリーズしたノードを確実に破棄
                         startAmbientSound();
                     }
                 }).catch((err) => {
@@ -1567,6 +1569,7 @@ function initAudio() {
             } else {
                 pregenerateCarbonatedBuffer();
                 if (gameActive) {
+                    stopAmbientSound(true); // 古いフリーズしたノードを確実に破棄
                     startAmbientSound();
                 }
             }
