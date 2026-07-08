@@ -2521,6 +2521,33 @@ function initApp() {
     // ページ視認性変更やフォーカス時にオーディオコンテキストを復旧する
     const handleVisibilityOrFocus = () => {
         if (gameActive) {
+            // iOS Safari 等で visibilitychange 直後の非同期コンテキストでは resume できない問題への対策
+            // 次回の画面タップ（タッチまたはクリック）の瞬間に確実に AudioContext を resume / init するリスナーを設定
+            const resumeAudioOnTouch = () => {
+                if (audioCtx) {
+                    if (audioCtx.state !== 'running') {
+                        audioCtx.resume().then(() => {
+                            if (ambientOscs.length === 0 && gameActive) {
+                                startAmbientSound();
+                            }
+                        }).catch((err) => {
+                            console.warn("タッチ時のAudioContext.resumeに失敗しました。再作成します:", err);
+                            audioCtx = null;
+                            initAudio();
+                        });
+                    }
+                } else {
+                    initAudio();
+                }
+                // 一度実行されたらイベントリスナーを解除
+                document.removeEventListener('touchstart', resumeAudioOnTouch);
+                document.removeEventListener('click', resumeAudioOnTouch);
+            };
+
+            document.addEventListener('touchstart', resumeAudioOnTouch, { passive: true });
+            document.addEventListener('click', resumeAudioOnTouch, { passive: true });
+
+            // 即座の復旧も試みる
             initAudio();
             if (audioCtx) {
                 if (audioCtx.state !== 'running' || ambientOscs.length === 0) {
