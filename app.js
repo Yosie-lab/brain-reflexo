@@ -2561,11 +2561,12 @@ function initApp() {
     });
     window.addEventListener('focus', handleVisibilityOrFocus);
 
-    // ★iOS対策: ユーザー操作を常に監視し、音声再生が制限（interrupted等）された場合に即時復旧に備える
-    window.addEventListener('touchstart', initAudio, { passive: true });
-    window.addEventListener('mousedown', initAudio, { passive: true });
-    window.addEventListener('click', initAudio, { passive: true });
-    window.addEventListener('touchend', initAudio, { passive: true });
+    // ★iOS対策: 他のハンドラの preventDefault や UIガードに遮られないよう、
+    // キャプチャフェーズ (capture: true) で最優先で initAudio を実行し、スピーカーを強制開放します。
+    window.addEventListener('touchstart', initAudio, { capture: true, passive: true });
+    window.addEventListener('mousedown', initAudio, { capture: true, passive: true });
+    window.addEventListener('click', initAudio, { capture: true, passive: true });
+    window.addEventListener('touchend', initAudio, { capture: true, passive: true });
     
     // iOS Safariでのマルチタッチによるピンチズーム（拡大・縮小操作）をJS側でも強制的に防止
     document.addEventListener('gesturestart', (e) => {
