@@ -1543,6 +1543,7 @@ function initAudio() {
         }
         if (!audioCtx && AudioContextClass) {
             audioCtx = new AudioContextClass();
+            carbonatedBufferCache = null; // 新規生成時は確実にキャッシュをクリアして再生成させる
         }
         
         if (audioCtx) {
