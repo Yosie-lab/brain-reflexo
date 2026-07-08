@@ -1548,14 +1548,26 @@ function initAudio() {
         if (audioCtx) {
             // suspended / interrupted（iOS固有）の場合は resume() を試みる
             if (audioCtx.state !== 'running') {
+                // 同期的に即座に発音ノードの生成を走らせる（iOS Safariのイベントスタックロック解除対策）
+                pregenerateCarbonatedBuffer();
+                if (gameActive) {
+                    startAmbientSound();
+                }
+
                 audioCtx.resume().then(() => {
                     // resume完了後に炭酸バッファを生成（suspended解除後でないと生成できない場合がある）
                     pregenerateCarbonatedBuffer();
+                    if (gameActive) {
+                        startAmbientSound();
+                    }
                 }).catch((err) => {
                     console.warn("AudioContextのresumeに失敗しました:", err);
                 });
             } else {
                 pregenerateCarbonatedBuffer();
+                if (gameActive) {
+                    startAmbientSound();
+                }
             }
             
             // 状態変化時の自動復旧リスナーを設定（バックグラウンドから戻った時など）
