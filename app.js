@@ -1539,67 +1539,75 @@ function initAudio() {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (audioCtx && audioCtx.state === 'closed') {
             audioCtx = null;
-            carbonatedBufferCache = null; // クローズ時はバッファもリセット
+            carbonatedBufferCache = null;
         }
         if (!audioCtx && AudioContextClass) {
             audioCtx = new AudioContextClass();
             carbonatedBufferCache = null; // 新規生成時は確実にキャッシュをクリアして再生成させる
         }
-        
-        if (audioCtx) {
-            // suspended / interrupted（iOS固有）の場合は resume() を試みる
-            if (audioCtx.state !== 'running') {
-                // 同期的に即座に発音ノードの生成を走らせる（iOS Safari of event stack lock release measure）
-                pregenerateCarbonatedBuffer();
-                if (gameActive) {
-                    stopAmbientSound(true); // 古いフリーズしたノードを確実に破棄
-                    startAmbientSound();
-                }
 
-                audioCtx.resume().then(() => {
-                    // resume完了後に炭酸バッファを生成（suspended解除後でないと生成できない場合がある）
-                    pregenerateCarbonatedBuffer();
-                    if (gameActive) {
-                        stopAmbientSound(true); // 古いフリーズしたノードを確実に破棄
-                        startAmbientSound();
-                    }
-                }).catch((err) => {
-                    console.warn("AudioContextのresumeに失敗しました:", err);
-                });
-            } else {
-                pregenerateCarbonatedBuffer();
-                if (gameActive) {
-                    stopAmbientSound(true); // 古いフリーズしたノードを確実に破棄
-                    startAmbientSound();
-                }
-            }
-            
+        if (audioCtx) {
             // 状態変化時の自動復旧リスナーを設定（バックグラウンドから戻った時など）
+            // ※ Fluid & Crystal と完全に同じ方式: resume成功時に onstatechange が 'running' を通知する
             if (!audioCtx._stateChangeListenerAdded) {
                 audioCtx._stateChangeListenerAdded = true;
                 audioCtx.onstatechange = () => {
-                    if (audioCtx.state === 'running') {
+                    if (audioCtx && audioCtx.state === 'running') {
                         pregenerateCarbonatedBuffer();
                         if (gameActive) {
+                            stopAmbientSound(true); // 古いフリーズノードを破棄
                             startAmbientSound();
                         }
                     }
                 };
             }
-            
-            // ロック解除のためのダミー無音再生（Safari向けのスロー対策として優先）
-            try {
-                const buffer = audioCtx.createBuffer(1, 1, 22050);
-                const source = audioCtx.createBufferSource();
-                source.buffer = buffer;
-                source.connect(audioCtx.destination);
-                source.start(0);
-            } catch (err) {
-                console.warn("ダミー音声再生に失敗しました:", err);
+
+            if (audioCtx.state !== 'running') {
+                // ロック解除のためのダミー無音再生（ユーザー操作コールスタック内で実行）
+                try {
+                    const buffer = audioCtx.createBuffer(1, 1, 22050);
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(audioCtx.destination);
+                    source.start(0);
+                } catch (err) {
+                    // エラーは無視
+                }
+
+                // resume() を1回だけキックする（二重実行防止）
+                if (!isResuming) {
+                    isResuming = true;
+                    audioCtx.resume().then(() => {
+                        isResuming = false;
+                        // onstatechange が 'running' を検知して音を再生する
+                        // 検知されなかった場合のフォールバック
+                        pregenerateCarbonatedBuffer();
+                        if (gameActive) {
+                            stopAmbientSound(true);
+                            startAmbientSound();
+                        }
+                    }).catch((err) => {
+                        isResuming = false;
+                        console.warn("AudioContextのresumeに失敗しました:", err);
+                    });
+                }
+            } else {
+                // すでに running なら即座に音を再生
+                pregenerateCarbonatedBuffer();
+                if (gameActive) {
+                    startAmbientSoundIfNeeded();
+                }
             }
         }
     } catch (e) {
         console.warn("Web Audio APIの初期化に失敗しました。無音で動作します:", e);
+    }
+}
+
+// ambientOscsが空の場合のみstartAmbientSoundを呼ぶ（重複起動防止）
+function startAmbientSoundIfNeeded() {
+    if (ambientOscs.length === 0) {
+        startAmbientSound();
     }
 }
 
