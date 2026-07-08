@@ -2551,7 +2551,17 @@ function initApp() {
         }
     };
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
+        if (document.visibilityState === 'hidden') {
+            // バックグラウンド移行時: 音声を即座に停止し、オーディオコンテキストを完全に破棄
+            stopAmbientSound(true);
+            if (audioCtx) {
+                try {
+                    audioCtx.close();
+                } catch (e) {}
+                audioCtx = null;
+                carbonatedBufferCache = null; // バッファキャッシュもクリア
+            }
+        } else if (document.visibilityState === 'visible') {
             handleVisibilityOrFocus();
         }
     });
