@@ -1527,6 +1527,15 @@ function drawMeteors() {
 // AudioContextの初期化（ユーザー操作時に都度呼び出し）
 function initAudio() {
     try {
+        // ★Chrome (iOS) 対策: 物理ボタンをタッチした直下の第一階層コールスタックで、
+        // HTML5 Audio要素を作成して同期再生し、スピーカーを強制開放する
+        try {
+            const audio = new Audio();
+            audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAARKwAARKwAAAEAAgAZAAAATUFOWQAAAAADAAgAZGF0YQgAAAAAAAAA';
+            audio.volume = 0.0001; // 耳に聞こえない極微小音量
+            audio.play().catch(() => {});
+        } catch (_) {}
+
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (audioCtx && audioCtx.state === 'closed') {
             audioCtx = null;
@@ -2521,33 +2530,6 @@ function initApp() {
     // ページ視認性変更やフォーカス時にオーディオコンテキストを復旧する
     const handleVisibilityOrFocus = () => {
         if (gameActive) {
-            // iOS Safari 等で visibilitychange 直後の非同期コンテキストでは resume できない問題への対策
-            // 次回の画面タップ（タッチまたはクリック）の瞬間に確実に AudioContext を resume / init するリスナーを設定
-            const resumeAudioOnTouch = () => {
-                if (audioCtx) {
-                    if (audioCtx.state !== 'running') {
-                        audioCtx.resume().then(() => {
-                            if (ambientOscs.length === 0 && gameActive) {
-                                startAmbientSound();
-                            }
-                        }).catch((err) => {
-                            console.warn("タッチ時のAudioContext.resumeに失敗しました。再作成します:", err);
-                            audioCtx = null;
-                            initAudio();
-                        });
-                    }
-                } else {
-                    initAudio();
-                }
-                // 一度実行されたらイベントリスナーを解除
-                document.removeEventListener('touchstart', resumeAudioOnTouch);
-                document.removeEventListener('click', resumeAudioOnTouch);
-            };
-
-            document.addEventListener('touchstart', resumeAudioOnTouch, { passive: true });
-            document.addEventListener('click', resumeAudioOnTouch, { passive: true });
-
-            // 即座の復旧も試みる
             initAudio();
             if (audioCtx) {
                 if (audioCtx.state !== 'running' || ambientOscs.length === 0) {
@@ -2562,6 +2544,12 @@ function initApp() {
         }
     });
     window.addEventListener('focus', handleVisibilityOrFocus);
+
+    // ★iOS対策: ユーザー操作を常に監視し、音声再生が制限（interrupted等）された場合に即時復旧に備える
+    window.addEventListener('touchstart', initAudio, { passive: true });
+    window.addEventListener('mousedown', initAudio, { passive: true });
+    window.addEventListener('click', initAudio, { passive: true });
+    window.addEventListener('touchend', initAudio, { passive: true });
     
     // iOS Safariでのマルチタッチによるピンチズーム（拡大・縮小操作）をJS側でも強制的に防止
     document.addEventListener('gesturestart', (e) => {
