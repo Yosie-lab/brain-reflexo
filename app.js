@@ -1,8 +1,8 @@
 // =============================================================
-// 1. 繧ｰ繝ｭ繝ｼ繝舌Ν螳壽焚縺ｨ迥ｶ諷句､画焚
+// 1. グローバル変数と状態変数
 // =============================================================
 
-// 豕｡縺ｮ濶ｲ繝代Ξ繝�ヨ�医￥縺吶∩繝代せ繝�Ν��
+// 泡の色パレット（くすみパステル）
 const BUBBLE_COLORS = [
     { hex: '#81c3d7', hue: 195 },
     { hex: '#f3c68f', hue: 35  },
@@ -13,18 +13,18 @@ const BUBBLE_COLORS = [
     { hex: '#e9c46a', hue: 42  }
 ];
 
-// 豕｡縺ｮ邂｡逅�
+// 泡の管理
 let bubbles = [];
 const MAX_BUBBLES = 28;
-const BUBBLE_SPAWN_MIN = 800;   // 譛遏ｭ繧ｹ繝昴�繝ｳ髢馴囈 (ms)
-const BUBBLE_SPAWN_MAX = 1500;  // 譛髟ｷ繧ｹ繝昴�繝ｳ髢馴囈 (ms)
+const BUBBLE_SPAWN_MIN = 800;
+const BUBBLE_SPAWN_MAX = 1500;
 let nextSpawnTime = 0;
 
-// 蜷瑚牡3騾｣繧ｿ繝��蛻､螳夂畑螻･豁ｴ
+// 同色3連タップ判定用履歴
 let tappedColorHistory = [];
-// 螟ｧ辷�匱蛻､螳夂畑縺ｮ逶ｴ霑�10繧ｿ繝��螻･豁ｴ
+// 大量連鎖判定用の直近10タップ履歴
 let popColorHistory = [];
-// 豬∵弌鄒､縺ｮ邂｡逅�
+// 流れ星の管理
 let meteors = [];
 let lastShootingStarTime = Date.now();
 let nextShootingStarDelay = 10000 + Math.random() * 20000; // 初回は起動10秒〜30秒の間のランダムなタイミングで流れるよう調整
@@ -51,13 +51,13 @@ let gyroPermissionRequested = false;
 
 
 
-// 繧ｳ繝ｳ繝懃ｮ｡逅�
-// 繧ｳ繝ｳ繝懃ｮ｡逅
+// コンボ管理
+// コンボ管理
 let comboCount = 0;
 let maxComboCount = 0;
 let lastPopTime = 0;
 let gameStartTime = 0;
-const COMBO_WINDOW = 1900; // 繧ｳ繝ｳ繝懃ｶ咏ｶ壽凾髢 (ms)
+const COMBO_WINDOW = 1900; // コンボ有効時間 (ms)
 
 // リラクゼーション設定（脳リフレクソ改用）
 let volumeBGM = 0.35;
@@ -73,7 +73,7 @@ let breathPattern = 'coherent'; // 'coherent' | '478' | 'box'
 let nightModeEnabled = false;
 let langMode = 'bilingual'; // 'bilingual' | 'ja' | 'en'
 
-// 繝ｪ繝輔Ξ繝す繝･繧ｲ繝ｼ繧ｸ
+// リフレッシュゲージ
 let refreshProgress = 0;
 const REFRESH_TARGET = 80; // 完了までに必要な泡のポップ数
 let totalPops = 0;
@@ -88,7 +88,6 @@ let popEffectMode = 'praise'; // デフォルト快感コメント
 
 // 音声関連
 let audioCtx = null;
-let isResuming = false;
 let ambientOscs = [];
 let ambientNodes = []; // エフェクト等中間ノード一括管理用
 let ambientGain = null;
@@ -100,7 +99,7 @@ let solfeggioGain396 = null;
 
 
 // =============================================================
-// 2. 繝槭う繝ｳ繝峨繧ｷ繝｣繝ｯ繝ｼ (閭梧勹Canvas繝代繝ぅ繧ｯ繝ｫ繧ｷ繧ｹ繝Β)
+// 2. メインシャワー（光彩Canvasパーティクルシステム）
 // =============================================================
 let showerCanvas = null;
 let showerCtx = null;
@@ -525,22 +524,18 @@ function initShower() {
     initStars(); // 星屑の初期設定
     window.addEventListener('resize', resizeShowerCanvas);
     
-    // 繝槭え繧ｹ遘ｻ蜍輔〒蜈峨霆瑚ｷ｡繧堤匱逕
     const addParticleFlow = (clientX, clientY) => {
         createShowerParticles(clientX, clientY, 2);
         createCursorTrail(clientX, clientY);
     };
     
-    // 繧ｯ繝ｪ繝け上ち繝メ譎ゅ蜃ｦ逅ｼ壽ｳ｡縺後≠繧後繝昴ャ繝励€√↑縺代ｌ縺ｰ豕｢邏
     const handleInteraction = (clientX, clientY) => {
         if (document.querySelector('.overlay.active')) return;
         
-        // 豕｡縺ｮ繝昴ャ繝励ｒ隧ｦ縺ｿ繧
         if (tryPopBubble(clientX, clientY)) {
-            return; // 豕｡繧偵繝縺励◆繧芽レ譎ｯ豕｢邏九荳崎ｦ
+            return;
         }
         
-        // 遨ｺ謖ｯ繧翫↑繧芽レ譎ｯ縺ｫ豕｢邏九→邊貞ｭ舌ｒ逋ｺ逕
         createShowerRipple(clientX, clientY);
         createShowerParticles(clientX, clientY, 15);
     };
@@ -1060,7 +1055,6 @@ function getThemeClearColor(ctx, width, height, alpha) {
 function drawShower() {
     if (!showerCtx || !showerCanvas) return;
     
-    // 繧ｳ繝ｳ繝應ｸｭ縺ｯ谿句ワ繧貞ｼｷ縺上＠縺ｦ闖ｯ繧°縺ｫ
     const now = performance.now();
     const activeCombo = (now - lastPopTime < COMBO_WINDOW) ? comboCount : 0;
     const clearAlpha = Math.max(0.06, 0.12 - activeCombo * 0.006);
@@ -1150,7 +1144,6 @@ function drawShower() {
     // グローバルアルファを元に戻す
     showerCtx.globalAlpha = 1.0;
     
-    // 豕｢邏九謠冗判域ｳ｢邏九＃縺ｨ縺ｫ濶ｲ逶ｸ繧貞渚譏
     showerRipples.forEach(r => {
         const hue = r.hue || 195;
         const color = `hsla(${hue}, 70%, 75%, ${r.alpha * 0.55})`;
@@ -1169,30 +1162,25 @@ function drawShower() {
         showerCtx.stroke();
     });
     
-    // 豬∵弌鄒､縺ｮ謠冗判医せ繧ｯ繝ｪ繝ｼ繝ｳ蜷域繝｢繝ｼ繝牙縺ｧ逋ｺ蜈牙柑譫懊ｒ豢ｻ縺加
     drawMeteors();
     
     showerCtx.restore();
     
-    // 豕｡縺ｯ騾壼ｸｸ縺ｮ繧ｳ繝ｳ繝昴ず繝ヨ縺ｧ謠冗判育ｲ貞ｭ舌荳翫↓魄ｮ譏弱↓陦ｨ遉ｺ
     drawBubbles();
 }
 
 
 // =============================================================
-// 2.5 荳牡縺ｮ豬∵弌鄒､繧ｷ繧ｹ繝Β
 // =============================================================
 
-// 豬∵弌鄒､繧偵ヨ繝ｪ繧ｬ繝ｼ縺吶ｋ
 function triggerMeteorShower(originX, originY) {
-    playMeteorSound(originX); // 髻ｳ貅舌ヱ繝ｳ險ｭ螳壹縺溘ａ縺ｫX蠎ｧ讓吶ｒ蠑輔″貂｡縺
+    playMeteorSound(originX);
     
     const count = 15; // 流れ星の総数
     const duration = 1000; // 1.0秒間かけて順次放出 (より集中して飛び散るように短縮)
     // 指定5色（シルバー: 210, 紫: 262, 青: 213, 緑: 148, 赤: 349）からシルバーを減らし、レッド・ブルーを増量した配色
     const colors = [210, 262, 262, 213, 213, 213, 148, 148, 349, 349, 349];
     
-    // 逋ｺ逕滓ｺ舌′貂｡縺輔ｌ縺ｪ縺九▲縺溷ｴ蜷医繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ育判髱｢荳ｭ螟ｮ
     const x = (originX !== undefined) ? originX : (showerCanvas ? showerCanvas.width / 2 : 0);
     const y = (originY !== undefined) ? originY : (showerCanvas ? showerCanvas.height / 2 : 0);
     
@@ -1205,15 +1193,12 @@ function triggerMeteorShower(originX, originY) {
     }
 }
 
-// 豬∵弌繧1譛ｬ菴懈縺吶ｋ
 function createMeteor(hue, originX, originY) {
     if (!showerCanvas) return;
     
-    // 蜈ｨ譁ｹ菴搾ｼ0縲360蠎ｦ峨↓繝ｩ繝ｳ繝€繝縺ｪ隗貞ｺｦ
     const angle = Math.random() * Math.PI * 2;
-    const speed = 14 + Math.random() * 12; // 14縲26px/繝輔Ξ繝ｼ繝
+    const speed = 14 + Math.random() * 12;
     
-    // 貎ｰ縺励◆豕｡縺ｮ霑代￥医ｏ縺壹°縺ｫ繝ｩ繝ｳ繝€繝縺ｧ謨｣繧峨☆峨°繧牙ｰ
     const startX = originX + (Math.random() - 0.5) * 20;
     const startY = originY + (Math.random() - 0.5) * 20;
     
@@ -1224,17 +1209,16 @@ function createMeteor(hue, originX, originY) {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 100 + Math.random() * 100, // 鬟帙謨｣繧九◆繧∝ｰ代＠遏ｭ繧√蟆ｾ100縲200px峨↓縺励※邯ｺ鮗励↓
+        length: 100 + Math.random() * 100,
         width: 1.5 + Math.random() * 2.0,
         hue: hue,
         alpha: 0,
-        fadeSpeed: 0.12, // 縺吶＄霑代￥縺ｧ逋ｺ逕溘☆繧九◆繧∝ｰ代＠譌ｩ繧√↓繝輔ぉ繝ｼ繝峨う繝ｳ
+        fadeSpeed: 0.12,
         targetAlpha: 0.85 + Math.random() * 0.15,
-        sparkleChance: 0.5 // 繧ｹ繝代繧ｯ繝ｫ邇ｒ繧ｄ鬮倥￥縺励※闖ｯ繧°縺ｫ
+        sparkleChance: 0.5
     });
 }
 
-// 豬∵弌縺ｮ螟ｧ辷匱繧偵ヨ繝ｪ繧ｬ繝ｼ縺吶ｋ
 function triggerMeteorBigExplosion(originX, originY) {
     triggerHaptic('explosion');
     // 最初の爆発音
@@ -1327,7 +1311,7 @@ function createBigExplosionMeteor(hue, originX, originY) {
     if (!showerCanvas) return;
     
     const angle = Math.random() * Math.PI * 2;
-    const speed = 25 + Math.random() * 25; // 25縲50px/繝輔Ξ繝ｼ繝 (荳€迸ｬ縺ｧ讌ｵ髯舌∪縺ｧ諡｡謨｣縺輔○繧)
+    const speed = 25 + Math.random() * 25;
     
     const startX = originX + (Math.random() - 0.5) * 15;
     const startY = originY + (Math.random() - 0.5) * 15;
@@ -1339,16 +1323,16 @@ function createBigExplosionMeteor(hue, originX, originY) {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 70 + Math.random() * 80, // 荳€迸ｬ縺ｮ髢縺ｮ縺溘ａ縲√＆繧峨↓蠑輔″邱縺ｾ縺｣縺溽洒縺ｰｾ (70縲150px)
-        width: 2.0 + Math.random() * 2.5, // 蟆代＠螟ｪ繧√〒蜉帛ｼｷ縺ｻ瑚ｷ｡
+        length: 70 + Math.random() * 80,
+        width: 2.0 + Math.random() * 2.5,
         hue: hue,
         alpha: 0,
-        fadeSpeed: 0.45, // 1縲2繝輔Ξ繝ｼ繝縺ｧ荳€迸ｬ縺ｫ縺励※譛€鬮倩ｼ晏ｺｦ縺ｫ遶九■荳翫￡繧
+        fadeSpeed: 0.45,
         // モバイル時は大爆発流星の最大輝度を抑えて眩しくしない（0.623 → 0.44）
         targetAlpha: (0.9 + Math.random() * 0.1) * (IS_MOBILE ? 0.44 : 0.623),
-        sparkleChance: 0.8, // 繧ｹ繝代う繧ｯ医″繧峨ａ縺搾ｼ臥匱逕溽｢ｺ邇ｒ螟ｧ蟷↓蠑輔″荳翫￡
+        sparkleChance: 0.8,
         life: 0,
-        maxLife: 8 + Math.random() * 8 // 8縲16繝輔Ξ繝ｼ繝 (邏0.13縲0.26遘) 縺ｮ讌ｵ髯舌遏ｭ蟇ｿ蜻ｽ
+        maxLife: 8 + Math.random() * 8
     });
 }
 
@@ -1394,7 +1378,6 @@ function spawnBackgroundShootingStar() {
     });
 }
 
-// 豬∵弌縺ｮ迚ｩ逅嫌蜍墓峩譁ｰ
 function updateMeteors() {
     // ランダムな間隔（平均25秒周期：10秒〜40秒の間）で自然な流れ星を流す
     const now = Date.now();
@@ -1417,23 +1400,19 @@ function updateMeteors() {
         m.x += m.vx;
         m.y += m.vy;
         
-        // 蟇ｿ蜻ｽ譖ｴ譁ｰ縺ｨ繝輔ぉ繝ｼ繝峨い繧ｦ繝亥愛螳 (螟ｧ辷匱縺ｮ蟇ｿ蜻ｽ莉倥″豬∵弌縺ｫ蟇ｾ蠢)
         if (m.maxLife !== undefined) {
             m.life++;
-            // 蟇ｿ蜻ｽ縺ｮ蠕悟濠60%繧定ｶ∴縺溘ｉ峨蠕舌€↓騾乗縺ｫ縺励※邯ｺ鮗励↓繝輔ぉ繝ｼ繝峨い繧ｦ繝域ｶ域ｻ＆縺帙ｋ
             if (m.life > m.maxLife * 0.6) {
                 m.alpha = m.targetAlpha * (1 - (m.life - m.maxLife * 0.6) / (m.maxLife * 0.4));
             } else if (m.alpha < m.targetAlpha) {
                 m.alpha = Math.min(m.targetAlpha, m.alpha + m.fadeSpeed);
             }
             
-            // 蟇ｿ蜻ｽ縺悟ｰｽ縺阪◆繧画ｶ亥悉
             if (m.life >= m.maxLife) {
                 meteors.splice(i, 1);
                 continue;
             }
         } else {
-            // 騾壼ｸｸ縺ｮ豬∵弌医ヵ繧ｧ繝ｼ繝峨う繝ｳ縺ｮ縺ｿ縲∫判髱｢螟悶〒豸亥悉
             if (m.alpha < m.targetAlpha) {
                 m.alpha = Math.min(m.targetAlpha, m.alpha + m.fadeSpeed);
             }
@@ -1450,7 +1429,6 @@ function updateMeteors() {
             );
         }
         
-        // 蜈ｨ譁ｹ蜷代逕ｻ髱｢螟門愛螳 (荳贋ｸ句ｷｦ蜿ｳ縺★繧後°縺ｫ螳悟縺ｫ螟悶ｌ縺溘ｉ蜑企勁)
         if (showerCanvas && (
             m.x < -m.length || 
             m.x > showerCanvas.width + m.length || 
@@ -1462,7 +1440,6 @@ function updateMeteors() {
     }
 }
 
-// 豬∵弌縺ｮ謠冗判
 function drawMeteors() {
     if (!showerCtx || meteors.length === 0) return;
     
@@ -2659,7 +2636,6 @@ function endGame(forceQuit = false) {
 
 // 泡が弾ける「ピチョン」音を合成して再生（ディレイ・エコー付き）  プチッと弾ける破裂音レイヤー
 function playPopSound(combo = 1, originX) {
-    initAudio();
     if (!audioCtx) return;
     
     // ブラウザの自動再生ブロック対策
@@ -2843,9 +2819,8 @@ function playPopSound(combo = 1, originX) {
 
 // フィーバー突入・花火連打時のチャイムスイープ音
 function playFeverStartSound(originX) {
-    initAudio();
     if (!audioCtx) return;
-    
+
     if (audioCtx.state !== 'running') return;
     
     try {
@@ -3020,20 +2995,17 @@ function playFeverChimeBackground(originX) {
 }
 
 function playClearSound() {
-    initAudio();
     if (!audioCtx) return;
-    
+
     if (audioCtx.state !== 'running') return;
     
     try {
         const now = audioCtx.currentTime;
-        // 6髻ｳ縺ｮ荳頑繝壹Φ繧ｿ繝医ル繝け繝輔Ξ繝ｼ繧ｺ (C5, D5, E5, G5, A5, C6)
         const notes = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
         
         notes.forEach((freq, index) => {
-            const timeOffset = index * 0.07; // 70ms縺壹▽縺壹ｉ縺励※霆ｽ蠢ｫ縺ｫ鬧￠荳翫′繧
+            const timeOffset = index * 0.07;
             
-            // A. 譛ｨ逅ｴ縺ｮ譛ｬ菴馴浹井ｸ芽ｧ呈ｳ｢縺ｧ繧ｳ繧ｷ縺ｮ縺ゅｋ髻ｿ縺搾ｼ
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
@@ -3043,13 +3015,11 @@ function playClearSound() {
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(freq, now + timeOffset);
             
-            // 譛ｨ逅ｴ繧峨＠縺洒縺ｸ幄｡ｰ (0.22遘偵〒貂幄｡ｰ)
             const duration = 0.22;
             gain.gain.setValueAtTime(0, now + timeOffset);
-            gain.gain.linearRampToValueAtTime(0.12, now + timeOffset + 0.002); // 2ms繧｢繧ｿ繝け
+            gain.gain.linearRampToValueAtTime(0.12, now + timeOffset + 0.002);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + timeOffset + duration); // 謖焚貂幄｡ｰ
             
-            // B. 繝励Λ繧ｹ繝√ャ繧ｯ譛ｨ逅ｴ縺ｮ謇捺茶髻ｳ縲後さ繝ャ縲搾ｼ井ｸ€迸ｬ縺縺鷹ｳｴ繧矩ｫ倬浹繧ｵ繧､繝ｳ豕｢
             const hitOsc = audioCtx.createOscillator();
             const hitGain = audioCtx.createGain();
             
@@ -3057,13 +3027,12 @@ function playClearSound() {
             hitGain.connect(audioCtx.destination);
             
             hitOsc.type = 'sine';
-            hitOsc.frequency.setValueAtTime(freq * 3.0, now + timeOffset); // 3蛟阪繧ｪ繝ｼ繝舌繝医繝ｳ縺ｧ謇捺茶諢
+            hitOsc.frequency.setValueAtTime(freq * 3.0, now + timeOffset);
             
             hitGain.gain.setValueAtTime(0, now + timeOffset);
-            hitGain.gain.linearRampToValueAtTime(0.06, now + timeOffset + 0.001); // 1ms縺ｧ遶九■荳翫￡
-            hitGain.gain.exponentialRampToValueAtTime(0.0001, now + timeOffset + 0.015); // 15ms縺ｧ諤･豼€縺ｫ豸亥悉
+            hitGain.gain.linearRampToValueAtTime(0.06, now + timeOffset + 0.001);
+            hitGain.gain.exponentialRampToValueAtTime(0.0001, now + timeOffset + 0.015);
             
-            // 繧ｹ繧ｿ繝ｼ繝医→繧ｹ繝医ャ繝
             osc.start(now + timeOffset);
             osc.stop(now + timeOffset + duration + 0.05);
             
@@ -3078,70 +3047,51 @@ function playClearSound() {
             };
         });
     } catch (e) {
-        console.warn("繧ｯ繝ｪ繧｢髻ｳ蜀咲函繧ｨ繝ｩ繝ｼ:", e);
+        console.warn("クリア音再生エラー:", e);
     }
 }
 
-// 譟斐ｉ縺九↑繝輔Ρ繝ｼ縺ｨ縺励◆迺ｰ蠅レ譎ｯ髻ｳ縺ｮ髢句ｧ具ｼ3.5遘偵繝輔ぉ繝ｼ繝峨う繝ｳ  繧ｳ繝ｼ繝ｩ繧ｹ  繝ｪ繝舌繝  蜻ｼ蜷ｸ縺吶ｋ繝輔ぅ繝ｫ繧ｿ繝ｼLFO
+// 流れるようなフロー環境音の開始（フェードイン／コーラス／リバーブ／LFO付き）
 function startAmbientSound() {
     if (!gameActive) return; // ゲームがアクティブでない場合は開始しない
-    if (!audioCtx) {
-        // audioCtx がまだ無い場合は初期化を試みてリトライ
-        initAudio();
-        if (!audioCtx) return;
-    }
+    if (!audioCtx) return; // audioCtx未生成時は何もしない（initAudioに委ねる）
+
+    // AudioContextがrunning状態でなければ何もしない
+    // resume()はinitAudio()のみが担当し、ここでは呼ばない
+    if (audioCtx.state !== 'running') return;
     
-    if (audioCtx.state !== 'running') {
-        if (!isResuming) {
-            isResuming = true;
-            audioCtx.resume().then(() => {
-                isResuming = false;
-                if (gameActive) { // 非同期解決後にもアクティブか再確認
-                    stopAmbientSound(true); // 古いノードを確実に破棄
-                    startAmbientSound();
-                }
-            }).catch(() => {
-                isResuming = false;
-            });
-        }
-        return; // 重要：サスペンド状態のときはオシレーターの新規作成処理に進まず抜ける
-    }
-    
-    // 縺吶〒縺ｫ蜀咲函荳ｭ縺ｮ蝣ｴ蜷医菴輔ｂ縺励↑縺
+    // すでに再生中の場合は何もしない
     if (ambientOscs.length > 0) return;
     
     try {
         const now = audioCtx.currentTime;
         
-        // 1. 繝｡繧､繝ｳ縺ｮ繝ｭ繝ｼ繝代せ繝輔ぅ繝ｫ繧ｿ繝ｼ (譟斐ｉ縺九￥蛹∩霎ｼ繧€繧医≧縺ｪ貂ｩ縺九＞繝医繝ｳ)
         ambientFilter = audioCtx.createBiquadFilter();
         ambientFilter.type = 'lowpass';
-        ambientFilter.frequency.setValueAtTime(320, now); // 蝓ｺ貅門€､繧320Hz縺ｫ荳九￡縺ｦ縲√＆繧峨↓繝輔Ρ繝ｼ縺ｨ縺励◆髻ｳ縺ｫ縺吶ｋ
+        ambientFilter.frequency.setValueAtTime(320, now);
         ambientNodes.push(ambientFilter);
         
-        // LFO (繝輔ぅ繝ｫ繧ｿ繝ｼ縺ｮ驕ｮ譁ｭ蜻ｨ豕｢謨ｰ繧偵ｆ縺｣縺上ｊ謠ｺ繧峨＠縲∝他蜷ｸ繧偵☆繧九ｈ縺↑讌ｵ荳翫豬ｮ驕頑─繧貞縺)
         ambientLFO = audioCtx.createOscillator();
-        ambientLFO.frequency.setValueAtTime(0.04, now); // 25遘貞捉譛 (0.04Hz) 縺ｧ髱槫ｸｸ縺ｫ繧▲縺溘ｊ縺ｨ謠ｺ繧峨☆
+        ambientLFO.frequency.setValueAtTime(0.04, now);
         const lfoGain = audioCtx.createGain();
-        lfoGain.gain.setValueAtTime(100, now); // 繝輔ぅ繝ｫ繧ｿ繝ｼ蜻ｨ豕｢謨ｰ繧陳ｱ100Hz謠ｺ繧峨☆ (220Hz 縲 420Hz 縺ｮ雜∪繧阪ｄ縺句ｸｯ蝓溘ｒ繧ｹ繧ｦ繧｣繝ｼ繝)
+        lfoGain.gain.setValueAtTime(100, now);
         
         ambientLFO.connect(lfoGain);
-        lfoGain.connect(ambientFilter.frequency); // 繝輔ぅ繝ｫ繧ｿ繝ｼ縺ｮ繧ｫ繝ヨ繧ｪ繝募捉豕｢謨ｰ縺ｸ謗･邯
+        lfoGain.connect(ambientFilter.frequency);
         ambientLFO.start(now);
         
         ambientOscs.push(ambientLFO);
         ambientNodes.push(lfoGain);
         
-        // 2. 繧ｳ繝ｼ繝ｩ繧ｹ繧ｨ繝輔ぉ繧ｯ繝亥屓霍ｯ縺ｮ霑ｽ蜉
         const chorusDelay = audioCtx.createDelay();
-        chorusDelay.delayTime.setValueAtTime(0.02, now); // 20ms縺ｮ驕ｻｶ
+        chorusDelay.delayTime.setValueAtTime(0.02, now);
         
         const chorusLFO = audioCtx.createOscillator();
-        chorusLFO.frequency.setValueAtTime(0.45, now); // 0.45Hz縺ｮ讌ｵ繧√※繧▲縺上ｊ縺励◆謠ｺ繧
-        chorusLFO.frequency.setValueAtTime(0.45, now); // 0.45Hz縺ｮ讌ｵ繧√※繧▲縺上ｊ縺励◆謠ｺ繧
+        chorusLFO.frequency.setValueAtTime(0.45, now);
+        chorusLFO.frequency.setValueAtTime(0.45, now);
         
         const chorusLFOGain = audioCtx.createGain();
-        chorusLFOGain.gain.setValueAtTime(0.0045, now); // 繝ぅ繝ｬ繧､繧ｿ繧､繝繧陳ｱ4.5ms謠ｺ繧峨☆ (15.5ms縲24.5ms)
+        chorusLFOGain.gain.setValueAtTime(0.0045, now);
         
         chorusLFO.connect(chorusLFOGain);
         chorusLFOGain.connect(chorusDelay.delayTime);
@@ -3151,51 +3101,42 @@ function startAmbientSound() {
         ambientNodes.push(chorusDelay);
         ambientNodes.push(chorusLFOGain);
         
-        // 3. 繝ｪ繝舌繝厄ｼ2邉ｻ邨ｱ繝輔ぅ繝ｼ繝峨ヰ繝け繝ぅ繝ｬ繧､縺ｫ繧医ｋ雎翫°縺ｪ遨ｺ髢捺ｮ矩涸牙屓霍ｯ縺ｮ霑ｽ蜉
         const revDelay1 = audioCtx.createDelay();
         const revFeedback1 = audioCtx.createGain();
         const revDelay2 = audioCtx.createDelay();
         const revFeedback2 = audioCtx.createGain();
         
         revDelay1.delayTime.setValueAtTime(0.12, now); // 120ms驕ｻｶ
-        revFeedback1.gain.setValueAtTime(0.70, now);   // 55%繝輔ぅ繝ｼ繝峨ヰ繝け
+        revFeedback1.gain.setValueAtTime(0.70, now);
         revDelay2.delayTime.setValueAtTime(0.17, now); // 170ms驕ｻｶ
-        revFeedback2.gain.setValueAtTime(0.65, now);   // 52%繝輔ぅ繝ｼ繝峨ヰ繝け
+        revFeedback2.gain.setValueAtTime(0.65, now);
         
-        // 繝輔ぅ繝ｼ繝峨ヰ繝け謗･邯
         revDelay1.connect(revFeedback1);
         revFeedback1.connect(revDelay1);
         revDelay2.connect(revFeedback2);
         revFeedback2.connect(revDelay2);
         
         const revMix = audioCtx.createGain();
-        revMix.gain.setValueAtTime(0.80, now); // 繝ｪ繝舌繝夜㍼繧62%縺ｫ蠑輔″荳翫￡縲√ｈ繧頑ｮ矩涸縺ｫ蛹∪繧後ｋ諢溘§縺ｫ
+        revMix.gain.setValueAtTime(0.80, now);
         
         ambientNodes.push(revDelay1, revFeedback1, revDelay2, revFeedback2, revMix);
         
-        // 4. 髻ｳ驥上さ繝ｳ繝医Ο繝ｼ繝ｫ逕ｨ縺ｮGainNode (阮￥郢顔ｴｰ縺ｫ)
         ambientGain = audioCtx.createGain();
         ambientGain.gain.setValueAtTime(0, now);
-        // 3.5遘偵°縺代※遨ｺ豌嶺ｸｭ縺ｫ貅ｶ縺題ｾｼ繧€繧医≧縺ｫ繝輔Ρ繝ｼ縺ｨ繝輔ぉ繝ｼ繝峨う繝ｳ (髻ｳ驥上縺輔ｉ縺ｫ蠕ｮ蟆上↑0.003)
         ambientGain.gain.linearRampToValueAtTime(0.003, now + 3.5);
         ambientNodes.push(ambientGain);
         
-        // --- 蜷お繝輔ぉ繧ｯ繝医謗･邯壽ｧ区 ---
-        // A. 逶ｴ謗･髻ｳ繝ｫ繝ｼ繝: filter -> ambientGain
         ambientFilter.connect(ambientGain);
         
-        // B. 繧ｳ繝ｼ繝ｩ繧ｹ髻ｳ繝ｫ繝ｼ繝: filter -> chorusDelay -> ambientGain
         ambientFilter.connect(chorusDelay);
         chorusDelay.connect(ambientGain);
         
-        // C. 繝ｪ繝舌繝夜浹繝ｫ繝ｼ繝: (繝輔ぅ繝ｫ繧ｿ繝ｼ蠕後髻ｳ縺後Μ繝舌繝門屓霍ｯ縺ｫ蜈･繧翫€√Α繝け繧ｹ縺輔ｌ縺ｦ蜃ｺ蜉帙∈)
         ambientFilter.connect(revDelay1);
         ambientFilter.connect(revDelay2);
         revDelay1.connect(revMix);
         revDelay2.connect(revMix);
         revMix.connect(ambientGain);
         
-        // 蜈ｨ菴薙譛€邨ょ蜉帙ｒ繧ｹ繝斐繧ｫ繝ｼ縺ｸ
         ambientGain.connect(audioCtx.destination);
         
         // 5. 浮遊感の極みとなる美しいテンション和音 (C4, G4, B4, D5, G5)
@@ -3399,9 +3340,8 @@ function stopAmbientSound(immediate = false) {
 
 // 流星群が流れる際のキラキラしたステレオ通過音を合成再生
 function playMeteorSound(originX) {
-    initAudio();
     if (!audioCtx) return;
-    
+
     if (audioCtx.state !== 'running') return;
     
     try {
@@ -3506,10 +3446,8 @@ function playMeteorSound(originX) {
 
 // 流星の大爆発の際のキラキラした爽快な宇宙爆発音を合成再生
 function playMeteorBigExplosionSound(originX) {
-    initAudio();
     if (!audioCtx) return;
-    
-    // Web Audio APIの初期化/レジューム試行
+
     if (audioCtx.state !== 'running') return;
     
     try {
@@ -3780,7 +3718,6 @@ function playMeteorBigExplosionSound(originX) {
 
 // 炭酸バブルサウンドの再生（異なる色の玉5個を2回連続でクリアしたときの大爆発で再生）
 function playCarbonatedBubbleSound(originX) {
-    initAudio();
     if (!audioCtx) return;
 
     if (audioCtx.state !== 'running') return;
@@ -4163,7 +4100,6 @@ function tryPopBubble(clientX, clientY) {
             }
             
             if (popColorHistory.length === 10) {
-                // 1. 髫｣謗･縺吶ｋ騾｣邯壹ち繝��縺後↑縺�°繝√ぉ繝�け
                 let hasConsecutiveSame = false;
                 for (let j = 0; j < 9; j++) {
                     if (popColorHistory[j] === popColorHistory[j + 1]) {
@@ -4173,7 +4109,6 @@ function tryPopBubble(clientX, clientY) {
                 }
                 
                 if (!hasConsecutiveSame) {
-                    // 2. 蜑榊濠5繧ｿ繝��縺ｨ蠕悟濠5繧ｿ繝��縺後◎繧後◇繧後Θ繝九�繧ｯ�磯㍾隍�↑縺暦ｼ峨°繝√ぉ繝�け
                     const first5 = popColorHistory.slice(0, 5);
                     const last5 = popColorHistory.slice(5, 10);
                     
@@ -4181,24 +4116,19 @@ function tryPopBubble(clientX, clientY) {
                     const last5Unique = new Set(last5).size === 5;
                     
                     if (first5Unique && last5Unique) {
-                        // 豬∵弌縺ｮ螟ｧ辷�匱繧偵ヨ繝ｪ繧ｬ繝ｼ
                         triggerMeteorBigExplosion(b.x, b.y);
-                        // 螻･豁ｴ繧偵Μ繧ｻ繝�ヨ
                         popColorHistory = [];
-                        tappedColorHistory = []; // 蜷瑚牡縺ｮ3騾｣繧ゅけ繝ｪ繧｢
+                        tappedColorHistory = [];
                     }
                 }
             }
             
-            // 繝ｪ繝輔Ξ繝�す繝･繧ｲ繝ｼ繧ｸ譖ｴ譁ｰ
             incrementPopProgress();
             
-            // 繧ｳ繝ｳ繝懆｡ｨ遉ｺ
             if (comboCount >= 2) {
                 showCombo(comboCount);
             }
             
-            // 繧ｬ繧､繝峨ユ繧ｭ繧ｹ繝医ｒ豸医☆�亥�蝗槭ち繝��蠕鯉ｼ�
             if (!guideHidden) {
                 guideHidden = true;
                 const guide = document.getElementById('guide-text');
@@ -4207,7 +4137,6 @@ function tryPopBubble(clientX, clientY) {
                 }
             }
             
-            // 繧ｲ繝ｼ繧ｸ貅繧ｿ繝ｳ 竊� 繝ｪ繝輔Ξ繝�す繝･螳御ｺ�
             if (!infiniteMode && refreshProgress >= 1) {
                 setTimeout(() => {
                     endGame();
@@ -4225,7 +4154,6 @@ function tryPopBubble(clientX, clientY) {
 // 4. UI譖ｴ譁ｰ
 // =============================================================
 
-// 繧ｳ繝ｳ繝懈焚繧堤判髱｢荳ｭ螟ｮ縺ｫ縺ｵ繧上▲縺ｨ陦ｨ遉ｺ
 // 褒める言葉の定義（日本語＋英語）
 const COMBO_PRAISES = [
     { jp: "スッキリ!", en: "Clear" },
@@ -4553,14 +4481,12 @@ function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
-// 繝ｪ繝輔Ξ繝�す繝･繧ｲ繝ｼ繧ｸ縺ｮ繝舌�繧呈峩譁ｰ
 function updateRefreshGauge() {
     const fill = document.getElementById('refresh-gauge-fill');
     if (fill) {
         fill.style.width = (refreshProgress * 100) + '%';
     }
     
-    // 繝ｩ繝吶Ν陦ｨ遉ｺ��50%莉･荳翫〒縺ｵ繧上▲縺ｨ陦ｨ遉ｺ��
     const label = document.getElementById('refresh-gauge-label');
     if (label) {
         if (refreshProgress >= 0.5) {
@@ -4574,11 +4500,9 @@ function updateRefreshGauge() {
 
 
 // =============================================================
-// 5. 繧ｲ繝ｼ繝�迥ｶ諷狗ｮ｡逅�
 // =============================================================
 
 function startGame() {
-    // 縺吶∋縺ｦ繧偵Μ繧ｻ繝�ヨ
     bubbles = [];
     meteors = [];
     tappedColorHistory = [];
@@ -4686,8 +4610,6 @@ function startGame() {
         comboEl.classList.remove('show');
     }
     
-    // 繧ｲ繝ｼ繝�繧ｪ繝ｼ繝舌�繝｢繝ｼ繝繝ｫ繧帝撼陦ｨ遉ｺ縺ｫ
-    // 繧ｲ繝ｼ繝繧ｪ繝ｼ繝舌繝｢繝ｼ繝€繝ｫ繧帝撼陦ｨ遉ｺ縺ｫ
     const overlay = document.getElementById('gameover-overlay');
     if (overlay) {
         overlay.classList.remove('active');
