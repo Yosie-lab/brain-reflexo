@@ -2564,6 +2564,16 @@ function initApp() {
     
     // アニメーションループ開始（ゲーム待機中も背景アニメは動かす）
     requestAnimationFrame(mainLoop);
+
+    // ★起動時はスタート画面をスキップして直接 Play モードを開始する
+    // （終了後のリスタートは従来どおりスタート画面に戻る）
+    meditationMode = false;
+    infiniteMode = false;
+    if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
+    if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
+    const startOverlayOnLoad = document.getElementById('start-overlay');
+    if (startOverlayOnLoad) startOverlayOnLoad.classList.remove('active');
+    startGame();
 }
 
 function endGame(forceQuit = false) {
