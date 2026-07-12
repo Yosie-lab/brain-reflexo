@@ -2573,6 +2573,21 @@ function initApp() {
     if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
     const startOverlayOnLoad = document.getElementById('start-overlay');
     if (startOverlayOnLoad) startOverlayOnLoad.classList.remove('active');
+
+    // ★AudioContextを事前生成しておく（suspended状態で待機）
+    // これにより、最初のユーザー操作で即座にresumeできる準備をする
+    initAudio();
+
+    // ★初回タッチ/クリック専用ハンドラ（once:true）
+    // ゲーム開始後、ユーザーが画面のどこかを最初に触れた瞬間に
+    // AudioContextをresumeして即座にアンビエント音を開始する
+    const _unlockAudioOnce = () => {
+        initAudio(); // resume() を実行 → onstatechange / .then() で startAmbientSound() が呼ばれる
+    };
+    window.addEventListener('touchstart', _unlockAudioOnce, { capture: true, once: true });
+    window.addEventListener('mousedown',  _unlockAudioOnce, { capture: true, once: true });
+    window.addEventListener('click',      _unlockAudioOnce, { capture: true, once: true });
+
     startGame();
 }
 
