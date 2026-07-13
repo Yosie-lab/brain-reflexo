@@ -1,0 +1,10 @@
+【iPhone】Open Brain_Reflexo.html
+
+1. Unzip this folder in the Files app
+2. Long-press Brain_Reflexo.html → Share → Open in Safari
+3. Tap Play to start
+
+Do NOT use index.html on iPhone (OS blocks separate JS/CSS files).
+
+Online: https://yosie-lab.github.io/brain-reflexo/
+Details: README.txt
