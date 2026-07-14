@@ -1837,7 +1837,8 @@ const BUBBLE_COLORS = [
 
 // 泡の管理
 let bubbles = [];
-const MAX_BUBBLES = 28;
+const MAX_BUBBLES = 34; // 旧28の1.2倍（全モード共通の画面上上限）
+const FEVER_MAX_BUBBLES = 72; // 旧60の1.2倍
 const BUBBLE_SPAWN_MIN = 800;
 const BUBBLE_SPAWN_MAX = 1500;
 let nextSpawnTime = 0;
@@ -3408,7 +3409,7 @@ function startAmbientSoundIfNeeded() {
 
 // 泡を一つ生成する
 function createBubble(forceType) {
-    let limit = feverActive ? 60 : MAX_BUBBLES;
+    let limit = feverActive ? FEVER_MAX_BUBBLES : MAX_BUBBLES;
     if (meditationMode) {
         limit = Math.floor(limit / 2);
     }
@@ -3492,7 +3493,7 @@ function updateBubbles(timestamp) {
             feverActive = false;
         }
         
-        let limit = feverActive ? 60 : MAX_BUBBLES;
+        let limit = feverActive ? FEVER_MAX_BUBBLES : MAX_BUBBLES;
         // オーロラ（フィーバータイム）が出ている間は球の発生率を4倍にする（間隔を1/4に）
         let spawnMin = feverActive ? Math.floor(BUBBLE_SPAWN_MIN / 4) : BUBBLE_SPAWN_MIN;
         let spawnMax = feverActive ? Math.floor(BUBBLE_SPAWN_MAX / 4) : BUBBLE_SPAWN_MAX;

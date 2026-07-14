@@ -6,5 +6,10 @@
 
 Do NOT use index.html on iPhone (OS blocks separate JS/CSS files).
 
-Online: https://yosie-lab.github.io/brain-reflexo/
+If "Open in Safari" is missing from Share:
+→ Use the Web URL below (most reliable, no unzip needed)
+  https://yosie-lab.github.io/brain-reflexo/
+Or: Share → Edit/More → enable Safari, then try again
+Or: Open with Chrome / Edge / Firefox from the Share sheet
+
 Details: README.txt
