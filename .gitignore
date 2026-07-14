@@ -1,4 +1,5 @@
 # Temporary/Backup files
+*.bak
 *_temp.js
 fix_app.js
 fix_fever_speed.js

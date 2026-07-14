@@ -15,8 +15,8 @@ const BUBBLE_COLORS = [
 
 // 泡の管理
 let bubbles = [];
-const MAX_BUBBLES = 34; // 旧28の1.2倍（全モード共通の画面上上限）
-const FEVER_MAX_BUBBLES = 72; // 旧60の1.2倍
+const MAX_BUBBLES = 34; // 画面上の泡上限（全モード共通）
+const FEVER_MAX_BUBBLES = 72; // フィーバー中の泡上限
 const BUBBLE_SPAWN_MIN = 800;
 const BUBBLE_SPAWN_MAX = 1500;
 let nextSpawnTime = 0;
@@ -52,7 +52,6 @@ let gyroPermissionRequested = false;
 
 
 
-// コンボ管理
 // コンボ管理
 let comboCount = 0;
 let maxComboCount = 0;
@@ -1172,6 +1171,7 @@ function drawShower() {
 
 
 // =============================================================
+// 流星群エフェクト
 // =============================================================
 
 function triggerMeteorShower(originX, originY) {
@@ -1502,87 +1502,114 @@ function drawMeteors() {
 // 3. 泡のシステム
 // =============================================================
 
+// iOS: resume完了前に startAmbientSound が呼ばれると無音のまま残ることがある
+let pendingAmbientStart = false;
+let audioResumePromise = null;
+
+// Audio が running になったときにアンビエントを確実に開始する
+function ensureAmbientAfterUnlock() {
+    if (!gameActive || !audioCtx || audioCtx.state !== 'running') return;
+    pendingAmbientStart = false;
+    if (ambientOscs.length === 0) {
+        startAmbientSound();
+    }
+}
+
 // AudioContextの初期化（ユーザー操作時に都度呼び出し）
-function initAudio() {
+// options.resume === false のときは Context 生成のみ（ページロード時など、ジェスチャ外での resume を避ける）
+function initAudio(options) {
+    const allowResume = !options || options.resume !== false;
     try {
-        // ★Chrome (iOS) 対策: 物理ボタンをタッチした直下の第一階層コールスタックで、
-        // HTML5 Audio要素を作成して同期再生し、スピーカーを強制開放する
-        try {
-            const audio = new Audio();
-            audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAARKwAARKwAAAEAAgAZAAAATUFOWQAAAAADAAgAZGF0YQgAAAAAAAAA';
-            audio.volume = 0.0001; // 耳に聞こえない極微小音量
-            audio.play().catch(() => {});
-        } catch (_) {}
+        // ★Chrome (iOS) 対策: ユーザージェスチャ直下で HTML5 Audio を同期再生しスピーカーを開放
+        if (allowResume) {
+            try {
+                const audio = new Audio();
+                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAARKwAARKwAAAEAAgAZAAAATUFOWQAAAAADAAgAZGF0YQgAAAAAAAAA';
+                audio.volume = 0.0001;
+                audio.play().catch(() => {});
+            } catch (_) {}
+        }
 
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (audioCtx && audioCtx.state === 'closed') {
             audioCtx = null;
             carbonatedBufferCache = null;
+            audioResumePromise = null;
         }
         if (!audioCtx && AudioContextClass) {
             audioCtx = new AudioContextClass();
-            carbonatedBufferCache = null; // 新規生成時は確実にキャッシュをクリアして再生成させる
+            carbonatedBufferCache = null;
+            audioResumePromise = null;
         }
 
         if (audioCtx) {
-            // 状態変化時の自動復旧リスナーを設定（バックグラウンドから戻った時など）
-            // ※ Fluid & Crystal と完全に同じ方式: resume成功時に onstatechange が 'running' を通知する
             if (!audioCtx._stateChangeListenerAdded) {
                 audioCtx._stateChangeListenerAdded = true;
                 audioCtx.onstatechange = () => {
                     if (audioCtx && audioCtx.state === 'running') {
                         pregenerateCarbonatedBuffer();
-                        if (gameActive) {
-                            stopAmbientSound(true); // 古いフリーズノードを破棄
+                        if (gameActive || pendingAmbientStart) {
+                            stopAmbientSound(true);
                             startAmbientSound();
                         }
                     }
                 };
             }
 
-            if (audioCtx.state !== 'running') {
-                // ロック解除のためのダミー無音再生（ユーザー操作コールスタック内で実行）
-                try {
-                    const buffer = audioCtx.createBuffer(1, 1, 22050);
-                    const source = audioCtx.createBufferSource();
-                    source.buffer = buffer;
-                    source.connect(audioCtx.destination);
-                    source.start(0);
-                } catch (err) {
-                    // エラーは無視
-                }
-
-                // ★isResumingガードを廃止: 非ユーザー操作でのiOSデッドロックを防ぐため、
-                // ここはユーザー操作コールスタック内なので毎回確実にresume()を実行する
-                audioCtx.resume().then(() => {
-                    // onstatechange が 'running' を検知して音を再生する
-                    // 検知されなかった場合のフォールバック
-                    pregenerateCarbonatedBuffer();
-                    if (gameActive) {
-                        stopAmbientSound(true);
-                        startAmbientSound();
-                    }
-                }).catch((err) => {
-                    console.warn("AudioContextのresumeに失敗しました:", err);
-                });
-            } else {
-                // すでに running なら即座に音を再生
+            if (audioCtx.state === 'running') {
                 pregenerateCarbonatedBuffer();
-                if (gameActive) {
-                    startAmbientSoundIfNeeded();
+                if (gameActive || pendingAmbientStart) {
+                    ensureAmbientAfterUnlock();
                 }
+                return audioResumePromise || Promise.resolve();
             }
+
+            // ジェスチャ外では resume しない（iOS で以後の解除が不安定になることがある）
+            if (!allowResume) {
+                if (gameActive) pendingAmbientStart = true;
+                return Promise.resolve();
+            }
+
+            // ロック解除用の無音バッファ（ユーザージェスチャ同期スタック内）
+            try {
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            } catch (_) {}
+
+            if (gameActive) pendingAmbientStart = true;
+
+            if (!audioResumePromise) {
+                audioResumePromise = audioCtx.resume()
+                    .then(() => {
+                        audioResumePromise = null;
+                        pregenerateCarbonatedBuffer();
+                        if (gameActive || pendingAmbientStart) {
+                            stopAmbientSound(true);
+                            startAmbientSound();
+                        }
+                    })
+                    .catch((err) => {
+                        audioResumePromise = null;
+                        console.warn("AudioContextのresumeに失敗しました:", err);
+                    });
+            } else {
+                // 進行中の resume 完了後も、今回の開始要求を拾わせる
+                audioResumePromise.then(() => {
+                    if (gameActive || pendingAmbientStart) {
+                        ensureAmbientAfterUnlock();
+                    }
+                }).catch(() => {});
+            }
+
+            return audioResumePromise || Promise.resolve();
         }
     } catch (e) {
         console.warn("Web Audio APIの初期化に失敗しました。無音で動作します:", e);
     }
-}
-
-// ambientOscsが空の場合のみstartAmbientSoundを呼ぶ（重複起動防止）
-function startAmbientSoundIfNeeded() {
-    if (ambientOscs.length === 0) {
-        startAmbientSound();
-    }
+    return Promise.resolve();
 }
 
 // 泡を一つ生成する
@@ -2383,6 +2410,7 @@ function initApp() {
                 
                 const handleAllow = () => {
                     dialog.classList.remove('active');
+                    initAudio(); // 許可タップのジェスチャで音声解除
                     requestGyroPermission();
                     gyroPermissionRequested = true;
                     cleanup();
@@ -2391,6 +2419,7 @@ function initApp() {
                 
                 const handleDeny = () => {
                     dialog.classList.remove('active');
+                    initAudio(); // 拒否タップのジェスチャでも音声解除
                     gyroEnabled = false;
                     const chkGyro = document.getElementById('chk-gyro');
                     if (chkGyro) chkGyro.checked = false;
@@ -2428,71 +2457,47 @@ function initApp() {
         startCallback();
     };
 
-    // 『スタート選択』画面: 通常Playボタン
-    const btnPlayNormal = document.getElementById('btn-play-normal');
-    if (btnPlayNormal) {
-        const startNormal = () => {
+    // モード開始ボタン（Play / Endless / Meditation）
+    const bindModeStartButton = (btnId, setupFn) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        const start = () => {
+            initAudio(); // 最初のジェスチャで音声解除（ジャイロ確認より先）
             handleGameStartWithGyroCheck(() => {
                 initAudio();
-                meditationMode = false;
-                infiniteMode = false;
-                if (window.updatePopEffectUI) window.updatePopEffectUI('praise'); // 通常Playは快感コメント
-                if (window.updateBreathGuideUI) window.updateBreathGuideUI(false); // 通常Playはオフ
+                setupFn();
                 const startOverlay = document.getElementById('start-overlay');
                 if (startOverlay) startOverlay.classList.remove('active');
                 startGame();
+                Promise.resolve(initAudio()).then(() => ensureAmbientAfterUnlock());
             });
         };
-        btnPlayNormal.addEventListener('click', startNormal);
-        btnPlayNormal.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            startNormal();
-        }, { passive: false });
-    }
+        // touchstart / pointerdown の方が iOS の音声解除に有効
+        btn.addEventListener('touchstart', () => { initAudio(); }, { passive: true });
+        btn.addEventListener('pointerdown', () => { initAudio(); });
+        btn.addEventListener('click', start);
+    };
 
-    // 『スタート選択』画面: Endless Playボタン
-    const btnPlayInfinite = document.getElementById('btn-play-infinite');
-    if (btnPlayInfinite) {
-        const startInfinite = () => {
-            handleGameStartWithGyroCheck(() => {
-                initAudio();
-                meditationMode = false;
-                infiniteMode = true;
-                if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
-                if (window.updateBreathGuideUI) window.updateBreathGuideUI(false); // エンドレスはオフ
-                const startOverlay = document.getElementById('start-overlay');
-                if (startOverlay) startOverlay.classList.remove('active');
-                startGame();
-            });
-        };
-        btnPlayInfinite.addEventListener('click', startInfinite);
-        btnPlayInfinite.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            startInfinite();
-        }, { passive: false });
-    }
+    bindModeStartButton('btn-play-normal', () => {
+        meditationMode = false;
+        infiniteMode = false;
+        if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
+    });
 
-    // 『スタート選択』画面: 瞑想Playボタン
-    const btnPlayMeditation = document.getElementById('btn-play-meditation');
-    if (btnPlayMeditation) {
-        const startMeditation = () => {
-            handleGameStartWithGyroCheck(() => {
-                initAudio();
-                meditationMode = true;
-                infiniteMode = true;
-                if (window.updatePopEffectUI) window.updatePopEffectUI('none');
-                if (window.updateBreathGuideUI) window.updateBreathGuideUI(true); // 瞑想はオン
-                const startOverlay = document.getElementById('start-overlay');
-                if (startOverlay) startOverlay.classList.remove('active');
-                startGame();
-            });
-        };
-        btnPlayMeditation.addEventListener('click', startMeditation);
-        btnPlayMeditation.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            startMeditation();
-        }, { passive: false });
-    }
+    bindModeStartButton('btn-play-infinite', () => {
+        meditationMode = false;
+        infiniteMode = true;
+        if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
+    });
+
+    bindModeStartButton('btn-play-meditation', () => {
+        meditationMode = true;
+        infiniteMode = true;
+        if (window.updatePopEffectUI) window.updatePopEffectUI('none');
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(true);
+    });
 
     // 再スタートボタン (リフレッシュ完了画面から)
     const btnRestart = document.getElementById('btn-restart');
@@ -2525,17 +2530,12 @@ function initApp() {
         }, { passive: false });
     }
     
-    // ページ視認性変更やフォーカス時にオーディオコンテキストを復旧する
-    // ★重要: visibilitychange は「ユーザー操作」とみなされないため、
-    // ここから initAudio() や resume() を呼ぶと isResuming フラグがiOS上でデッドロックする。
-    // 実際の resume() はユーザーが次にタッチした瞬間の capture フェーズ initAudio() に委ねる。
+    // ページ復帰時: running 状態なら Ambient のみ再開（ジェスチャ外では resume しない）
     const handleVisibilityOrFocus = () => {
         if (gameActive && audioCtx) {
-            // すでに running かつ ambient が消えている場合のみ再開（非resume処理のみ）
             if (audioCtx.state === 'running' && ambientOscs.length === 0) {
                 startAmbientSound();
             }
-            // running でない場合は、次のユーザータップで capture フェーズの initAudio が resume する
         }
     };
     document.addEventListener('visibilitychange', () => {
@@ -2545,8 +2545,7 @@ function initApp() {
     });
     window.addEventListener('focus', handleVisibilityOrFocus);
 
-    // ★iOS対策: 他のハンドラの preventDefault や UIガードに遮られないよう、
-    // キャプチャフェーズ (capture: true) で最優先で initAudio を実行し、スピーカーを強制開放します。
+    // iOS: UIガードに遮られず解除できるよう capture で initAudio
     window.addEventListener('touchstart', initAudio, { capture: true });
     window.addEventListener('mousedown', initAudio, { capture: true });
     window.addEventListener('click', initAudio, { capture: true });
@@ -2575,18 +2574,18 @@ function initApp() {
     const startOverlayOnLoad = document.getElementById('start-overlay');
     if (startOverlayOnLoad) startOverlayOnLoad.classList.remove('active');
 
-    // ★AudioContextを事前生成しておく（suspended状態で待機）
-    // これにより、最初のユーザー操作で即座にresumeできる準備をする
-    initAudio();
+    // ★AudioContextを事前生成のみ（ジェスチャ外では resume しない）
+    initAudio({ resume: false });
 
-    // ★初回タッチ/クリック専用ハンドラ（once:true）
-    // ゲーム開始後、ユーザーが画面のどこかを最初に触れた瞬間に
-    // AudioContextをresumeして即座にアンビエント音を開始する
+    // ★初回タッチ/クリックで AudioContext を resume → アンビエント開始
     const _unlockAudioOnce = () => {
-        initAudio(); // resume() を実行 → onstatechange / .then() で startAmbientSound() が呼ばれる
+        pendingAmbientStart = true;
+        initAudio();
+        Promise.resolve(audioResumePromise).then(() => ensureAmbientAfterUnlock());
     };
     window.addEventListener('touchstart', _unlockAudioOnce, { capture: true, once: true });
     window.addEventListener('mousedown',  _unlockAudioOnce, { capture: true, once: true });
+    window.addEventListener('pointerdown', _unlockAudioOnce, { capture: true, once: true });
     window.addEventListener('click',      _unlockAudioOnce, { capture: true, once: true });
 
     startGame();
@@ -2662,10 +2661,26 @@ function endGame(forceQuit = false) {
 
 // 泡が弾ける「ピチョン」音を合成して再生（ディレイ・エコー付き）  プチッと弾ける破裂音レイヤー
 function playPopSound(combo = 1, originX) {
-    if (!audioCtx) return;
+    if (!audioCtx) {
+        initAudio();
+        return;
+    }
     
-    // ブラウザの自動再生ブロック対策
-    if (audioCtx.state !== 'running') return;
+    // ブラウザの自動再生ブロック対策（タップジェスチャ内なら解除を再試行）
+    if (audioCtx.state !== 'running') {
+        initAudio();
+        if (audioCtx.state !== 'running') {
+            // resume完了後に同じパラメータで1回だけ鳴らす
+            const c = combo;
+            const x = originX;
+            Promise.resolve(audioResumePromise).then(() => {
+                if (audioCtx && audioCtx.state === 'running') {
+                    playPopSound(c, x);
+                }
+            }).catch(() => {});
+            return;
+        }
+    }
     
     try {
         const now = audioCtx.currentTime;
@@ -3080,11 +3095,19 @@ function playClearSound() {
 // 流れるようなフロー環境音の開始（フェードイン／コーラス／リバーブ／LFO付き）
 function startAmbientSound() {
     if (!gameActive) return; // ゲームがアクティブでない場合は開始しない
-    if (!audioCtx) return; // audioCtx未生成時は何もしない（initAudioに委ねる）
+    if (!audioCtx) {
+        pendingAmbientStart = true;
+        return;
+    }
 
-    // AudioContextがrunning状態でなければ何もしない
-    // resume()はinitAudio()のみが担当し、ここでは呼ばない
-    if (audioCtx.state !== 'running') return;
+    // AudioContextがrunning状態でなければ、解除完了後に開始するよう予約する
+    // resume()はユーザージェスチャ内の initAudio() のみが担当する
+    if (audioCtx.state !== 'running') {
+        pendingAmbientStart = true;
+        return;
+    }
+
+    pendingAmbientStart = false;
     
     // すでに再生中の場合は何もしない
     if (ambientOscs.length > 0) return;
@@ -3132,9 +3155,9 @@ function startAmbientSound() {
         const revDelay2 = audioCtx.createDelay();
         const revFeedback2 = audioCtx.createGain();
         
-        revDelay1.delayTime.setValueAtTime(0.12, now); // 120ms驕ｻｶ
+        revDelay1.delayTime.setValueAtTime(0.12, now); // 120ms delay
         revFeedback1.gain.setValueAtTime(0.70, now);
-        revDelay2.delayTime.setValueAtTime(0.17, now); // 170ms驕ｻｶ
+        revDelay2.delayTime.setValueAtTime(0.17, now); // 170ms delay
         revFeedback2.gain.setValueAtTime(0.65, now);
         
         revDelay1.connect(revFeedback1);
@@ -4177,7 +4200,7 @@ function tryPopBubble(clientX, clientY) {
 
 
 // =============================================================
-// 4. UI譖ｴ譁ｰ
+// 4. UI更新
 // =============================================================
 
 // 褒める言葉の定義（日本語＋英語）
@@ -4526,6 +4549,7 @@ function updateRefreshGauge() {
 
 
 // =============================================================
+// 5. ゲーム開始 / 終了
 // =============================================================
 
 function startGame() {
@@ -4541,9 +4565,9 @@ function startGame() {
     refreshProgress = 0;
     gameStartTime = performance.now();
     gameActive = true;
-    isResuming = false; // オーディオ復旧状態の初期化
     guideHidden = false;
     nextSpawnTime = performance.now() + 400; // 間隔を置いて開始させる
+    pendingAmbientStart = true; // resume 完了待ちでも確実に音を開始する
     
     // UI初期化
     updateRefreshGauge();

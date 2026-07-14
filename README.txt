@@ -11,7 +11,6 @@
 - index.html         : PC・Android 用（CSS/JSを別ファイルで読み込み）
 - style.css          : スタイルシート（index.html 用）
 - app.js             : プログラム本体（index.html 用）
-- server.js          : ローカル確認用サーバー（開発者向け・任意）
 - README.txt         : この説明書（本書）
 
 ---------------------------------------------------------

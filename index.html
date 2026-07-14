@@ -5,21 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>脳リフレクソ - 音と光の泡つぶし / Brain Reflexo - Sound & Light Bubble Pop</title>
     <meta name="description" content="フワーと包み込む音と、ピチョンと弾ける泡。考えすぎのあたまをサラッとクリアにする脳疲労リセット空間。 / A relaxing space to clear your mind with soothing sounds and popping bubbles.">
-    <script>
-        // デバッグ用エラーキャッチャー (画面上に直接赤いダイアログでエラーを表示)
-        window.onerror = function(message, source, lineno, colno, error) {
-            const errDiv = document.createElement('div');
-            errDiv.style.cssText = 'position:fixed;top:10px;left:10px;width:calc(100% - 20px);max-height:300px;background:rgba(220,38,38,0.95);color:#fff;padding:15px;border-radius:10px;z-index:999999;font-family:monospace;font-size:11px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);line-height:1.4;';
-            errDiv.innerHTML = '<strong>[JS Runtime Error]</strong><br>' + message + '<br><small>Location: ' + source + ':' + lineno + ':' + colno + '</small>' + (error && error.stack ? '<br><pre style="margin-top:5px;white-space:pre-wrap;font-size:10px;opacity:0.8;">' + error.stack + '</pre>' : '');
-            document.body.appendChild(errDiv);
-            return false;
-        };
-    </script>
-    <!-- Google Fonts から洗練されたフォントを読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2.0">
+    <link rel="stylesheet" href="style.css?v=3.1">
 </head>
 <body class="theme-starry">
     <!-- 背景全体を覆うマインドシャワー＆泡Canvas -->
@@ -316,7 +305,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=3.0"></script>
+    <script src="app.js?v=3.1"></script>
     <!-- iPhone: Filesアプリでは同階層の app.js / style.css を読めないため、未読込時に案内を出す -->
     <script>
         (function () {
