@@ -77,6 +77,11 @@ body, html {
     pointer-events: auto;
 }
 
+/* プレイ中はロゴ領域がタップを奪わない（装飾のみ） */
+.app-header {
+    pointer-events: none;
+}
+
 /* =============================================================
    2. ヘッダーデザイン
    ============================================================= */
@@ -2341,7 +2346,13 @@ function initShower() {
     };
     
     const handleInteraction = (clientX, clientY) => {
-        if (document.querySelector('.overlay.active')) return;
+        // モード選択・終了・ジャイロ確認など「操作を塞ぐ」オーバーレイだけブロック
+        if (document.querySelector(
+            '#start-overlay.active, #gameover-overlay.active, #gyro-confirm-dialog.active, #sound-guide-dialog.active'
+        )) {
+            return;
+        }
+        if (!gameActive) return;
         
         if (tryPopBubble(clientX, clientY)) {
             return;
@@ -2353,7 +2364,7 @@ function initShower() {
 
     const isElementInUI = (target) => {
         if (!target) return false;
-        return !!(target.closest && target.closest('#settings-panel, .overlay, .game-actions, .btn-settings, .refresh-gauge'));
+        return !!(target.closest && target.closest('#settings-panel, #start-overlay, #gameover-overlay, #gyro-confirm-dialog, #sound-guide-dialog, .game-actions, .btn-settings, .refresh-gauge'));
     };
 
     let isDragging = false;
@@ -2416,8 +2427,7 @@ function initShower() {
         isDragging = true;
         lastDragX = e.clientX;
         lastDragY = e.clientY;
-        initAudio(); // ユーザー操作 of direct initialization
-        startAmbientSound(); // 背景アンビエント音の開始
+        initAudio();
         handleInteraction(e.clientX, e.clientY);
     });
 
@@ -2439,14 +2449,14 @@ function initShower() {
             e.preventDefault();
         }
         isDragging = true;
-        initAudio(); // ユーザー操作 of direct initialization
-        startAmbientSound(); // 背景アンビエント音の開始
+        // 先にヒット判定してから音声解除（初回タップの泡反応を優先）
         if (e.touches.length > 0) {
             const touch = e.touches[0];
             lastDragX = touch.clientX;
             lastDragY = touch.clientY;
             handleInteraction(touch.clientX, touch.clientY);
         }
+        initAudio();
     }, { passive: false });
 
     window.addEventListener('touchend', () => {
@@ -3358,7 +3368,7 @@ function initAudio(options) {
                 audioCtx._stateChangeListenerAdded = true;
                 audioCtx.onstatechange = () => {
                     if (audioCtx && audioCtx.state === 'running') {
-                        pregenerateCarbonatedBuffer();
+                        scheduleCarbonatedPregen();
                         if (gameActive || pendingAmbientStart) {
                             stopAmbientSound(true);
                             startAmbientSound();
@@ -3368,7 +3378,7 @@ function initAudio(options) {
             }
 
             if (audioCtx.state === 'running') {
-                pregenerateCarbonatedBuffer();
+                scheduleCarbonatedPregen();
                 if (gameActive || pendingAmbientStart) {
                     ensureAmbientAfterUnlock();
                 }
@@ -3396,7 +3406,7 @@ function initAudio(options) {
                 audioResumePromise = audioCtx.resume()
                     .then(() => {
                         audioResumePromise = null;
-                        pregenerateCarbonatedBuffer();
+                        scheduleCarbonatedPregen();
                         if (gameActive || pendingAmbientStart) {
                             stopAmbientSound(true);
                             startAmbientSound();
@@ -3421,6 +3431,21 @@ function initAudio(options) {
         console.warn("Web Audio APIの初期化に失敗しました。無音で動作します:", e);
     }
     return Promise.resolve();
+}
+
+// 炭酸バッファ生成は重いので、タップ判定のあとへずらす（iOSの初回タップ取りこぼし防止）
+function scheduleCarbonatedPregen() {
+    if (carbonatedBufferCache || !audioCtx) return;
+    const run = () => {
+        try {
+            pregenerateCarbonatedBuffer();
+        } catch (_) {}
+    };
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run, { timeout: 900 });
+    } else {
+        setTimeout(run, 0);
+    }
 }
 
 // 泡を一つ生成する
@@ -4376,30 +4401,9 @@ function initApp() {
     // アニメーションループ開始（ゲーム待機中も背景アニメは動かす）
     requestAnimationFrame(mainLoop);
 
-    // ★起動時はスタート画面をスキップして直接 Play モードを開始する
-    // （終了後のリスタートは従来どおりスタート画面に戻る）
-    meditationMode = false;
-    infiniteMode = false;
-    if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
-    if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
-    const startOverlayOnLoad = document.getElementById('start-overlay');
-    if (startOverlayOnLoad) startOverlayOnLoad.classList.remove('active');
-
-    // ★AudioContextを事前生成のみ（ジェスチャ外では resume しない）
+    // AudioContext は事前生成のみ。Play ボタンのジェスチャで resume する
+    // （起動時に自動開始すると iOS では最初のタップまで無音・反応が不安定になる）
     initAudio({ resume: false });
-
-    // ★初回タッチ/クリックで AudioContext を resume → アンビエント開始
-    const _unlockAudioOnce = () => {
-        pendingAmbientStart = true;
-        initAudio();
-        Promise.resolve(audioResumePromise).then(() => ensureAmbientAfterUnlock());
-    };
-    window.addEventListener('touchstart', _unlockAudioOnce, { capture: true, once: true });
-    window.addEventListener('mousedown',  _unlockAudioOnce, { capture: true, once: true });
-    window.addEventListener('pointerdown', _unlockAudioOnce, { capture: true, once: true });
-    window.addEventListener('click',      _unlockAudioOnce, { capture: true, once: true });
-
-    startGame();
 }
 
 function endGame(forceQuit = false) {
@@ -5886,8 +5890,9 @@ function tryPopBubble(clientX, clientY) {
         const dy = clientY - (b.y + bOffsetY);
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        // 半径の1.4倍に加えて、最小タップ判定サイズとして32pxを保証（小さな泡でも触りやすくする）
-        const hitRadius = Math.max(b.radius * 1.4, 32);
+        // 半径の1.55倍＋最小サイズ保証（スマホではさらに余裕を持たせる）
+        const minHit = IS_MOBILE ? 44 : 32;
+        const hitRadius = Math.max(b.radius * (IS_MOBILE ? 1.55 : 1.4), minHit);
         if (dist <= hitRadius) {
             b.popping = true;
             
@@ -6479,9 +6484,14 @@ function startGame() {
     // 最初の柔らかなアンビエント音を開始
     startAmbientSound();
 
-    // 最初の1個目の泡として、瞑想モード時のみ確実に「白い球 (silver)」を1個生成する
+    // 開始直後からタップできるように泡を先出し（スポーン待ちで無反応に見えないようにする）
     if (meditationMode) {
         createBubble('silver');
+    } else {
+        createBubble();
+        createBubble();
+        createBubble();
+        nextSpawnTime = performance.now() + 350;
     }
 }
 
