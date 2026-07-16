@@ -6,12 +6,16 @@
 ---------------------------------------------------------
 ■ パッケージ内容 (Files Included)
 ---------------------------------------------------------
+brain_reflexo.zip には、次のプレイヤー向けファイルだけが入っています。
+
 - 00_iPhone_OPEN_Brain_Reflexo.txt : iPhone起動の最短手順
 - Brain_Reflexo.html : 【おすすめ】iPhone / オフライン用・1ファイル完結版
 - index.html         : PC・Android 用（CSS/JSを別ファイルで読み込み）
 - style.css          : スタイルシート（index.html 用）
 - app.js             : プログラム本体（index.html 用）
 - README.txt         : この説明書（本書）
+
+※ 開発用（server.js / pack.js / build-single-html.js など）は zip に含みません。
 
 ---------------------------------------------------------
 ■ iPhone での起動方法（重要）

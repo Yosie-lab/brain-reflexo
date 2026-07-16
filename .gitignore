@@ -1,14 +1,19 @@
-# Temporary/Backup files
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Temporary / backup / old one-off scripts (do not ship)
 *.bak
 *_temp.js
-fix_app.js
-fix_fever_speed.js
-fix_haptics.js
-get_base64.js
-001ap
-/脳リフレクソ
-
-# Scripts
+*_temp.css
+*_temp.html
+fix_*.js
 apply_*.js
 clean_*.js
 rollback.js
@@ -16,6 +21,5 @@ rollback_*.js
 setup_*.js
 test_*.js
 update_*.js
-
-# OS files
-.DS_Store
+get_base64.js
+001ap

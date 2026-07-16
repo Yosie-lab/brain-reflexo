@@ -12,7 +12,8 @@ const root = __dirname;
 // 1) 単一HTMLビルド
 require('./build-single-html.js');
 
-// 2) 配布用zip（プレイヤーに不要な開発用ファイルは含めない）
+// 2) 配布用zip（プレイヤー向けファイルのみ。開発用は入れない）
+// 除外するもの: pack.js / build-single-html.js / server.js / .git* / .DS_Store / zip自身
 const zipName = 'brain_reflexo.zip';
 const zipPath = path.join(root, zipName);
 const include = [
@@ -32,5 +33,9 @@ for (const name of include) {
 }
 
 if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-execFileSync('zip', ['-r', zipName, ...include, '-x', '*.DS_Store'], { cwd: root, stdio: 'inherit' });
-console.log('Packed', zipName);
+execFileSync(
+    'zip',
+    ['-X', '-r', zipName, ...include, '-x', '*.DS_Store', '*__MACOSX*', '*.git*'],
+    { cwd: root, stdio: 'inherit' }
+);
+console.log('Packed', zipName, '(' + include.length + ' files)');
