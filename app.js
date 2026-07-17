@@ -17,8 +17,8 @@ const BUBBLE_COLORS = [
 let bubbles = [];
 const MAX_BUBBLES = 34; // 画面上の泡上限（全モード共通）
 const FEVER_MAX_BUBBLES = 72; // フィーバー中の泡上限
-const BUBBLE_SPAWN_MIN = 222; // ~800/3.6
-const BUBBLE_SPAWN_MAX = 417; // ~1500/3.6
+const BUBBLE_SPAWN_MIN = 296; // ~800/2.7
+const BUBBLE_SPAWN_MAX = 556; // ~1500/2.7
 let nextSpawnTime = 0;
 
 // 同色3連タップ判定用履歴
@@ -74,7 +74,7 @@ let langMode = 'bilingual'; // 'bilingual' | 'ja' | 'en'
 
 // リフレッシュゲージ
 let refreshProgress = 0;
-const REFRESH_TARGET = 80; // 完了までに必要な泡のポップ数
+const REFRESH_TARGET = 150; // 完了までに必要な泡のポップ数
 let totalPops = 0;
 let sessionPops = 0;
 
@@ -526,10 +526,15 @@ function initShower() {
     resizeShowerCanvas();
     initStars(); // 星屑の初期設定
     window.addEventListener('resize', resizeShowerCanvas);
+    // iOSのアドレスバー伸縮は visualViewport 側で起きるため、こちらも追従
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', resizeShowerCanvas);
+    }
     
     const addParticleFlow = (clientX, clientY) => {
-        createShowerParticles(clientX, clientY, 2);
-        createCursorTrail(clientX, clientY);
+        const p = clientToView(clientX, clientY);
+        createShowerParticles(p.x, p.y, 2);
+        createCursorTrail(p.x, p.y);
     };
     
     const handleInteraction = (clientX, clientY) => {
@@ -540,13 +545,14 @@ function initShower() {
             return;
         }
         if (!gameActive) return;
+        const p = clientToView(clientX, clientY);
         
-        if (tryPopBubble(clientX, clientY)) {
+        if (tryPopBubble(p.x, p.y)) {
             return;
         }
         
-        createShowerRipple(clientX, clientY);
-        createShowerParticles(clientX, clientY, 15);
+        createShowerRipple(p.x, p.y);
+        createShowerParticles(p.x, p.y, 15);
     };
 
     const isElementInUI = (target) => {
@@ -561,9 +567,10 @@ function initShower() {
     // 前回のドラッグ位置から現在の位置までの中間点を補間してポップ判定を行う（高速スワイプ時のすり抜け防止）
     const handleDragPop = (clientX, clientY) => {
         if (!gameActive) return;
+        const p = clientToView(clientX, clientY);
         if (lastDragX !== null && lastDragY !== null) {
-            const dx = clientX - lastDragX;
-            const dy = clientY - lastDragY;
+            const dx = p.x - lastDragX;
+            const dy = p.y - lastDragY;
             const dist = Math.sqrt(dx * dx + dy * dy);
             
             // 距離が12px以上の場合は中間地点を生成して判定（ステップ過多で固まるのを防ぐ）
@@ -576,13 +583,13 @@ function initShower() {
                     tryPopBubble(interX, interY);
                 }
             } else {
-                tryPopBubble(clientX, clientY);
+                tryPopBubble(p.x, p.y);
             }
         } else {
-            tryPopBubble(clientX, clientY);
+            tryPopBubble(p.x, p.y);
         }
-        lastDragX = clientX;
-        lastDragY = clientY;
+        lastDragX = p.x;
+        lastDragY = p.y;
     };
 
     window.addEventListener('mousemove', (e) => {
@@ -612,8 +619,9 @@ function initShower() {
     window.addEventListener('mousedown', (e) => {
         if (isElementInUI(e.target)) return;
         isDragging = true;
-        lastDragX = e.clientX;
-        lastDragY = e.clientY;
+        const p = clientToView(e.clientX, e.clientY);
+        lastDragX = p.x;
+        lastDragY = p.y;
         initAudio();
         handleInteraction(e.clientX, e.clientY);
     });
@@ -639,8 +647,9 @@ function initShower() {
         // 先にヒット判定してから音声解除（初回タップの泡反応を優先）
         if (e.touches.length > 0) {
             const touch = e.touches[0];
-            lastDragX = touch.clientX;
-            lastDragY = touch.clientY;
+            const p = clientToView(touch.clientX, touch.clientY);
+            lastDragX = p.x;
+            lastDragY = p.y;
             handleInteraction(touch.clientX, touch.clientY);
         }
         initAudio();
@@ -668,10 +677,37 @@ function initShower() {
     }, { passive: false });
 }
 
+function getLayoutSize() {
+    // CSSの実レイアウト（100%/100dvh）を優先。innerWidth との差が iOS のズレ原因になる
+    if (showerCanvas) {
+        const w = showerCanvas.clientWidth;
+        const h = showerCanvas.clientHeight;
+        if (w > 0 && h > 0) return { w, h };
+    }
+    const vv = window.visualViewport;
+    if (vv && vv.width > 0 && vv.height > 0) {
+        return { w: Math.round(vv.width), h: Math.round(vv.height) };
+    }
+    return { w: window.innerWidth, h: window.innerHeight };
+}
+
+function clientToView(clientX, clientY) {
+    if (!showerCanvas) return { x: clientX, y: clientY };
+    const rect = showerCanvas.getBoundingClientRect();
+    const rw = rect.width || viewW || 1;
+    const rh = rect.height || viewH || 1;
+    return {
+        x: (clientX - rect.left) * ((viewW || rw) / rw),
+        y: (clientY - rect.top) * ((viewH || rh) / rh)
+    };
+}
+
 function resizeShowerCanvas() {
     if (!showerCanvas) return;
-    const nextW = window.innerWidth;
-    const nextH = window.innerHeight;
+    // インライン指定を外し、CSSレイアウトにサイズを委ねる（ズレ防止）
+    showerCanvas.style.width = '';
+    showerCanvas.style.height = '';
+    const { w: nextW, h: nextH } = getLayoutSize();
     // iOSのツールバー伸縮などで毎フレームリサイズすると操作不能になるため、実変化時のみ
     const sizeChanged = Math.abs(nextW - viewW) > 8 || Math.abs(nextH - viewH) > 8 || viewW === 0;
     if (!sizeChanged && showerCtx) return;
@@ -680,8 +716,6 @@ function resizeShowerCanvas() {
     viewH = nextH;
     // モバイルは描画負荷を抑えつつRetinaのぼやけを緩和（上限1.5）
     canvasDpr = Math.min(window.devicePixelRatio || 1, IS_MOBILE ? 1.5 : 2);
-    showerCanvas.style.width = viewW + 'px';
-    showerCanvas.style.height = viewH + 'px';
     showerCanvas.width = Math.max(1, Math.round(viewW * canvasDpr));
     showerCanvas.height = Math.max(1, Math.round(viewH * canvasDpr));
     if (!showerCtx) {
@@ -1749,26 +1783,19 @@ function createBubble(forceType) {
             radius *= 1.25;
         }
     } else {
-        // フィーバー中でなければ、低確率で銀色の泡が発生。フィーバー中は25%の確率で連鎖バブルが発生
-        if (meditationMode) {
-            // 瞑想モード時は20個に1個（5%）の確率で銀色（白い球）が発生
-            if (Math.random() < 0.05) {
+        // フィーバー中でなければ、18個に1個で銀色の泡が発生。フィーバー中は連鎖バブルが発生
+        if (!feverActive) {
+            // 全モード共通: 18個に1個の確率で銀色（白い球）が発生
+            if (Math.random() < (1 / 18)) {
                 type = 'silver';
-                radius *= 1.25;
+                radius *= 1.25; // 銀色の泡は少し大きく
             }
         } else {
-            if (!feverActive) {
-                if (Math.random() < 0.05) { // 5%の確率
-                    type = 'silver';
-                    radius *= 1.25; // 銀色の泡は少し大きく
-                }
-            } else {
-                // 画面上にすでに連鎖バブルが存在するかチェック（破裂中や予約中のものも含め、画面上に1つだけに制限する）
-                const hasChain = bubbles.some(b => b.type === 'chain');
-                if (!hasChain && Math.random() < 0.35) { // 35%の確率で連鎖バブルが発生
-                    type = 'chain';
-                    radius *= 1.15; // 連鎖バブルは少し大きく
-                }
+            // 画面上にすでに連鎖バブルが存在するかチェック（破裂中や予約中のものも含め、画面上に1つだけに制限する）
+            const hasChain = bubbles.some(b => b.type === 'chain');
+            if (!hasChain && Math.random() < 0.35) { // 35%の確率で連鎖バブルが発生
+                type = 'chain';
+                radius *= 1.15; // 連鎖バブルは少し大きく
             }
         }
     }
@@ -2113,9 +2140,9 @@ function applyLangMode(mode) {
     // スタート画面のモードカードの説明テキスト (btn-mode-detail)
     const modeDetails = {
         'btn-play-normal': {
-            bilingual: '泡を80個つぶしてゴール ／ 約3〜5分',
-            ja:        '泡を80個つぶしてゴール ／ 約3〜5分',
-            en:        'Pop 80 bubbles to finish · 3–5 min'
+            bilingual: '泡を150個つぶしてゴール ／ 約40秒',
+            ja:        '泡を150個つぶしてゴール ／ 約40秒',
+            en:        'Pop 150 bubbles to finish · about 40 sec'
         },
         'btn-play-infinite': {
             bilingual: 'ゴールなく自由に楽しむ ／ 時間無制限',
@@ -2686,6 +2713,7 @@ function endGame(forceQuit = false) {
     }
 
     gameActive = false;
+    pendingAmbientStart = false;
     
     // クリア効果音の再生
     playClearSound();
@@ -3416,44 +3444,43 @@ function startAmbientSound() {
     }
 }
 
-// 柔らかな環境背景音の停止（2秒のフェードアウト）
+// 柔らかな環境背景音の停止
 function stopAmbientSound(immediate = false) {
-    if (ambientOscs.length === 0 && solfeggioOscs.length === 0) return;
+    pendingAmbientStart = false;
+    if (ambientOscs.length === 0 && solfeggioOscs.length === 0 && !ambientGain && !solfeggioGain528 && !solfeggioGain396) {
+        return;
+    }
+    if (!audioCtx) {
+        ambientOscs = [];
+        ambientNodes = [];
+        solfeggioOscs = [];
+        ambientGain = null;
+        solfeggioGain528 = null;
+        solfeggioGain396 = null;
+        return;
+    }
     
     try {
         const now = audioCtx.currentTime;
-        const fadeTime = immediate ? 0.05 : 0.5; // 即時なら50ms、通常は0.5秒で素早く消音
+        const fadeTime = immediate ? 0.02 : 0.5;
         
-        if (ambientGain) {
-            try {
-                ambientGain.gain.cancelScheduledValues(now);
-                const currentVal = Math.max(0, Math.min(0.003, ambientGain.gain.value));
-                ambientGain.gain.setValueAtTime(currentVal, now);
-                ambientGain.gain.linearRampToValueAtTime(0, now + fadeTime);
-            } catch (err) {
-                ambientGain.gain.setValueAtTime(0, now);
+        // ディレイ・フィードバック経路も含め、グラフ内の全Gainを消音
+        // （ソルフェジオは destination 直結のリバーブがあり、入力ゲインだけでは止まらない）
+        const gainsToMute = [ambientGain, solfeggioGain528, solfeggioGain396];
+        for (const node of ambientNodes) {
+            if (node && node.gain && !gainsToMute.includes(node)) {
+                gainsToMute.push(node);
             }
         }
-
-        if (solfeggioGain528) {
+        for (const g of gainsToMute) {
+            if (!g || !g.gain) continue;
             try {
-                solfeggioGain528.gain.cancelScheduledValues(now);
-                const currentVal = Math.max(0, Math.min(0.015, solfeggioGain528.gain.value));
-                solfeggioGain528.gain.setValueAtTime(currentVal, now);
-                solfeggioGain528.gain.linearRampToValueAtTime(0, now + fadeTime);
+                g.gain.cancelScheduledValues(now);
+                const currentVal = Math.max(0, g.gain.value);
+                g.gain.setValueAtTime(currentVal, now);
+                g.gain.linearRampToValueAtTime(0, now + fadeTime);
             } catch (err) {
-                solfeggioGain528.gain.setValueAtTime(0, now);
-            }
-        }
-
-        if (solfeggioGain396) {
-            try {
-                solfeggioGain396.gain.cancelScheduledValues(now);
-                const currentVal = Math.max(0, Math.min(0.015, solfeggioGain396.gain.value));
-                solfeggioGain396.gain.setValueAtTime(currentVal, now);
-                solfeggioGain396.gain.linearRampToValueAtTime(0, now + fadeTime);
-            } catch (err) {
-                solfeggioGain396.gain.setValueAtTime(0, now);
+                try { g.gain.value = 0; } catch (_) {}
             }
         }
         
@@ -3464,33 +3491,40 @@ function stopAmbientSound(immediate = false) {
         ambientOscs = [];
         ambientNodes = [];
         solfeggioOscs = [];
+        ambientGain = null;
         solfeggioGain528 = null;
         solfeggioGain396 = null;
-        
-        setTimeout(() => {
-            // オシレーターの完全停止と接続解除
+        ambientFilter = null;
+        ambientLFO = null;
+
+        const teardown = () => {
             currentOscs.forEach(osc => {
-                try {
-                    osc.stop();
-                    osc.disconnect();
-                } catch (e) {}
+                try { osc.stop(); } catch (e) {}
+                try { osc.disconnect(); } catch (e) {}
             });
-            // ソルフェジオオシレーターの完全停止と接続解除
             currentSolfeggioOscs.forEach(osc => {
-                try {
-                    osc.stop();
-                    osc.disconnect();
-                } catch (e) {}
+                try { osc.stop(); } catch (e) {}
+                try { osc.disconnect(); } catch (e) {}
             });
-            // エフェクトノードの一括接続解除
             currentNodes.forEach(node => {
-                try {
-                    node.disconnect();
-                } catch (e) {}
+                try { node.disconnect(); } catch (e) {}
             });
-        }, fadeTime * 1000 + 100);
+        };
+
+        if (immediate) {
+            // 即時停止: フィードバック残響が残らないよう同期で切断
+            teardown();
+        } else {
+            setTimeout(teardown, fadeTime * 1000 + 80);
+        }
     } catch (e) {
         console.warn("アンビエント音の停止エラー:", e);
+        ambientOscs = [];
+        ambientNodes = [];
+        solfeggioOscs = [];
+        ambientGain = null;
+        solfeggioGain528 = null;
+        solfeggioGain396 = null;
     }
 }
 
@@ -4037,9 +4071,12 @@ function mainLoop(timestamp) {
         _lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
         const frameStart = performance.now();
         
-        // iOSのツールバー伸縮で毎フレームリサイズしない（閾値付き）
-        if (showerCanvas && (Math.abs(viewW - window.innerWidth) > 8 || Math.abs(viewH - window.innerHeight) > 8)) {
-            resizeShowerCanvas();
+        // iOSのツールバー伸縮で毎フレームリサイズしない（実レイアウトとの差で判定）
+        if (showerCanvas) {
+            const layout = getLayoutSize();
+            if (Math.abs(viewW - layout.w) > 8 || Math.abs(viewH - layout.h) > 8) {
+                resizeShowerCanvas();
+            }
         }
         
         // バックグラウンドのマインドシャワーの更新と描画（泡もここで描画される）

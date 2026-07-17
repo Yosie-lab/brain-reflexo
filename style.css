@@ -22,7 +22,10 @@ body, html {
     width: 100%;
     height: 100%;
     height: 100dvh; /* モバイルブラウザのツールバーによるはみ出しを防ぐ */
+    max-height: 100%;
+    max-height: 100dvh;
     overflow: hidden;
+    overscroll-behavior: none;
     background-color: #050811; /* フォールバック用の暗い背景色 */
     background: radial-gradient(circle at 50% 30%, #0b1528 0%, #050811 60%, #010205 100%);
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
@@ -32,11 +35,11 @@ body, html {
 
 /* 背景Canvas */
 #shower-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: fixed;
+    inset: 0;
     width: 100%;
     height: 100%;
+    /* inset:0 と 100dvh の二重指定は Chrome で数pxはみ出すことがあるため height は 100% のみ */
     z-index: 1;
     touch-action: none; /* キャンバス上での迅速なタップ操作による意図しないズームを防ぐ */
     image-rendering: auto;
@@ -53,7 +56,7 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
-    height: 100dvh; /* 動的ビューポートに対応して常に画面内に収める */
+    /* 親(html/body)が 100dvh のため 100% に統一（Chromeのはみ出し防止） */
     z-index: 10;
     display: flex;
     flex-direction: column;
@@ -79,35 +82,68 @@ body, html {
 .app-header {
     text-align: center;
     margin-top: 10px;
-    opacity: 0.85;
+    opacity: 1;
     animation: fadeInDown 1.5s ease-out;
 }
 
 .logo {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    color: #e2e8f0;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-    line-height: 1.25;
     text-align: center;
+    line-height: 1.15;
 }
 
-.logo span {
-    color: #81c3d7;
-    font-weight: 300;
-    text-shadow: 0 0 15px rgba(129, 195, 215, 0.3);
+.logo-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 140px;
+    height: 70px;
+    transform: translate(-50%, -55%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(126, 200, 216, 0.32) 0%, rgba(216, 196, 160, 0.1) 45%, transparent 72%);
+    filter: blur(6px);
+    z-index: 0;
+    animation: titleGlow 4.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* 共通ブランドタイトル「脳リフレクソ」 */
+.brand-title {
+    position: relative;
+    z-index: 1;
+    font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    background: linear-gradient(115deg, #eaf6fa 0%, #7ec8d8 38%, #e2d0a8 78%, #f4efe6 100%);
+    background-size: 180% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: brandShimmer 6s ease-in-out infinite;
+    filter: drop-shadow(0 6px 20px rgba(126, 200, 216, 0.24));
+    white-space: nowrap;
+}
+
+.logo-brand {
+    font-size: 24px;
+    letter-spacing: 0.22em;
+    margin-right: -0.22em;
 }
 
 .logo-en {
-    font-size: 10px;
-    font-weight: 400;
-    letter-spacing: 2px;
-    color: #94a3b8;
-    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.42em;
+    margin-right: -0.42em;
+    color: rgba(148, 163, 184, 0.9);
+    margin-top: 8px;
     text-transform: uppercase;
 }
 
@@ -226,13 +262,18 @@ body, html {
     .app-header .subtitle {
         display: none; /* プレイ中のすっきりしたビジュアルとスペース確保のためサブタイトルを非表示にする */
     }
-    .logo {
-        font-size: 19px;
-        letter-spacing: 2px;
+    .logo-brand {
+        font-size: 20px;
+        letter-spacing: 0.18em;
+        margin-right: -0.18em;
     }
     .logo-en {
         font-size: 8px;
-        margin-top: 2px;
+        margin-top: 6px;
+    }
+    .logo-glow {
+        width: 110px;
+        height: 56px;
     }
     .game-actions {
         top: calc(10px + env(safe-area-inset-top));
@@ -360,32 +401,35 @@ body, html {
    6. リフレッシュゲージ (プログレスバー)
    ============================================================= */
 .refresh-gauge {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
+    right: 0;
     width: 100%;
-    height: calc(20px + env(safe-area-inset-bottom));
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 20;
-    overflow: visible;
+    height: calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 30; /* fixed キャンバス(1)より前面に常時表示 */
+    overflow: hidden;
+    pointer-events: none; /* バー自体はタップを奪わない（下端の泡操作を妨げない） */
+    box-sizing: border-box;
 }
 
 .refresh-gauge-fill {
     width: 0%;
-    height: 20px; /* セーフエリアの上部のバー領域のみを塗る */
+    height: 8px; /* 細いバー。セーフエリア分は下の余白として残す */
     background: linear-gradient(90deg, #8da9c4, #81c3d7, #96e6b3, #c2aff0);
-    box-shadow: 0 0 12px rgba(129, 195, 215, 0.7);
+    box-shadow: 0 0 8px rgba(129, 195, 215, 0.55);
     transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .refresh-gauge-label {
     position: absolute;
-    top: 10px; /* セーフエリアに依らずバーの縦中央に配置 */
+    top: 4px;
     transform: translateY(-50%);
-    right: calc(20px + env(safe-area-inset-right));
-    font-size: 10px;
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    font-size: 9px;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: 1px;
@@ -393,6 +437,7 @@ body, html {
     transition: opacity 0.5s ease;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
     z-index: 25;
+    line-height: 1;
 }
 
 .refresh-gauge-label.visible {
@@ -427,6 +472,21 @@ body, html {
     will-change: opacity, visibility;
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
+}
+
+/* スタート画面は少し下寄せで視覚バランスを取る */
+#start-overlay.overlay {
+    justify-content: flex-start;
+    padding-top: max(56px, 11vh);
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+#start-overlay.overlay::before,
+#start-overlay.overlay::after {
+    display: none;
+    content: none;
+    margin: 0;
+    flex: 0 0 auto;
 }
 
 .overlay::before,
@@ -547,6 +607,78 @@ body, html {
 
 .btn-meditation:hover {
     box-shadow: 0 6px 20px rgba(129, 195, 215, 0.5);
+}
+
+/* スタート画面のモードボタンはガラス調スタイルを優先 */
+#start-overlay .btn-primary.btn-mode,
+#start-overlay .btn-infinite.btn-mode,
+#start-overlay .btn-meditation.btn-mode {
+    background: linear-gradient(155deg, rgba(22, 36, 56, 0.88), rgba(10, 18, 32, 0.72));
+    color: #eaf4f8;
+    border: 1px solid rgba(200, 232, 240, 0.14);
+    border-radius: 18px;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    position: relative;
+    overflow: hidden;
+}
+
+#start-overlay .btn-primary.btn-mode::before,
+#start-overlay .btn-infinite.btn-mode::before,
+#start-overlay .btn-meditation.btn-mode::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10%;
+    bottom: 10%;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, transparent, #7ec8d8, transparent);
+    opacity: 0.85;
+}
+
+#start-overlay #mode-card-normal .btn-mode {
+    border-color: rgba(126, 200, 216, 0.32);
+    box-shadow:
+        0 10px 30px rgba(126, 200, 216, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+#start-overlay #mode-card-normal .btn-mode::before {
+    background: linear-gradient(180deg, transparent, #7ec8d8, #e2d0a8, transparent);
+}
+
+#start-overlay #mode-card-infinite .btn-mode {
+    border-color: rgba(196, 180, 220, 0.28);
+    box-shadow:
+        0 10px 30px rgba(168, 150, 210, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+#start-overlay #mode-card-infinite .btn-mode::before {
+    background: linear-gradient(180deg, transparent, #c4b4dc, #9ad9c0, transparent);
+}
+
+#start-overlay #mode-card-meditation .btn-mode {
+    border-color: rgba(150, 230, 200, 0.28);
+    box-shadow:
+        0 10px 30px rgba(129, 195, 215, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+#start-overlay #mode-card-meditation .btn-mode::before {
+    background: linear-gradient(180deg, transparent, #7ec8d8, #a7f3d0, transparent);
+}
+
+#start-overlay .btn-mode:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    border-color: rgba(232, 240, 245, 0.28);
+}
+
+#start-overlay .btn-mode:active {
+    transform: translateY(1px);
+    filter: brightness(0.98);
 }
 
 /* モード選択画面のサブラベル調整 */
@@ -1016,54 +1148,141 @@ body.theme-sakura {
    14. スタート画面 オンボーディング導入
    ============================================================= */
 
-/* オーバーレイコンテンツをスタート画面用に拡張 */
+/* 3帯構成: ブランド → ガイド → アクション */
 .start-overlay-content {
-    padding: 24px 22px 28px;
-    max-width: 380px;
-    width: 92%;
-    /* スクロールはオーバーレイ側が担うのでこちらはautoではなくvisible */
-    overflow: visible;
-    /* 左右は中央寄せ、上下は擬似要素でのセンタリングのためマージン0 */
+    --start-gap-xs: 8px;
+    --start-gap-sm: 12px;
+    --start-gap-md: 16px;
+    position: relative;
+    z-index: 1;
+    padding: 28px 22px 24px;
+    max-width: 360px;
+    width: min(92vw, 360px);
+    overflow: hidden;
     margin: 0 auto;
+    background:
+        radial-gradient(110% 70% at 50% -8%, rgba(126, 200, 216, 0.14), transparent 52%),
+        linear-gradient(165deg, rgba(14, 24, 42, 0.78), rgba(7, 12, 24, 0.52));
+    border: 1px solid rgba(200, 232, 240, 0.14);
+    box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    border-radius: 24px;
+    backdrop-filter: blur(28px) saturate(1.12);
+    -webkit-backdrop-filter: blur(28px) saturate(1.12);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 .start-overlay-content::-webkit-scrollbar { display: none; }
 
-/* タイトル */
+.start-overlay-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.035) 50%, transparent 58%);
+    background-size: 220% 100%;
+    animation: startSheen 7s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes startSheen {
+    0%, 100% { background-position: 120% 0; opacity: 0.3; }
+    50% { background-position: -20% 0; opacity: 0.55; }
+}
+
+/* タイトル帯 */
 .start-title {
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: 5px;
-    background: linear-gradient(135deg, #81c3d7, #c2aff0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
-    margin-bottom: 8px;
-    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 var(--start-gap-xs);
+    line-height: 1.1;
+    animation: startTitleIn 1.0s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes startTitleIn {
+    from { opacity: 0; transform: translateY(10px); filter: blur(3px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.start-title-glow {
+    position: absolute;
+    width: 140px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(126, 200, 216, 0.26) 0%, rgba(216, 196, 160, 0.06) 45%, transparent 72%);
+    filter: blur(8px);
+    z-index: 0;
+    animation: titleGlow 4.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes titleGlow {
+    0%, 100% { opacity: 0.45; transform: scale(0.94); }
+    50% { opacity: 0.85; transform: scale(1.05); }
+}
+
+.start-title-ja { position: relative; z-index: 1; }
+
+.start-brand {
+    font-size: 34px;
+    letter-spacing: 0.16em;
+    margin-right: -0.16em;
+    z-index: 1;
+}
+
+@keyframes brandShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.start-title-en {
+    position: relative;
+    z-index: 1;
+    margin-top: 8px;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.4em;
+    margin-right: -0.4em;
+    text-transform: uppercase;
+    color: rgba(168, 190, 210, 0.82);
 }
 
 .start-subtitle {
+    position: relative;
+    z-index: 1;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
     font-size: 11px;
-    color: #94a3b8;
-    letter-spacing: 0.5px;
-    margin-bottom: 18px;
+    font-weight: 300;
+    color: rgba(148, 163, 184, 0.92);
+    letter-spacing: 0.03em;
+    margin: 0 0 var(--start-gap-md);
     line-height: 1.6;
+    text-align: center;
+    animation: startTitleIn 1.0s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
 }
 
-/* =============================================================
-   3ステップHow-toガイド
-   ============================================================= */
+/* ガイド帯: 主役を奪わないコンパクト行 */
 .how-to-guide {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: flex-start;
-    justify-content: center;
-    gap: 4px;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 16px;
-    padding: 14px 8px;
-    margin-bottom: 20px;
-    animation: fadeInUp 0.8s ease-out 0.3s both;
+    justify-content: space-between;
+    gap: 2px;
+    background: transparent;
+    border: none;
+    border-top: 1px solid rgba(200, 232, 240, 0.1);
+    border-bottom: 1px solid rgba(200, 232, 240, 0.1);
+    padding: var(--start-gap-sm) 2px;
+    margin: 0 0 var(--start-gap-md);
+    animation: fadeInUp 0.75s ease-out 0.22s both;
 }
 
 .how-to-step {
@@ -1071,14 +1290,16 @@ body.theme-sakura {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     text-align: center;
+    min-width: 0;
 }
 
 .how-to-icon {
-    font-size: 22px;
+    font-size: 17px;
     line-height: 1;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    opacity: 0.9;
     animation: floatIcon 3s ease-in-out infinite;
 }
 
@@ -1088,14 +1309,14 @@ body.theme-sakura {
 
 @keyframes floatIcon {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+    50% { transform: translateY(-3px); }
 }
 
 .how-to-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #e2e8f0;
-    letter-spacing: 1px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.92);
+    letter-spacing: 0.04em;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1106,144 +1327,202 @@ body.theme-sakura {
     font-size: 8px;
     font-weight: 400;
     color: #64748b;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .how-to-desc {
-    font-size: 9.5px;
-    color: #64748b;
-    line-height: 1.5;
-    letter-spacing: 0.3px;
+    font-size: 9px;
+    color: rgba(100, 116, 139, 0.95);
+    line-height: 1.35;
+    letter-spacing: 0.01em;
 }
 
 .how-to-arrow {
-    font-size: 14px;
+    font-size: 11px;
     color: rgba(129, 195, 215, 0.35);
     flex-shrink: 0;
-    padding-top: 12px;
+    padding-top: 6px;
     align-self: flex-start;
+    opacity: 0.75;
 }
 
-/* =============================================================
-   モード選択ラベル
-   ============================================================= */
+/* アクション帯 */
 .mode-select-label {
+    position: relative;
+    z-index: 1;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
     font-size: 10px;
-    color: #64748b;
-    letter-spacing: 1px;
+    color: rgba(168, 190, 210, 0.7);
+    letter-spacing: 0.16em;
+    margin-right: -0.16em;
     text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-weight: 300;
+    margin: 0 0 var(--start-gap-sm);
     text-align: center;
-    animation: fadeInUp 0.8s ease-out 0.5s both;
+    animation: fadeInUp 0.75s ease-out 0.35s both;
 }
 
-/* =============================================================
-   モードカード（バッジ付きボタンコンテナ）
-   ============================================================= */
+/* バッジはボタン上に重ねて、カード高さのムラを解消 */
 .mode-card {
     position: relative;
-    margin-bottom: 10px;
-    animation: fadeInUp 0.8s ease-out both;
+    z-index: 1;
+    margin: 0 0 10px;
+    animation: fadeInUp 0.75s ease-out both;
 }
+.mode-card:last-child { margin-bottom: 0; }
 
-#mode-card-normal  { animation-delay: 0.6s; }
-#mode-card-infinite { animation-delay: 0.75s; }
-#mode-card-meditation { animation-delay: 0.9s; }
+#mode-card-normal  { animation-delay: 0.45s; }
+#mode-card-infinite { animation-delay: 0.55s; }
+#mode-card-meditation { animation-delay: 0.65s; }
 
-/* おすすめバッジ */
 .mode-badge {
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    z-index: 3;
     display: inline-block;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
     font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #f3c68f;
-    background: rgba(243, 198, 143, 0.12);
-    border: 1px solid rgba(243, 198, 143, 0.3);
-    border-radius: 20px;
-    padding: 2px 10px;
-    margin-bottom: 5px;
-    margin-left: 4px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: rgba(226, 208, 168, 0.95);
+    background: rgba(18, 28, 44, 0.95);
+    border: 1px solid rgba(226, 208, 168, 0.28);
+    border-radius: 999px;
+    padding: 2px 9px;
+    margin: 0;
+    line-height: 1.3;
+    pointer-events: none;
 }
 
-/* =============================================================
-   モードボタン（アイコン＋テキスト2行レイアウト）
-   ============================================================= */
 .btn-mode {
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
-    gap: 10px;
-    padding: 13px 16px !important;
+    gap: 12px;
+    padding: 13px 14px 13px 16px !important;
     text-align: left;
     width: 100%;
+    min-height: 62px;
+    box-sizing: border-box;
 }
 
 .btn-mode-icon {
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1;
     flex-shrink: 0;
-    width: 28px;
-    text-align: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    background: rgba(126, 200, 216, 0.1);
+    border: 1px solid rgba(200, 232, 240, 0.12);
+    color: #d7eef4;
+}
+
+#mode-card-infinite .btn-mode-icon {
+    background: rgba(196, 180, 220, 0.12);
+    border-color: rgba(196, 180, 220, 0.18);
+    color: #e6ddf5;
+}
+
+#mode-card-meditation .btn-mode-icon {
+    background: rgba(150, 230, 200, 0.1);
+    border-color: rgba(150, 230, 200, 0.18);
+    color: #d5f6e8;
 }
 
 .btn-mode-body {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     flex: 1;
+    min-width: 0;
 }
 
 .btn-mode-title {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
     display: block;
-    line-height: 1.2;
+    line-height: 1.25;
+    color: #f2f7fa;
 }
 
 .btn-mode-detail {
-    font-size: 9.5px;
-    font-weight: 500; /* 文字の視認性を高めるために少し太く */
-    opacity: 0.85; /* コントラストを高めるために透明度を下げる */
-    letter-spacing: 0.3px;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 11.5px;
+    font-weight: 400;
+    opacity: 0.9;
+    letter-spacing: 0.01em;
     display: block;
     line-height: 1.4;
+    color: #c5d4e2;
 }
 
-/* ホバー時の強調 */
-.btn-mode:hover .btn-mode-title {
-    opacity: 1;
-}
-.btn-mode:hover .btn-mode-detail {
-    opacity: 0.95;
-}
+.btn-mode:hover .btn-mode-title { opacity: 1; }
+.btn-mode:hover .btn-mode-detail { opacity: 0.95; }
 
 /* モバイル小画面対応（iPhone SE: 667px、iPhone 12: 844px 等） */
 @media (max-height: 750px) {
-    #start-overlay {
-        padding-top: 12px;
+    /* 縦中央寄せだと上下が欠けてスクロール不能になるため、上寄せ＋スクロールに切替 */
+    #start-overlay.overlay,
+    #gameover-overlay.overlay {
+        justify-content: flex-start;
+        align-items: center;
+        padding: max(8px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom));
+    }
+    #start-overlay.overlay {
+        padding-top: max(40px, 8vh);
+    }
+    #start-overlay.overlay::before,
+    #start-overlay.overlay::after,
+    #gameover-overlay.overlay::before,
+    #gameover-overlay.overlay::after {
+        display: none;
+        content: none;
+        margin: 0;
+        flex: 0 0 auto;
+    }
+    .start-overlay-content,
+    #gameover-overlay .overlay-content {
+        margin: 0 auto;
+        max-width: min(380px, 94vw);
+        width: 94%;
     }
     .start-overlay-content {
-        padding: 14px 16px 16px;
+        padding: 20px 16px 18px;
+        --start-gap-xs: 6px;
+        --start-gap-sm: 10px;
+        --start-gap-md: 12px;
     }
     .start-title {
-        font-size: 24px;
         margin-bottom: 6px;
-        letter-spacing: 4px;
     }
-    body.lang-en .start-title .en-text {
-        font-size: 26px !important;
+    .start-brand {
+        font-size: 28px;
+        letter-spacing: 0.14em;
+        margin-right: -0.14em;
+    }
+    .start-title-glow {
+        width: 110px;
+        height: 56px;
+    }
+    body.lang-en .start-title .en-text,
+    body.lang-en .start-title-en {
+        font-size: 24px !important;
     }
     .start-subtitle {
         font-size: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
     .how-to-guide {
-        padding: 10px 6px;
-        margin-bottom: 14px;
-        border-radius: 12px;
+        padding: 10px 4px;
+        margin-bottom: 12px;
     }
     .how-to-icon {
         font-size: 17px;
@@ -1271,35 +1550,57 @@ body.theme-sakura {
         margin-bottom: 4px;
     }
     .btn-mode {
-        padding: 11px 14px !important;
+        padding: 12px 14px 12px 16px !important;
+        gap: 12px;
     }
     .btn-mode-icon {
-        font-size: 17px;
-        width: 24px;
+        font-size: 15px;
+        width: 36px;
+        height: 36px;
     }
     .btn-mode-title {
-        font-size: 12px;
+        font-size: 15px;
     }
     .btn-mode-detail {
-        font-size: 9px;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+    .app-container {
+        padding: 16px 12px;
     }
 }
 
-/* iPhone SE（375×667）などさらに小さい画面 */
+/* iPhone SE（375×667）など小さい画面 */
 @media (max-height: 680px) {
-    #start-overlay {
-        padding-top: 8px;
+    #start-overlay.overlay,
+    #gameover-overlay.overlay {
+        padding-top: max(6px, env(safe-area-inset-top));
+    }
+    #start-overlay.overlay {
+        padding-top: max(28px, 6vh);
     }
     .start-overlay-content {
-        padding: 10px 14px 12px;
+        padding: 10px 12px 12px;
+    }
+    .start-title {
+        margin-bottom: 4px;
+    }
+    .start-brand {
+        font-size: 24px;
+        letter-spacing: 0.14em;
+        margin-right: -0.14em;
+    }
+    .start-title-glow {
+        width: 100px;
+        height: 100px;
     }
     .how-to-guide {
         padding: 8px 4px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         gap: 2px;
     }
     .how-to-icon {
-        font-size: 15px;
+        font-size: 14px;
         margin-bottom: 1px;
     }
     .how-to-desc {
@@ -1308,11 +1609,76 @@ body.theme-sakura {
     .start-subtitle {
         display: none; /* 極小画面ではサブタイトルを非表示 */
     }
+    .mode-select-label {
+        margin-bottom: 6px;
+    }
     .mode-card {
         margin-bottom: 5px;
     }
+    .mode-badge {
+        display: none;
+    }
+    .btn-mode {
+        padding: 11px 12px 11px 14px !important;
+    }
+    .btn-mode-title {
+        font-size: 14px;
+    }
+    .btn-mode-detail {
+        font-size: 11px;
+    }
+}
+
+/* iPhone SE（Safariツールバー込み〜約560–600px）でさらに圧縮 */
+@media (max-height: 620px) {
+    .how-to-guide {
+        display: none; /* 3ステップを隠してモード選択を優先 */
+    }
+    .start-brand {
+        font-size: 24px;
+    }
+    .start-title-glow {
+        width: 90px;
+        height: 90px;
+    }
+    .start-overlay-content {
+        padding: 8px 12px 10px;
+    }
     .btn-mode {
         padding: 10px 12px !important;
+    }
+    .btn-mode-title {
+        font-size: 14px;
+    }
+    .btn-mode-detail {
+        font-size: 10.5px;
+    }
+    #gameover-overlay .overlay-content {
+        padding: 20px 16px;
+    }
+    #gameover-overlay .overlay-content h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    #gameover-overlay .overlay-content p {
+        margin-bottom: 14px;
+        font-size: 12px;
+    }
+}
+
+/* 幅の狭い SE（第1世代 320px） */
+@media (max-width: 360px) {
+    .start-overlay-content,
+    #gameover-overlay .overlay-content {
+        width: 96%;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    .btn-mode-detail {
+        font-size: 10px;
+    }
+    .logo-brand {
+        font-size: 17px;
     }
 }
 
@@ -1396,17 +1762,24 @@ body.lang-en .lang-divider {
     display: none !important;
 }
 
-/* 英語モードのスタートタイトル微調整 (脳リフレクソと同サイズかつ同じ美しいグラデーション) */
-body.lang-en .start-title .en-text {
-    font-size: 32px !important;
-    font-weight: 800;
+/* 英語モードのスタートタイトル微調整 */
+body.lang-en .start-title .en-text,
+body.lang-en .start-title-en {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 34px !important;
+    font-weight: 200;
     opacity: 1;
-    letter-spacing: 2px;
-    background: linear-gradient(135deg, #81c3d7, #c2aff0);
+    letter-spacing: 0.14em;
+    margin-right: -0.14em;
+    text-transform: none;
+    background: linear-gradient(115deg, #eaf6fa 0%, #7ec8d8 40%, #e2d0a8 100%);
+    background-size: 180% 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: brandShimmer 6s ease-in-out infinite;
     display: inline-block !important;
+    margin-top: 0;
 }
 
 /* 英語モードでは combo-jp を非表示にして combo-en を大きく表示 */
@@ -1427,15 +1800,17 @@ body.lang-en .combo-en {
 /* 英語モードでは logo-en (英語ロゴ) を表示し、サイズを大きくしてグラデーション化 */
 body.lang-en .logo-en {
     display: block !important;
-    font-size: 26px !important;
-    font-weight: 800;
-    color: #e2e8f0;
-    letter-spacing: 2px;
-    background: linear-gradient(135deg, #81c3d7, #c2aff0);
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    font-size: 28px !important;
+    font-weight: 200;
+    letter-spacing: 0.12em;
+    margin-right: -0.12em;
+    text-transform: none;
+    background: linear-gradient(115deg, #eaf6fa 0%, #7ec8d8 40%, #e2d0a8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 0 15px rgba(129, 195, 215, 0.3);
+    filter: drop-shadow(0 0 18px rgba(126, 200, 216, 0.28));
     margin-top: 0;
 }
 
