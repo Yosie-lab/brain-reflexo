@@ -1783,10 +1783,10 @@ function createBubble(forceType) {
             radius *= 1.25;
         }
     } else {
-        // フィーバー中でなければ、18個に1個で銀色の泡が発生。フィーバー中は連鎖バブルが発生
+        // フィーバー中でなければ、12個に1個で銀色の泡が発生。フィーバー中は連鎖バブルが発生
         if (!feverActive) {
-            // 全モード共通: 18個に1個の確率で銀色（白い球）が発生
-            if (Math.random() < (1 / 18)) {
+            // 全モード共通: 12個に1個の確率で銀色（白い球）が発生
+            if (Math.random() < (1 / 12)) {
                 type = 'silver';
                 radius *= 1.25; // 銀色の泡は少し大きく
             }
@@ -1800,8 +1800,8 @@ function createBubble(forceType) {
         }
     }
     
-    // 浮遊速度の決定（基準の1.2倍）
-    let vy = (type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5)) * 1.2;
+    // 浮遊速度の決定（基準の2.4倍）
+    let vy = (type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5)) * 2.4;
     
     bubbles.push({
         type: type,
