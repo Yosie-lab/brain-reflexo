@@ -1773,8 +1773,8 @@ function createBubble(forceType) {
         }
     }
     
-    // 浮遊速度の決定
-    let vy = type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5);
+    // 浮遊速度の決定（基準の1.2倍）
+    let vy = (type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5)) * 1.2;
     
     bubbles.push({
         type: type,
