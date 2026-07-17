@@ -28,8 +28,6 @@ body, html {
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
     color: #f8fafc;
     touch-action: none; /* ダブルタップズームやピンチズーム、スクロールによるレイアウト崩れを防ぐ */
-    filter: brightness(0.99) contrast(0.98) sepia(0.02);
-    transition: filter 0.5s ease;
 }
 
 /* 背景Canvas */
@@ -41,6 +39,11 @@ body, html {
     height: 100%;
     z-index: 1;
     touch-action: none; /* キャンバス上での迅速なタップ操作による意図しないズームを防ぐ */
+    image-rendering: auto;
+    /* 独自レイヤー化して、負荷時の合成ぼかしを抑える */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    isolation: isolate;
 }
 
 /* UIコンテナ */
@@ -928,9 +931,6 @@ body, html {
     text-transform: uppercase;
 }
 
-/* 呼吸ガイドのアニメーション定義（JSで進行状況に合わせてスケール制御） */
-/* 吸気(inhale): scale(1.6), 呼気(exhale): scale(0.9) */
-
 /* =============================================================
    12. リラクゼーションレポート (Zen Summary Card)
    ============================================================= */
@@ -1319,10 +1319,6 @@ body.theme-sakura {
 /* =============================================================
    15. ナイトモード (ブルーライトフィルター・明度調整)
    ============================================================= */
-body.night-mode {
-    filter: sepia(0.22) brightness(0.88) contrast(0.95);
-}
-
 body.night-mode::after {
     content: '';
     position: fixed;
@@ -1330,7 +1326,7 @@ body.night-mode::after {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(245, 158, 11, 0.03); /* マイルドな温かみのある琥珀色オーバーレイ */
+    background: rgba(180, 120, 40, 0.14); /* 旧filter相当の温かみ＋減光をオーバーレイで代替 */
     pointer-events: none;
     z-index: 999999;
     transition: background-color 0.5s ease;
