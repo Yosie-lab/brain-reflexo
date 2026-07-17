@@ -59,7 +59,9 @@ const COMBO_WINDOW = 1900; // コンボ有効時間 (ms)
 
 // リラクゼーション設定（脳リフレクソ改用）
 let volumeBGM = 0.35;
-let volumeSolfeggio = 0.1;
+// ソルフェジオは環境音スライダーに連動（デフォルト比率 0.10 / 0.35 を維持）
+const SOLFEGGIO_TO_BGM_RATIO = 0.1 / 0.35;
+let volumeSolfeggio = volumeBGM * SOLFEGGIO_TO_BGM_RATIO;
 let volumeSE = 0.8;
 let currentTheme = 'starry';
 let hapticEnabled = true;
@@ -2311,28 +2313,17 @@ function initApp() {
         if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
         sliderVolBGM.addEventListener('input', (e) => {
             volumeBGM = parseFloat(e.target.value);
+            volumeSolfeggio = volumeBGM * SOLFEGGIO_TO_BGM_RATIO;
             if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
-            if (ambientGain && audioCtx) {
-                const now = audioCtx.currentTime;
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            if (ambientGain) {
                 ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
                 ambientGain.gain.linearRampToValueAtTime(0.003 * volumeBGM, now + 0.1);
             }
-        });
-    }
-
-    const sliderVolSolfeggio = document.getElementById('slider-vol-solfeggio');
-    const labelVolSolfeggio = document.getElementById('label-vol-solfeggio');
-    if (sliderVolSolfeggio) {
-        sliderVolSolfeggio.value = volumeSolfeggio;
-        if (labelVolSolfeggio) labelVolSolfeggio.textContent = Math.round(volumeSolfeggio * 100) + '%';
-        sliderVolSolfeggio.addEventListener('input', (e) => {
-            volumeSolfeggio = parseFloat(e.target.value);
-            if (labelVolSolfeggio) labelVolSolfeggio.textContent = Math.round(volumeSolfeggio * 100) + '%';
-            if (solfeggioGain528 && solfeggioGain396 && audioCtx) {
-                const now = audioCtx.currentTime;
+            if (solfeggioGain528 && solfeggioGain396) {
                 solfeggioGain528.gain.setValueAtTime(solfeggioGain528.gain.value, now);
                 solfeggioGain528.gain.linearRampToValueAtTime(0.006 * volumeSolfeggio, now + 0.1);
-                
                 solfeggioGain396.gain.setValueAtTime(solfeggioGain396.gain.value, now);
                 solfeggioGain396.gain.linearRampToValueAtTime(0.009 * volumeSolfeggio, now + 0.1);
             }
