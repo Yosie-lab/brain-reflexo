@@ -17,8 +17,8 @@ const BUBBLE_COLORS = [
 let bubbles = [];
 const MAX_BUBBLES = 34; // 画面上の泡上限（全モード共通）
 const FEVER_MAX_BUBBLES = 72; // フィーバー中の泡上限
-const BUBBLE_SPAWN_MIN = 333; // ~800/2.4
-const BUBBLE_SPAWN_MAX = 625; // 1500/2.4
+const BUBBLE_SPAWN_MIN = 286; // ~800/2.8
+const BUBBLE_SPAWN_MAX = 536; // ~1500/2.8
 let nextSpawnTime = 0;
 
 // 同色3連タップ判定用履歴
