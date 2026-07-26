@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * iPhone向け単一HTMLを生成し、配布用 zip を作り直す。
+ * iPhone向け単一HTMLを生成し、配布用 zip を作り直す（開発・オフライン保険用）。
+ * 販売の第一推奨は購入者限定 Web URL（PWA）。Zip販売は非推奨。
  * 使い方: node pack.js
  */
 const fs = require('fs');

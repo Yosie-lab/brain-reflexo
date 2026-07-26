@@ -8,6 +8,10 @@ Thumbs.db
 *.swp
 *~
 
+# Local access path (do not commit the real secret path file)
+access.env
+.seller-url.local.txt
+
 # Temporary / backup / old one-off scripts (do not ship)
 *.bak
 *_temp.js
