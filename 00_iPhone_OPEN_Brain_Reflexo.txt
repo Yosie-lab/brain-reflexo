@@ -1,4 +1,7 @@
-【iPhone】Open Brain_Reflexo.html
+【おすすめ】購入者限定の Web版URL を Safari で開いてください
+（解凍不要・ホーム画面にも追加できます）
+
+Zip は非推奨です。使う場合のみ:
 
 1. Unzip this folder in the Files app
 2. Long-press Brain_Reflexo.html → Share → Open in Safari
@@ -6,10 +9,7 @@
 
 Do NOT use index.html on iPhone (OS blocks separate JS/CSS files).
 
-If "Open in Safari" is missing from Share:
-→ Use the Web URL below (most reliable, no unzip needed)
-  https://yosie-lab.github.io/brain-reflexo/
-Or: Share → Edit/More → enable Safari, then try again
-Or: Open with Chrome / Edge / Firefox from the Share sheet
+If "Open in Safari" is missing:
+→ Use the purchaser Web URL from your guide (most reliable)
 
-Details: README.txt
+Details: README.txt / sales/purchaser-guide.txt

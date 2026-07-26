@@ -1,0 +1,32 @@
+{
+  "name": "脳リフレクソ / Brain Reflexo",
+  "short_name": "脳リフレクソ",
+  "description": "音と光の泡つぶしで、あたまをサラッとクリアにする脳疲労リセット空間",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050811",
+  "theme_color": "#0b1528",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
