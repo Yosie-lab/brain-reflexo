@@ -14,11 +14,11 @@
 ### 購入者限定URL
 
 ```
-【ここに限定URLを貼り付けてください】
-例: https://yosie-lab.github.io/brain-reflexo/p/xxxxxxxx/
+https://yosie-lab.github.io/brain-reflexo/p/cf8105be3c201c4d96e7f156da204c73/
 ```
 
-※ 販売者メモ: ローカルで `node scripts/sync-pages.js` 実行後、`.seller-url.local.txt` のURLをここに転記して PDF/TXT 化してください（原稿は `sales/purchaser-guide.*`）。
+BOOTH販売用PDF: `sales/脳リフレクソ_購入者案内.pdf`  
+（再生成: `node scripts/sync-pages.js` 後に案内へURL転記 → PDF化）
 
 ---
 
