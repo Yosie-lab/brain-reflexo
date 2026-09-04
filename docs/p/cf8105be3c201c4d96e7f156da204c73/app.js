@@ -1018,7 +1018,7 @@ function initAuroraParticles() {
     }
 }
 
-function drawAuroraParticles(scale) {
+function drawAuroraParticles(scale, brightnessMultiplier = 1.0) {
     if (!auroraOffCtx || !showerCanvas) return;
     if (auroraParticles.length === 0) {
         initAuroraParticles();
@@ -1040,8 +1040,8 @@ function drawAuroraParticles(scale) {
             p.yRatio = 0;
             p.xRatio = Math.random();
             p.size = 6 + Math.random() * 18;
-            p.alpha = 0.03 + Math.random() * 0.09;
-            const colorChoices = ["212, 255, 213", "48, 220, 100", "38, 180, 106"];
+            p.alpha = 0.15 + Math.random() * 0.25;
+            const colorChoices = ["220, 255, 230", "60, 235, 120", "45, 205, 125"];
             p.colorBase = colorChoices[Math.floor(Math.random() * colorChoices.length)];
         }
 
@@ -1057,8 +1057,8 @@ function drawAuroraParticles(scale) {
         // 全体をもっと透けたグラデーションにするためのフェード計算
         const fade = Math.pow(1.0 - p.yRatio, 2.0); // 2乗にして上部ほどより早く、かつ滑らかに透明に溶け込ませる
         const twinkle = 0.4 + 0.6 * Math.sin(p.phase);
-        // モバイル時は霧状粒子の輝度も抑えるＨ0.6595 → 0.46）
-        const auroraParticleAlphaMod = IS_MOBILE ? 0.46 : 0.6595;
+        // オーロラ霧状粒子の輝度調整
+        const auroraParticleAlphaMod = (IS_MOBILE ? 1.0 : 1.25) * brightnessMultiplier;
         const finalAlpha = p.alpha * fade * twinkle * waveInfo.z * auroraParticleAlphaMod;
 
         if (finalAlpha <= 0) continue;
@@ -1073,7 +1073,7 @@ function drawAuroraParticles(scale) {
     auroraOffCtx.restore();
 }
 
-function drawRealAuroraCurtain() {
+function drawRealAuroraCurtain(brightnessMultiplier = 1.0) {
     if (!showerCtx || !showerCanvas || meditationMode) return;
     auroraTime += 0.0055;
 
@@ -1103,7 +1103,7 @@ function drawRealAuroraCurtain() {
 
         const step = 3; // 3px間隔（元の12px相当）
         const globalT = auroraTime * 0.60;
-        const globalAlphaMod = 0.70 + Math.sin(globalT * 1.05) * 0.30;
+        const globalAlphaMod = 0.75 + Math.sin(globalT * 1.05) * 0.25;
 
         for (let ox = 0; ox < offWidth; ox += step) {
             const rx = ox / scale;
@@ -1112,28 +1112,28 @@ function drawRealAuroraCurtain() {
             const ocurtainHeight = waveInfo.curtainHeight * scale;
             const oz = waveInfo.z;
 
-            // 画像の右上のように、太く柔らかい光の柱（Rays）が縦に広がるような質感を作る（細かな縦筋にはならない）
+            // 太く柔らかい光の柱（Rays）が縦に広がるような質感
             const rayVal = Math.sin(rx * 0.008 + globalT * 0.30) * Math.cos(rx * 0.003 - globalT * 0.12);
             const curtainRays = 0.70 + 0.30 * Math.abs(rayVal);
-            // モバイル時はオーロラカーテンの輝度を抑えて眩しくない表示に（0.02052 → 0.014）
-            const baseAuroraAlpha = IS_MOBILE ? 0.014 : 0.02052;
+            // オーロラカーテンの輝度（しっかり美しく夜空に映える輝度）
+            const baseAuroraAlpha = (IS_MOBILE ? 0.22 : 0.28) * brightnessMultiplier;
             const midAlpha = baseAuroraAlpha * globalAlphaMod * curtainRays;
 
             const grad = auroraOffCtx.createLinearGradient(ox, oyBase, ox, oyBase + ocurtainHeight);
             const a = midAlpha * oz;
 
-            // 画像の右上にある本物のオーロラのような、眩しいミントホワイトの発光コアを持つグラデーション
+            // 眩しいミントホワイトの発光コアを持つリアルなオーロラグラデーション
             grad.addColorStop(0.00, "rgba(  0,  20,  10, 0)"); // 最上部：透明
-            grad.addColorStop(0.35, "rgba( 14,  80,  35, " + (a * 0.15) + ")"); // 上部フェード（黄緑寄りを5%戻す）
-            grad.addColorStop(0.68, "rgba( 20, 175,  85, " + (a * 1.10) + ")"); // エメラルドグリーン（黄緑寄りを5%戻す）
-            grad.addColorStop(0.82, "rgba( 32, 235, 118, " + (a * 2.00) + ")"); // マイルドなネオングリーン（黄緑寄りを5%戻す）
-            grad.addColorStop(0.85, "rgba(228, 255, 238, " + (a * 2.30) + ")"); // 眩しさを抑えたホワイトコア（黄緑寄りを5%戻す）
-            grad.addColorStop(0.88, "rgba( 32, 235, 118, " + (a * 1.80) + ")"); // 下部マイルドグリーン（黄緑寄りを5%戻す）
-            grad.addColorStop(0.94, "rgba( 12, 120,  58, " + (a * 0.50) + ")"); // 下部フェード（黄緑寄りを5%戻す）
+            grad.addColorStop(0.35, "rgba( 14,  80,  35, " + (a * 0.25) + ")"); // 上部フェード
+            grad.addColorStop(0.68, "rgba( 20, 185,  95, " + (a * 1.20) + ")"); // エメラルドグリーン
+            grad.addColorStop(0.82, "rgba( 45, 245, 130, " + (a * 2.10) + ")"); // ネオングリーン
+            grad.addColorStop(0.85, "rgba(235, 255, 242, " + (a * 2.40) + ")"); // ミントホワイトコア
+            grad.addColorStop(0.88, "rgba( 45, 245, 130, " + (a * 1.90) + ")"); // 下部マイルドグリーン
+            grad.addColorStop(0.94, "rgba( 15, 140,  70, " + (a * 0.65) + ")"); // 下部フェード
             grad.addColorStop(1.00, "rgba(  0,  20,  10, 0)"); // 最下部：透明
 
             auroraOffCtx.strokeStyle = grad;
-            auroraOffCtx.lineWidth = (step / scale + 110.0) * oz * scale; // 非常に太い線幅もスケール
+            auroraOffCtx.lineWidth = (step / scale + 110.0) * oz * scale; // 太い線幅でカーテンを形成
             auroraOffCtx.beginPath();
             auroraOffCtx.moveTo(ox, oyBase);
             auroraOffCtx.lineTo(ox, oyBase + ocurtainHeight);
@@ -1141,12 +1141,12 @@ function drawRealAuroraCurtain() {
         }
 
         // ── 霧状のエメラルドグリーン粒子のカーテンの描画 ──
-        drawAuroraParticles(scale);
+        drawAuroraParticles(scale, brightnessMultiplier);
 
         auroraOffCtx.restore();
     }
 
-    // ── キャッシュ画像を本Canvasにscreenブレンドで貼り付け（ぼかしフィルタを廃止して拡大補間を利用） ──
+    // ── キャッシュ画像を本Canvasにscreenブレンドで貼り付け ──
     showerCtx.save();
     showerCtx.globalCompositeOperation = 'screen';
     // オーロラをジャイロの傾きと逆方向に少しずらす (パララックス効果)
@@ -1201,9 +1201,13 @@ function drawShower() {
     // 夜空のまたたく星屑を描画
     drawStars();
     
-    // フィーバー中のオーロラ
-    if (feverActive && !meditationMode) {
-        drawRealAuroraCurtain();
+    // オーロラカーテンの描画（フィーバー中はフル輝度、極光空間テーマ選択時は穏やかに常時表示）
+    if (!meditationMode) {
+        if (feverActive) {
+            drawRealAuroraCurtain(1.0);
+        } else if (currentTheme === 'aurora') {
+            drawRealAuroraCurtain(0.65);
+        }
     }
     
     showerCtx.save();
