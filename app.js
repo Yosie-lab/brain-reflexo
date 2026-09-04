@@ -145,10 +145,10 @@ function getParticleSprite(hue) {
     const ctx = canvas.getContext('2d');
     
     const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    grad.addColorStop(0, `hsla(${roundedHue}, 90%, 95%, 1.0)`);
-    grad.addColorStop(0.2, `hsla(${roundedHue}, 85%, 72%, 1.0)`);
-    grad.addColorStop(0.5, `hsla(${roundedHue}, 85%, 72%, 0.25)`);
-    grad.addColorStop(1.0, `hsla(${roundedHue}, 85%, 72%, 0.0)`);
+    grad.addColorStop(0, `hsla(${roundedHue}, 98%, 96%, 1.0)`);
+    grad.addColorStop(0.20, `hsla(${roundedHue}, 100%, 68%, 1.0)`);
+    grad.addColorStop(0.55, `hsla(${roundedHue}, 100%, 62%, 0.45)`);
+    grad.addColorStop(1.0, `hsla(${roundedHue}, 98%, 56%, 0.0)`);
     
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 32, 32);
@@ -667,6 +667,14 @@ function initShower() {
         lastDragY = null;
     });
 
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'm' || e.key === 's' || e.key === 'S') {
+            triggerMeteorShower(viewW / 2, viewH * 0.45);
+        } else if (e.key === 'b' || e.key === 'g' || e.key === 'B' || e.key === 'G') {
+            triggerMeteorBigExplosion(viewW / 2, viewH * 0.45);
+        }
+    });
+
     window.addEventListener('touchstart', (e) => {
         if (isElementInUI(e.target)) return;
         if (e.cancelable) {
@@ -774,8 +782,8 @@ function createShowerParticles(x, y, count, hueBase, isSpecialEvent = false) {
     for (let i = 0; i < count; i++) {
         let particleHue;
         if (isSpecialEvent && (hueBase === null || hueBase === 'multi')) {
-            // 指定された5色から選択（シルバーの割合を減らし、レッドとブルーを増量）
-            const allowedHues = [210, 262, 262, 213, 213, 213, 148, 148, 349, 349, 349];
+            // 指定されたジュエルカラー（シルバー、アメジスト、サファイア、エメラルド、ゴールド、ルビー）
+            const allowedHues = [210, 262, 262, 213, 213, 148, 148, 45, 45, 349, 349, 349];
             particleHue = allowedHues[Math.floor(Math.random() * allowedHues.length)];
         } else {
             particleHue = (hueBase !== undefined && hueBase !== null)
@@ -1228,8 +1236,9 @@ function drawShower() {
             // 大爆発時の特殊形状（sparkle, ring）
             const lifeRatio = p.life / (p.maxLife || 50);
             const currentHue = (p.hue + lifeRatio * 15) % 360;
-            const currentLightness = 72 + lifeRatio * 15;
-            const color = `hsla(${currentHue}, 90%, ${currentLightness}%, ${p.alpha})`;
+            // 白飛びせず極彩色の美しい光彩が出るよう明度と彩度を調整
+            const currentLightness = 64 + lifeRatio * 16;
+            const color = `hsla(${currentHue}, 98%, ${currentLightness}%, ${p.alpha})`;
             const currentSize = Math.max(0.4, p.size * (1.0 - lifeRatio));
             
             showerCtx.fillStyle = color;
@@ -1258,13 +1267,13 @@ function drawShower() {
                 // スパークルの擬似グロー（キャッシュ画像を使用）
                 const glowSprite = getParticleSprite(currentHue);
                 const gSize = currentSize * 6.0; // Glow size (3.0 * 2)
-                showerCtx.globalAlpha = p.alpha * 0.25;
+                showerCtx.globalAlpha = p.alpha * 0.40;
                 showerCtx.drawImage(glowSprite, -gSize / 2, -gSize / 2, gSize, gSize);
 
                 showerCtx.restore();
             } else if (p.type === 'ring') {
                 showerCtx.globalAlpha = p.alpha;
-                showerCtx.lineWidth = 1.0;
+                showerCtx.lineWidth = 1.2;
                 showerCtx.beginPath();
                 showerCtx.arc(p.x, p.y, currentSize * 1.3, 0, Math.PI * 2);
                 showerCtx.stroke();
@@ -1284,9 +1293,10 @@ function drawShower() {
     // グローバルアルファを元に戻す
     showerCtx.globalAlpha = 1.0;
     
+    // 波紋の描画（彩度95%以上の高輝度ジュエルリング）
     showerRipples.forEach(r => {
         const hue = r.hue || 195;
-        const color = `hsla(${hue}, 70%, 75%, ${r.alpha * 0.55})`;
+        const color = `hsla(${hue}, 95%, 70%, ${r.alpha * 0.70})`;
         showerCtx.strokeStyle = color;
         showerCtx.lineWidth = 3.2;
         
@@ -1294,9 +1304,9 @@ function drawShower() {
         showerCtx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
         showerCtx.stroke();
 
-        // 擬似的なグロー効果として、外側に薄くて太い線を重ねる
-        showerCtx.strokeStyle = `hsla(${hue}, 70%, 75%, ${r.alpha * 0.15})`;
-        showerCtx.lineWidth = 6.4;
+        // 擬似的なグロー効果として、外側に色鮮やかで太い線を重ねる
+        showerCtx.strokeStyle = `hsla(${hue}, 98%, 65%, ${r.alpha * 0.32})`;
+        showerCtx.lineWidth = 7.0;
         showerCtx.beginPath();
         showerCtx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
         showerCtx.stroke();
@@ -1320,16 +1330,21 @@ function triggerMeteorShower(originX, originY) {
     
     const count = 15; // 流れ星の総数
     const duration = 1000; // 1.0秒間かけて順次放出 (より集中して飛び散るように短縮)
-    // 指定5色（シルバー: 210, 紫: 262, 青: 213, 緑: 148, 赤: 349）からシルバーを減らし、レッド・ブルーを増量した配色
-    const colors = [210, 262, 262, 213, 213, 213, 148, 148, 349, 349, 349];
+    // 鮮やかなジュエルカラー（シルバー、アメジスト、サファイア、エメラルド、ゴールド、ルビー）
+    const colors = [210, 262, 262, 213, 213, 148, 148, 45, 45, 349, 349, 349];
     
     const x = (originX !== undefined) ? originX : (showerCanvas ? viewW / 2 : 0);
     const y = (originY !== undefined) ? originY : (showerCanvas ? viewH / 2 : 0);
     
+    // メテオシャワー発生時の鮮烈な発光コア（星屑とジュエル波紋）
+    createShowerParticles(x, y, 16, 'multi', true);
+    createShowerRipple(x, y, 220, 3.6, 213, 0.75); // サファイアブルーの鮮烈な波紋
+    createShowerRipple(x, y, 160, 4.2, 45, 0.70);  // ルミナスゴールドの光彩リング
+    
     for (let i = 0; i < count; i++) {
         const delayTime = (i / count) * duration + Math.random() * 50;
         setTimeout(() => {
-            if (!gameActive) return;
+            if (!showerCanvas) return;
             createMeteor(colors[i % colors.length], x, y);
         }, delayTime);
     }
@@ -1351,13 +1366,13 @@ function createMeteor(hue, originX, originY) {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 100 + Math.random() * 100,
-        width: 1.5 + Math.random() * 2.0,
+        length: 120 + Math.random() * 110,
+        width: 2.4 + Math.random() * 2.2, // 存在感のある流麗な太さに強化
         hue: hue,
         alpha: 0,
-        fadeSpeed: 0.12,
-        targetAlpha: 0.85 + Math.random() * 0.15,
-        sparkleChance: 0.5
+        fadeSpeed: 0.15,
+        targetAlpha: 0.95 + Math.random() * 0.05, // 最大輝度を1.0近くまで引き上げ
+        sparkleChance: 0.75 // 軌道上のきらめき星屑を増量
     });
 }
 
@@ -1439,8 +1454,8 @@ function triggerMeteorBigExplosion(originX, originY) {
 
 // 爆発点から流星群を放出するヘルパー関数
 function launchExplosionMeteors(cx, cy, count, duration) {
-    // 指定5色（シルバー: 210, 紫: 262, 青: 213, 緑: 148, 赤: 349）からシルバーを減らし、レッド・ブルーを増量した配色
-    const colors = [210, 262, 262, 213, 213, 213, 148, 148, 349, 349, 349];
+    // 鮮やかなジュエルカラー（シルバー、アメジスト、サファイア、エメラルド、ゴールド、ルビー）
+    const colors = [210, 262, 262, 213, 213, 148, 148, 45, 45, 349, 349, 349];
     for (let i = 0; i < count; i++) {
         const delayTime = (i / count) * duration + Math.random() * 4;
         setTimeout(() => {
@@ -1465,14 +1480,14 @@ function createBigExplosionMeteor(hue, originX, originY) {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 70 + Math.random() * 80,
-        width: 2.0 + Math.random() * 2.5,
+        length: 85 + Math.random() * 95,
+        width: 2.8 + Math.random() * 2.8, // 鮮烈で力強い光条の太さに強化
         hue: hue,
         alpha: 0,
         fadeSpeed: 0.45,
-        // 大爆発流星の輝度を引き上げ (モバイル 0.44->0.72, PC 0.623->0.88)
-        targetAlpha: (0.9 + Math.random() * 0.1) * (IS_MOBILE ? 0.72 : 0.88),
-        sparkleChance: 0.8,
+        // グランドメテオ流星の最大輝度を引き上げ (モバイル 0.90, PC 1.0)
+        targetAlpha: (0.95 + Math.random() * 0.05) * (IS_MOBILE ? 0.90 : 1.0),
+        sparkleChance: 0.9,
         life: 0,
         maxLife: 8 + Math.random() * 8
     });
@@ -1595,39 +1610,43 @@ function drawMeteors() {
             // 自然な流れ星のグラデーション（ほぼ純白〜微かに淡い青白にフェード）
             grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
             grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
-            grad.addColorStop(0.3, `rgba(242, 246, 255, ${m.alpha * 0.85})`); // 透明度を少し引き上げ
+            grad.addColorStop(0.3, `rgba(242, 246, 255, ${m.alpha * 0.90})`);
             grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
             
-            // 周囲のグロー（光背）も視認できるように少し強調
+            // 周囲のグロー（光背）
             glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.22})`);
-            glowGrad.addColorStop(0.5, `rgba(240, 245, 255, 0)`);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.40})`);
+            glowGrad.addColorStop(0.5, `rgba(215, 235, 255, 0)`);
         } else {
+            // メテオシャワー・グランドメテオの鮮烈なジュエルカラー
             grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
-            grad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha})`);
-            grad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.6})`);
-            grad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`); // 純白の鋭い芯
+            grad.addColorStop(0.12, `hsla(${m.hue}, 100%, 88%, ${m.alpha})`); // 強いハイライト
+            grad.addColorStop(0.38, `hsla(${m.hue}, 100%, 65%, ${m.alpha * 0.92})`); // 極彩色のジュエルトーン
+            grad.addColorStop(0.72, `hsla(${m.hue}, 100%, 55%, ${m.alpha * 0.55})`); // 深みのある光条
+            grad.addColorStop(1, `hsla(${m.hue}, 100%, 50%, 0)`);
             
+            // 周囲を鮮やかに照らすオーラグロー（彩度100%、輝度強化）
             glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.3})`);
-            glowGrad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha * 0.3})`);
-            glowGrad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.18})`);
-            glowGrad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.75})`);
+            glowGrad.addColorStop(0.15, `hsla(${m.hue}, 100%, 75%, ${m.alpha * 0.70})`);
+            glowGrad.addColorStop(0.45, `hsla(${m.hue}, 100%, 62%, ${m.alpha * 0.55})`);
+            glowGrad.addColorStop(0.80, `hsla(${m.hue}, 100%, 54%, ${m.alpha * 0.28})`);
+            glowGrad.addColorStop(1, `hsla(${m.hue}, 100%, 50%, 0)`);
         }
         
         showerCtx.save();
         showerCtx.lineCap = 'round';
         
-        // グロー線
+        // グロー線（鮮やかなオーラ）
         showerCtx.strokeStyle = glowGrad;
-        showerCtx.lineWidth = m.isBackground ? m.width * 1.5 : m.width * 2.5;
+        showerCtx.lineWidth = m.isBackground ? m.width * 2.0 : m.width * 3.6;
         showerCtx.beginPath();
         showerCtx.moveTo(m.x, m.y);
         showerCtx.lineTo(tailX, tailY);
         showerCtx.stroke();
         
-        // 実線
+        // 実線（くっきりとした光条）
         showerCtx.strokeStyle = grad;
         showerCtx.lineWidth = m.width;
         showerCtx.beginPath();
