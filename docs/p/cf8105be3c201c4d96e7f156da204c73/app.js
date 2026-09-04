@@ -96,9 +96,8 @@ let solfeggioOscs = []; // 528Hz, 396Hz のオシレーター格納用
 let solfeggioGain528 = null;
 let solfeggioGain396 = null;
 
-
 // =============================================================
-// 2. メインシャワー（光彩Canvasパーティクルシステム）
+// 2. メインCanvas・背景・オーロラ・星空システム
 // =============================================================
 let showerCanvas = null;
 let showerCtx = null;
@@ -164,320 +163,7 @@ function initParticleSprites() {
 }
 
 // バブルテンプレートの事前レンダリング
-function getBubbleTemplate(type, hue, colorHex) {
-    const key = `${type}_${hue}`;
-    if (bubbleTemplateCache[key]) {
-        return bubbleTemplateCache[key];
-    }
-    
-    const canvas = document.createElement('canvas');
-    const canvasSize = 256;
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
-    const ctx = canvas.getContext('2d');
-    
-    const center = canvasSize / 2;
-    const templateRadius = 60; // 基準半径
-    
-    ctx.save();
-    ctx.translate(center, center);
-    
-    if (type === 'silver') {
-        const drawRadius = templateRadius;
-        
-        // 1. 白銀バブルの気品ある光彩（ルミナスグローを豊かに強化）
-        // 外側にふんわり広がる柔らかな光彩
-        const outerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.75, 0, 0, drawRadius * 1.95);
-        outerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
-        outerGlowGrad.addColorStop(0.45, 'rgba(226, 232, 240, 0.22)');
-        outerGlowGrad.addColorStop(0.75, 'rgba(203, 213, 225, 0.08)');
-        outerGlowGrad.addColorStop(1, 'rgba(203, 213, 225, 0)');
-        ctx.fillStyle = outerGlowGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.95, 0, Math.PI * 2);
-        ctx.fill();
 
-        // 泡のすぐ外側を包む濃密な高輝度光彩
-        const innerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.55, 0, 0, drawRadius * 1.45);
-        innerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
-        innerGlowGrad.addColorStop(0.40, 'rgba(248, 250, 252, 0.48)');
-        innerGlowGrad.addColorStop(0.75, 'rgba(226, 232, 240, 0.20)');
-        innerGlowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
-        ctx.fillStyle = innerGlowGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.45, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 2. Body（真珠・白銀のような深みと高輝度な輝き）
-        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.26, -drawRadius * 0.26, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        bodyGrad.addColorStop(0.25, 'rgba(248, 250, 252, 0.96)');
-        bodyGrad.addColorStop(0.65, 'rgba(226, 232, 240, 0.85)');
-        bodyGrad.addColorStop(0.90, 'rgba(180, 198, 220, 0.72)');
-        bodyGrad.addColorStop(1.0, 'rgba(125, 145, 170, 0.88)'); // 外周をしっかり締めてボケを防止
-        ctx.fillStyle = bodyGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 3. クッキリ鮮明なリムライン（輪郭線）
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius - 0.9, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // 4. メインハイライト（シャープで高輝度な光沢）
-        const hlX = -drawRadius * 0.32;
-        const hlY = -drawRadius * 0.32;
-        const hlR = drawRadius * 0.25;
-        const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.75)');
-        hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = hlGrad;
-        ctx.beginPath();
-        ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 5. サブハイライト（対角の反射光による立体感）
-        const subHlX = drawRadius * 0.28;
-        const subHlY = drawRadius * 0.28;
-        const subHlR = drawRadius * 0.18;
-        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
-        subHlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = subHlGrad;
-        ctx.beginPath();
-        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
-        ctx.fill();
-    } else {
-        const drawRadius = templateRadius;
-        
-        // 1. 鮮やかな光彩（輝度を高めたクリアなオーラ）
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.80, 0, 0, drawRadius * 1.25);
-        glowGrad.addColorStop(0, `hsla(${hue}, 92%, 75%, 0.36)`);
-        glowGrad.addColorStop(1, `hsla(${hue}, 92%, 75%, 0)`);
-        ctx.fillStyle = glowGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.25, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 2. Body（輝度と彩度を両立し、クリスタルのように澄んで光る球体）
-        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, `hsla(${hue}, 90%, 92%, 0.94)`); // 光の透過部（輝度アップ）
-        bodyGrad.addColorStop(0.35, `hsla(${hue}, 88%, 76%, 0.52)`);
-        bodyGrad.addColorStop(0.72, `hsla(${hue}, 85%, 65%, 0.44)`); // 色の深み
-        bodyGrad.addColorStop(0.90, `hsla(${hue}, 90%, 70%, 0.78)`); // フレネル反射部
-        bodyGrad.addColorStop(1.0, `hsla(${hue}, 92%, 74%, 0.94)`); // 外縁の鮮やかな輪郭
-        ctx.fillStyle = bodyGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 3. クッキリした鮮明で明るい光の輪郭線
-        ctx.strokeStyle = `hsla(${hue}, 92%, 88%, 0.94)`;
-        ctx.lineWidth = 1.7;
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // 4. メインハイライト（鋭く澄んだ高輝度の輝き）
-        const hlX = -drawRadius * 0.32;
-        const hlY = -drawRadius * 0.32;
-        const hlR = drawRadius * 0.26;
-        const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        hlGrad.addColorStop(0.45, `hsla(${hue}, 80%, 96%, 0.78)`);
-        hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = hlGrad;
-        ctx.beginPath();
-        ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 5. サブハイライト（対角の反射光による立体的な輝き）
-        const subHlX = drawRadius * 0.28;
-        const subHlY = drawRadius * 0.28;
-        const subHlR = drawRadius * 0.18;
-        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, `hsla(${hue}, 95%, 92%, 0.60)`);
-        subHlGrad.addColorStop(1, `hsla(${hue}, 95%, 92%, 0)`);
-        ctx.fillStyle = subHlGrad;
-        ctx.beginPath();
-        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    ctx.restore();
-    bubbleTemplateCache[key] = canvas;
-    return canvas;
-}
-
-function initBubbleTemplates() {
-    getBubbleTemplate('silver', 210, '#cbd5e1');
-    BUBBLE_COLORS.forEach(c => {
-        getBubbleTemplate('normal', c.hue, c.hex);
-    });
-}
-
-// 炭酸バブル効果音の事前合成
-function pregenerateCarbonatedBuffer() {
-    if (carbonatedBufferCache || !audioCtx) return;
-    
-    try {
-        const durationSeconds = 6.5;
-        const sampleRate = audioCtx.sampleRate;
-        const bufferSize = sampleRate * durationSeconds;
-        
-        const audioBuffer = audioCtx.createBuffer(2, bufferSize, sampleRate);
-        const leftData = audioBuffer.getChannelData(0);
-        const rightData = audioBuffer.getChannelData(1);
-        
-        // 1. ベースノイズの合成
-        for (let i = 0; i < bufferSize; i++) {
-            const time = i / sampleRate;
-            const amp = Math.min(1.0, time / 0.15) * Math.exp(-time / 2.0) * 0.032;
-            const noise = Math.random() * 2 - 1;
-            leftData[i] = noise * amp;
-            rightData[i] = noise * amp;
-        }
-        
-        // 2. パチパチ音（400個）を一括加算
-        const bubbleCount = 400;
-        const clickDuration = durationSeconds - 0.2;
-        
-        for (let i = 0; i < bubbleCount; i++) {
-            let timeOffset;
-            if (i < 320) {
-                timeOffset = Math.pow(Math.random(), 1.4) * 4.0;
-            } else {
-                timeOffset = 4.0 + Math.random() * (clickDuration - 4.0);
-            }
-            
-            const isNoise = Math.random() < 0.35;
-            const clickLen = isNoise 
-                ? (0.003 + Math.random() * 0.006) 
-                : (0.004 + Math.random() * 0.012);
-
-            const startSample = Math.floor(timeOffset * sampleRate);
-            const lengthSamples = Math.floor(clickLen * sampleRate);
-
-            let volumeMultiplier = 1.0;
-            if (timeOffset <= 4.0) {
-                volumeMultiplier = 1.7 - (timeOffset / 4.0) * 0.5;
-            } else {
-                const postRatio = (timeOffset - 4.0) / (clickDuration - 4.0);
-                volumeMultiplier = Math.max(0.12, 1.0 - postRatio * 0.88);
-            }
-
-            const maxVolume = (isNoise
-                ? (0.026 + Math.random() * 0.028)
-                : (0.020 + Math.random() * 0.022)) * volumeMultiplier * 0.85;
-
-            // 各個別の泡の定位（ステレオの広がり）
-            const clickPan = (Math.random() * 2 - 1);
-            const gainL = Math.cos((clickPan + 1) * Math.PI / 4);
-            const gainR = Math.sin((clickPan + 1) * Math.PI / 4);
-
-            const clickFreq = 2800 + Math.random() * 6800;
-
-            for (let j = 0; j < lengthSamples; j++) {
-                const idx = startSample + j;
-                if (idx >= bufferSize) break;
-
-                const progress = j / lengthSamples;
-                const env = Math.exp(-progress * 4.5) * (1.0 - progress);
-
-                let val = 0;
-                if (isNoise) {
-                    val = (Math.random() * 2 - 1) * maxVolume * env;
-                } else {
-                    const angle = (j / sampleRate) * clickFreq * Math.PI * 2;
-                    val = Math.sin(angle) * maxVolume * env;
-                }
-
-                leftData[idx] += val * gainL;
-                rightData[idx] += val * gainR;
-            }
-        }
-        
-        carbonatedBufferCache = audioBuffer;
-    } catch (e) {
-        console.warn("炭酸バブルバッファの事前生成エラー:", e);
-    }
-}
-
-// ハプティクス（バイブレーション）をトリガーするヘルパー関数
-function triggerHaptic(type) {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        try {
-            switch (type) {
-                case 'light':
-                    // 通常バブルのプチッとした微小な振動 (12ms)
-                    navigator.vibrate(12);
-                    break;
-                case 'medium':
-                    // 連鎖バブルなどの少し強めの振動 (25ms)
-                    navigator.vibrate(25);
-                    break;
-                case 'heavy':
-                    // フィーバー突入時のしっかりとした振動
-                    navigator.vibrate([40, 60, 40]);
-                    break;
-                case 'explosion':
-                    // 大爆発・流星群発生時の連続した振動
-                    navigator.vibrate([30, 40, 30, 40, 50]);
-                    break;
-                case 'success':
-                    // ゲームクリア時の心地よい2回振動
-                    navigator.vibrate([60, 80, 80]);
-                    break;
-                default:
-                    if (typeof type === 'number' || Array.isArray(type)) {
-                        navigator.vibrate(type);
-                    }
-                    break;
-            }
-        } catch (e) {
-            console.warn("ハプティクス再生エラー:", e);
-        }
-    }
-}
-
-function handleOrientation(event) {
-    const maxTilt = 30; // 30度で最大の傾きとする
-    let g = event.gamma || 0; // 左右の傾き (-90 〜 90)
-    let b = event.beta || 0;  // 前後の傾き (-180 〜 180)
-    
-    // 左右: -30度〜30度を -1.0〜1.0 にマッピング
-    targetGyroX = Math.max(-1, Math.min(1, g / maxTilt));
-    // 前後: 通常の縦持ち角度（約55度）を基準にし、前後30度のズレを -1.0〜1.0 にマッピング
-    targetGyroY = Math.max(-1, Math.min(1, (b - 55) / maxTilt));
-}
-
-function requestGyroPermission() {
-    if (gyroActive) return;
-    
-    if (typeof DeviceOrientationEvent !== 'undefined' && 
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(permissionState => {
-                if (permissionState === 'granted') {
-                    window.addEventListener('deviceorientation', handleOrientation);
-                    gyroActive = true;
-                }
-            })
-            .catch(err => {
-                console.warn("ジャイロセンサーの許可要求エラー:", err);
-            });
-    } else {
-        // iOS以外（AndroidやPC等）
-        window.addEventListener('deviceorientation', handleOrientation);
-        gyroActive = true;
-    }
-}
-
-// 星屑の初期化 (夜空のまたたき用)
 function initStars() {
     if (!showerCanvas) return;
     stars = [];
@@ -1323,11 +1009,97 @@ function drawShower() {
     showerCtx.imageSmoothingEnabled = prevSmooth;
 }
 
+const THEME_BUBBLE_COLORS = {
+    ocean: [
+        { hex: '#38bdf8', hue: 198 },
+        { hex: '#34d399', hue: 156 },
+        { hex: '#c084fc', hue: 272 },
+        { hex: '#6ee7b7', hue: 160 },
+        { hex: '#f472b6', hue: 330 },
+        { hex: '#60a5fa', hue: 217 },
+        { hex: '#fbbf24', hue: 45  }
+    ],
+    aurora: [
+        { hex: '#38d064', hue: 140 }, // Mint emerald
+        { hex: '#96e6b3', hue: 148 }, // Pale green
+        { hex: '#38b06a', hue: 150 }, // Deep mint
+        { hex: '#81c3d7', hue: 195 }, // Cyan
+        { hex: '#c2aff0', hue: 262 }, // Violet
+        { hex: '#a7f3d0', hue: 152 }  // Glow emerald
+    ],
+    starry: [
+        { hex: '#ffd700', hue: 45 },  // Gold
+        { hex: '#f8fafc', hue: 210 }, // Diamond White
+        { hex: '#a5f3fc', hue: 187 }, // Ice Blue
+        { hex: '#ffcc80', hue: 35 },  // Pale Amber
+        { hex: '#c2aff0', hue: 262 }, // Starry Violet
+        { hex: '#cbd5e1', hue: 215 }  // Soft Silver
+    ],
+    sakura: [
+        { hex: '#fbcfe8', hue: 330 }, // Sakura pink
+        { hex: '#f472b6', hue: 330 }, // Rose pink
+        { hex: '#fecdd3', hue: 350 }, // Peach
+        { hex: '#fda4af', hue: 353 }, // Deep peach
+        { hex: '#ffffff', hue: 0 },   // Pure white
+        { hex: '#e8d5db', hue: 340 }  // Warm grey
+    ]
+};
+
+function applyTheme(themeName) {
+    if (!THEME_BUBBLE_COLORS[themeName]) return;
+    currentTheme = themeName;
+    
+    // Body class
+    document.body.classList.remove('theme-aurora', 'theme-starry', 'theme-sakura');
+    if (themeName !== 'ocean') {
+        document.body.classList.add(`theme-${themeName}`);
+    }
+    
+    // Modify bubble colors in-place
+    BUBBLE_COLORS.length = 0;
+    THEME_BUBBLE_COLORS[themeName].forEach(color => BUBBLE_COLORS.push(color));
+    
+    // Base Hues
+    if (themeName === 'ocean') {
+        showerHue = 200;
+    } else if (themeName === 'aurora') {
+        showerHue = 145;
+    } else if (themeName === 'starry') {
+        showerHue = 45;
+    } else if (themeName === 'sakura') {
+        showerHue = 340;
+    }
+    
+    // Clear caches
+    for (let key in bubbleTemplateCache) {
+        delete bubbleTemplateCache[key];
+    }
+    for (let key in particleSpriteCache) {
+        delete particleSpriteCache[key];
+    }
+    // 背景グラデーションキャッシュもリセット
+    _bgGradientCache = null;
+    
+    // Re-init templates and particles
+    initBubbleTemplates();
+    initParticleSprites();
+    initStars();
+    initAuroraParticles();
+    
+    // UI class active
+    const themeButtons = document.querySelectorAll('#theme-options .btn-option');
+    themeButtons.forEach(btn => {
+        if (btn.getAttribute('data-theme') === themeName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
 
 // =============================================================
-// 流星群エフェクト
+// 3. 流星群エフェクト（メテオシャワー・グランドメテオ）
 // =============================================================
-
 function triggerMeteorShower(originX, originY) {
     playMeteorSound(originX);
     
@@ -1655,141 +1427,165 @@ function drawMeteors() {
 }
 
 // =============================================================
-// 3. 泡のシステム
+// 4. 泡（バブル）システム（生成・浮遊・破裂・光彩）
 // =============================================================
-
-// iOS: resume完了前に startAmbientSound が呼ばれると無音のまま残ることがある
-let pendingAmbientStart = false;
-let audioResumePromise = null;
-
-// Audio が running になったときにアンビエントを確実に開始する
-function ensureAmbientAfterUnlock() {
-    if (!gameActive || !audioCtx || audioCtx.state !== 'running') return;
-    pendingAmbientStart = false;
-    if (ambientOscs.length === 0) {
-        startAmbientSound();
+function getBubbleTemplate(type, hue, colorHex) {
+    const key = `${type}_${hue}`;
+    if (bubbleTemplateCache[key]) {
+        return bubbleTemplateCache[key];
     }
-}
+    
+    const canvas = document.createElement('canvas');
+    const canvasSize = 256;
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    const ctx = canvas.getContext('2d');
+    
+    const center = canvasSize / 2;
+    const templateRadius = 60; // 基準半径
+    
+    ctx.save();
+    ctx.translate(center, center);
+    
+    if (type === 'silver') {
+        const drawRadius = templateRadius;
+        
+        // 1. 白銀バブルの気品ある光彩（ルミナスグローを豊かに強化）
+        // 外側にふんわり広がる柔らかな光彩
+        const outerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.75, 0, 0, drawRadius * 1.95);
+        outerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        outerGlowGrad.addColorStop(0.45, 'rgba(226, 232, 240, 0.22)');
+        outerGlowGrad.addColorStop(0.75, 'rgba(203, 213, 225, 0.08)');
+        outerGlowGrad.addColorStop(1, 'rgba(203, 213, 225, 0)');
+        ctx.fillStyle = outerGlowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius * 1.95, 0, Math.PI * 2);
+        ctx.fill();
 
-// AudioContextの初期化（ユーザー操作時に都度呼び出し）
-// options.resume === false のときは Context 生成のみ（ページロード時など、ジェスチャ外での resume を避ける）
-function initAudio(options) {
-    const allowResume = !options || options.resume !== false;
-    try {
-        // すでに再生中なら重い解除処理を繰り返さない（毎タップの Audio 生成で iOS が固まる対策）
-        if (audioCtx && audioCtx.state === 'running') {
-            scheduleCarbonatedPregen();
-            if (gameActive || pendingAmbientStart) {
-                ensureAmbientAfterUnlock();
-            }
-            return Promise.resolve();
-        }
+        // 泡のすぐ外側を包む濃密な高輝度光彩
+        const innerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.55, 0, 0, drawRadius * 1.45);
+        innerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+        innerGlowGrad.addColorStop(0.40, 'rgba(248, 250, 252, 0.48)');
+        innerGlowGrad.addColorStop(0.75, 'rgba(226, 232, 240, 0.20)');
+        innerGlowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
+        ctx.fillStyle = innerGlowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius * 1.45, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 2. Body（真珠・白銀のような深みと高輝度な輝き）
+        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.26, -drawRadius * 0.26, drawRadius * 0.06, 0, 0, drawRadius);
+        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        bodyGrad.addColorStop(0.25, 'rgba(248, 250, 252, 0.96)');
+        bodyGrad.addColorStop(0.65, 'rgba(226, 232, 240, 0.85)');
+        bodyGrad.addColorStop(0.90, 'rgba(180, 198, 220, 0.72)');
+        bodyGrad.addColorStop(1.0, 'rgba(125, 145, 170, 0.88)'); // 外周をしっかり締めてボケを防止
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 3. クッキリ鮮明なリムライン（輪郭線）
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius - 0.9, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // 4. メインハイライト（シャープで高輝度な光沢）
+        const hlX = -drawRadius * 0.32;
+        const hlY = -drawRadius * 0.32;
+        const hlR = drawRadius * 0.25;
+        const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.75)');
+        hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = hlGrad;
+        ctx.beginPath();
+        ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
+        ctx.fill();
 
-        // ★Chrome (iOS) 対策: ユーザージェスチャ直下で HTML5 Audio を同期再生しスピーカーを開放
-        if (allowResume) {
-            try {
-                const audio = new Audio();
-                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAARKwAARKwAAAEAAgAZAAAATUFOWQAAAAADAAgAZGF0YQgAAAAAAAAA';
-                audio.volume = 0.0001;
-                audio.play().catch(() => {});
-            } catch (_) {}
-        }
-
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (audioCtx && audioCtx.state === 'closed') {
-            audioCtx = null;
-            carbonatedBufferCache = null;
-            audioResumePromise = null;
-        }
-        if (!audioCtx && AudioContextClass) {
-            audioCtx = new AudioContextClass();
-            carbonatedBufferCache = null;
-            audioResumePromise = null;
-        }
-
-        if (audioCtx) {
-            if (!audioCtx._stateChangeListenerAdded) {
-                audioCtx._stateChangeListenerAdded = true;
-                audioCtx.onstatechange = () => {
-                    if (audioCtx && audioCtx.state === 'running') {
-                        scheduleCarbonatedPregen();
-                        if (gameActive || pendingAmbientStart) {
-                            // stop+start の連打は固まりの原因。未開始時のみ開始する
-                            ensureAmbientAfterUnlock();
-                        }
-                    }
-                };
-            }
-
-            if (audioCtx.state === 'running') {
-                scheduleCarbonatedPregen();
-                if (gameActive || pendingAmbientStart) {
-                    ensureAmbientAfterUnlock();
-                }
-                return audioResumePromise || Promise.resolve();
-            }
-
-            // ジェスチャ外では resume しない（iOS で以後の解除が不安定になることがある）
-            if (!allowResume) {
-                if (gameActive) pendingAmbientStart = true;
-                return Promise.resolve();
-            }
-
-            // ロック解除用の無音バッファ（ユーザージェスチャ同期スタック内）
-            try {
-                const buffer = audioCtx.createBuffer(1, 1, 22050);
-                const source = audioCtx.createBufferSource();
-                source.buffer = buffer;
-                source.connect(audioCtx.destination);
-                source.start(0);
-            } catch (_) {}
-
-            if (gameActive) pendingAmbientStart = true;
-
-            if (!audioResumePromise) {
-                audioResumePromise = audioCtx.resume()
-                    .then(() => {
-                        audioResumePromise = null;
-                        scheduleCarbonatedPregen();
-                        if (gameActive || pendingAmbientStart) {
-                            ensureAmbientAfterUnlock();
-                        }
-                    })
-                    .catch((err) => {
-                        audioResumePromise = null;
-                        console.warn("AudioContextのresumeに失敗しました:", err);
-                    });
-            } else {
-                // 進行中の resume 完了後も、今回の開始要求を拾わせる
-                audioResumePromise.then(() => {
-                    if (gameActive || pendingAmbientStart) {
-                        ensureAmbientAfterUnlock();
-                    }
-                }).catch(() => {});
-            }
-
-            return audioResumePromise || Promise.resolve();
-        }
-    } catch (e) {
-        console.warn("Web Audio APIの初期化に失敗しました。無音で動作します:", e);
-    }
-    return Promise.resolve();
-}
-
-// 炭酸バッファ生成は重いので、タップ判定のあとへずらす（iOSの初回タップ取りこぼし防止）
-function scheduleCarbonatedPregen() {
-    if (carbonatedBufferCache || !audioCtx) return;
-    const run = () => {
-        try {
-            pregenerateCarbonatedBuffer();
-        } catch (_) {}
-    };
-    if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(run, { timeout: 900 });
+        // 5. サブハイライト（対角の反射光による立体感）
+        const subHlX = drawRadius * 0.28;
+        const subHlY = drawRadius * 0.28;
+        const subHlR = drawRadius * 0.18;
+        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
+        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+        subHlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = subHlGrad;
+        ctx.beginPath();
+        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
+        ctx.fill();
     } else {
-        setTimeout(run, 0);
+        const drawRadius = templateRadius;
+        
+        // 1. 鮮やかな光彩（輝度を高めたクリアなオーラ）
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.80, 0, 0, drawRadius * 1.25);
+        glowGrad.addColorStop(0, `hsla(${hue}, 92%, 75%, 0.36)`);
+        glowGrad.addColorStop(1, `hsla(${hue}, 92%, 75%, 0)`);
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius * 1.25, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 2. Body（輝度と彩度を両立し、クリスタルのように澄んで光る球体）
+        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
+        bodyGrad.addColorStop(0, `hsla(${hue}, 90%, 92%, 0.94)`); // 光の透過部（輝度アップ）
+        bodyGrad.addColorStop(0.35, `hsla(${hue}, 88%, 76%, 0.52)`);
+        bodyGrad.addColorStop(0.72, `hsla(${hue}, 85%, 65%, 0.44)`); // 色の深み
+        bodyGrad.addColorStop(0.90, `hsla(${hue}, 90%, 70%, 0.78)`); // フレネル反射部
+        bodyGrad.addColorStop(1.0, `hsla(${hue}, 92%, 74%, 0.94)`); // 外縁の鮮やかな輪郭
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 3. クッキリした鮮明で明るい光の輪郭線
+        ctx.strokeStyle = `hsla(${hue}, 92%, 88%, 0.94)`;
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // 4. メインハイライト（鋭く澄んだ高輝度の輝き）
+        const hlX = -drawRadius * 0.32;
+        const hlY = -drawRadius * 0.32;
+        const hlR = drawRadius * 0.26;
+        const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        hlGrad.addColorStop(0.45, `hsla(${hue}, 80%, 96%, 0.78)`);
+        hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = hlGrad;
+        ctx.beginPath();
+        ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 5. サブハイライト（対角の反射光による立体的な輝き）
+        const subHlX = drawRadius * 0.28;
+        const subHlY = drawRadius * 0.28;
+        const subHlR = drawRadius * 0.18;
+        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
+        subHlGrad.addColorStop(0, `hsla(${hue}, 95%, 92%, 0.60)`);
+        subHlGrad.addColorStop(1, `hsla(${hue}, 95%, 92%, 0)`);
+        ctx.fillStyle = subHlGrad;
+        ctx.beginPath();
+        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
+        ctx.fill();
     }
+    
+    ctx.restore();
+    bubbleTemplateCache[key] = canvas;
+    return canvas;
 }
+
+function initBubbleTemplates() {
+    getBubbleTemplate('silver', 210, '#cbd5e1');
+    BUBBLE_COLORS.forEach(c => {
+        getBubbleTemplate('normal', c.hue, c.hex);
+    });
+}
+
+// 炭酸バブル効果音の事前合成
 
 // 泡を一つ生成する
 function createBubble(forceType) {
@@ -2021,794 +1817,501 @@ function drawBubbles() {
     });
 }
 
-
-
-const THEME_BUBBLE_COLORS = {
-    ocean: [
-        { hex: '#38bdf8', hue: 198 },
-        { hex: '#34d399', hue: 156 },
-        { hex: '#c084fc', hue: 272 },
-        { hex: '#6ee7b7', hue: 160 },
-        { hex: '#f472b6', hue: 330 },
-        { hex: '#60a5fa', hue: 217 },
-        { hex: '#fbbf24', hue: 45  }
-    ],
-    aurora: [
-        { hex: '#38d064', hue: 140 }, // Mint emerald
-        { hex: '#96e6b3', hue: 148 }, // Pale green
-        { hex: '#38b06a', hue: 150 }, // Deep mint
-        { hex: '#81c3d7', hue: 195 }, // Cyan
-        { hex: '#c2aff0', hue: 262 }, // Violet
-        { hex: '#a7f3d0', hue: 152 }  // Glow emerald
-    ],
-    starry: [
-        { hex: '#ffd700', hue: 45 },  // Gold
-        { hex: '#f8fafc', hue: 210 }, // Diamond White
-        { hex: '#a5f3fc', hue: 187 }, // Ice Blue
-        { hex: '#ffcc80', hue: 35 },  // Pale Amber
-        { hex: '#c2aff0', hue: 262 }, // Starry Violet
-        { hex: '#cbd5e1', hue: 215 }  // Soft Silver
-    ],
-    sakura: [
-        { hex: '#fbcfe8', hue: 330 }, // Sakura pink
-        { hex: '#f472b6', hue: 330 }, // Rose pink
-        { hex: '#fecdd3', hue: 350 }, // Peach
-        { hex: '#fda4af', hue: 353 }, // Deep peach
-        { hex: '#ffffff', hue: 0 },   // Pure white
-        { hex: '#e8d5db', hue: 340 }  // Warm grey
-    ]
-};
-
-function applyTheme(themeName) {
-    if (!THEME_BUBBLE_COLORS[themeName]) return;
-    currentTheme = themeName;
-    
-    // Body class
-    document.body.classList.remove('theme-aurora', 'theme-starry', 'theme-sakura');
-    if (themeName !== 'ocean') {
-        document.body.classList.add(`theme-${themeName}`);
-    }
-    
-    // Modify bubble colors in-place
-    BUBBLE_COLORS.length = 0;
-    THEME_BUBBLE_COLORS[themeName].forEach(color => BUBBLE_COLORS.push(color));
-    
-    // Base Hues
-    if (themeName === 'ocean') {
-        showerHue = 200;
-    } else if (themeName === 'aurora') {
-        showerHue = 145;
-    } else if (themeName === 'starry') {
-        showerHue = 45;
-    } else if (themeName === 'sakura') {
-        showerHue = 340;
-    }
-    
-    // Clear caches
-    for (let key in bubbleTemplateCache) {
-        delete bubbleTemplateCache[key];
-    }
-    for (let key in particleSpriteCache) {
-        delete particleSpriteCache[key];
-    }
-    // 背景グラデーションキャッシュもリセット
-    _bgGradientCache = null;
-    
-    // Re-init templates and particles
-    initBubbleTemplates();
-    initParticleSprites();
-    initStars();
-    initAuroraParticles();
-    
-    // UI class active
-    const themeButtons = document.querySelectorAll('#theme-options .btn-option');
-    themeButtons.forEach(btn => {
-        if (btn.getAttribute('data-theme') === themeName) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-}
-
-function setNightMode(enabled) {
-    const chkNightMode = document.getElementById('chk-night-mode');
-    if (chkNightMode) {
-        chkNightMode.checked = enabled;
-    }
-    if (enabled) {
-        document.body.classList.add('night-mode');
+function incrementPopProgress() {
+    totalPops++;
+    sessionPops++;
+    if (infiniteMode && totalPops >= REFRESH_TARGET) {
+        // 無限モード時の満タンイベント：
+        // ゲージを一瞬100%にしてから、お祝いの音を鳴らしてリセットする
+        refreshProgress = 1;
+        updateRefreshGauge();
+        
+        playClearSound();
+        triggerHaptic('success');
+        
+        totalPops = 0;
+        setTimeout(() => {
+            if (gameActive && infiniteMode) {
+                refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
+                updateRefreshGauge();
+            }
+        }, 1000);
     } else {
-        document.body.classList.remove('night-mode');
+        refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
+        updateRefreshGauge();
     }
 }
 
-// ──────────────────────────────────────────────
-// 言語モード切り替え
-// mode: 'bilingual' | 'ja' | 'en'
-// ──────────────────────────────────────────────
-function applyLangMode(mode) {
-    langMode = mode;
+// 連鎖バブルがタップされた際に、周囲の泡を巻き込んで連鎖爆発させる
+function triggerChainReaction(parentBubble) {
+    if (!parentBubble) return;
 
-    // body クラスを切り替え
-    document.body.classList.remove('lang-ja', 'lang-en', 'lang-bilingual');
-    if (mode === 'ja') {
-        document.body.classList.add('lang-ja');
-    } else if (mode === 'en') {
-        document.body.classList.add('lang-en');
-    } else {
-        document.body.classList.add('lang-bilingual');
-    }
+    const chainRadius = 500; // 連鎖する判定半径（500px）
+    const nowReserve = performance.now();
 
-    // 設定ボタンのアクティブ状態を更新
-    const langBtns = document.querySelectorAll('#lang-options .btn-option');
-    langBtns.forEach(btn => {
-        if (btn.getAttribute('data-lang') === mode) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
+    // 1. 半径500px以内の連鎖対象の泡を収集
+    const targetBubbles = [];
+    bubbles.forEach(b => {
+        // すでにポップ中(popping)またはドミノ予約済み(reserved)の泡は除外
+        if (b === parentBubble || b.popping || b.reserved) return;
+
+        const dx = b.x - parentBubble.x;
+        const dy = b.y - parentBubble.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= chainRadius) {
+            targetBubbles.push({ bubble: b, dist: dist });
+            b.reserved = true; // 重複巻き込みを防ぐために先に予約フラグを立てる
+            b.reservedAt = nowReserve;
         }
     });
 
-    // ────────────────────────────────────────────
-    // 英語モード専用: テキストが日英混在している
-    // 要素を書き換える（CSSで隠せない箇所）
-    // ────────────────────────────────────────────
-    const langTexts = {
-        // [selector, bilingual, ja, en]
-        '#btn-quit-active':     ['終了する / Quit', '終了する', 'Quit'],
-        '#btn-sound-guide-open': ['🔊 音が鳴らないときは / If there is no sound', '🔊 音が鳴らないときは', '🔊 If there is no sound'],
-    };
+    // 2. 距離が近い順（昇順）にソート
+    targetBubbles.sort((a, b) => a.dist - b.dist);
 
-    Object.entries(langTexts).forEach(([sel, texts]) => {
-        if (!texts) return;
-        const el = document.querySelector(sel);
-        if (!el) return;
-        if (mode === 'bilingual') el.textContent = texts[0];
-        else if (mode === 'ja')   el.textContent = texts[1];
-        else                       el.textContent = texts[2];
-    });
+    // 3. ドミノ倒しのように1つずつ時間差（一定の間隔）で破裂をスケジュール
+    const dominoInterval = 90; // 各破裂の間隔 (90ms)
 
-    // スタート画面のモードカードの説明テキスト (btn-mode-detail)
-    const modeDetails = {
-        'btn-play-normal': {
-            bilingual: '泡を150個つぶしてゴール ／ 約40秒',
-            ja:        '泡を150個つぶしてゴール ／ 約40秒',
-            en:        'Pop 150 bubbles to finish · about 40 sec'
-        },
-        'btn-play-infinite': {
-            bilingual: 'ゴールなく自由に楽しむ ／ 時間無制限',
-            ja:        'ゴールなく自由に楽しむ ／ 時間無制限',
-            en:        'Play freely without a goal · No time limit'
-        },
-        'btn-play-meditation': {
-            bilingual: '呼吸ガイドに合わせて深くリラックス',
-            ja:        '呼吸ガイドに合わせて深くリラックス',
-            en:        'Deep relaxation with breath guide'
-        }
-    };
+    targetBubbles.forEach((target, index) => {
+        const b = target.bubble;
+        const delayTime = (index + 1) * dominoInterval; // 1個ずつ順番に遅延を増やす
 
-    Object.entries(modeDetails).forEach(([btnId, texts]) => {
-        const btn = document.getElementById(btnId);
-        if (!btn) return;
-        const detail = btn.querySelector('.btn-mode-detail');
-        if (detail) detail.textContent = texts[mode] || texts['bilingual'];
-    });
-
-    // スタート画面バッジテキスト
-    const badgeNormal = document.querySelector('#mode-card-normal .mode-badge');
-    if (badgeNormal) {
-        if (mode === 'en') badgeNormal.textContent = '✦ Recommended for beginners';
-        else               badgeNormal.textContent = '✦ はじめての方におすすめ';
-    }
-    const badgeMeditation = document.querySelector('#mode-card-meditation .mode-badge');
-    if (badgeMeditation) {
-        if (mode === 'en') badgeMeditation.textContent = '✦ Recommended for mental fatigue';
-        else               badgeMeditation.textContent = '✦ 脳疲労の強い方におすすめ';
-    }
-
-    // how-to-guide の説明テキスト
-    const howToDescs = document.querySelectorAll('.how-to-desc');
-    const howToDescTexts = [
-        { bilingual: '揺れる泡を\nゆっくり眺める', ja: '揺れる泡を\nゆっくり眺める', en: 'Watch the swaying\nbubbles slowly' },
-        { bilingual: '気になった泡を\nそっとタップ',   ja: '気になった泡を\nそっとタップ',   en: 'Gently tap a bubble\nthat catches your eye' },
-        { bilingual: 'あたまが\nクリアになる',       ja: 'あたまが\nクリアになる',       en: 'Your mind becomes\nclear and refreshed' }
-    ];
-    howToDescs.forEach((el, i) => {
-        if (howToDescTexts[i]) {
-            el.textContent = howToDescTexts[i][mode] || howToDescTexts[i]['bilingual'];
-        }
-    });
-
-    // 呼吸ガイドテキストを即時反映（breathStateを強制リセットして再描画を促す）
-    breathState = '';
-    
-    if (window.updateBreathPatternUI) {
-        window.updateBreathPatternUI();
-    }
-
-    // ガイドテキスト（ゲーム開始前）の初期表示切り替え
-    const guide = document.getElementById('guide-text');
-    if (guide && !gameActive) {
-        if (mode === 'en') {
-            guide.innerHTML = '<span class="en-text">Gently tap while watching the swaying spheres</span>';
-        } else if (mode === 'ja') {
-            guide.innerHTML = '<span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span>';
-        } else {
-            guide.innerHTML = '<span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span><br class="lang-divider"><span class="en-text">Gently tap while watching the swaying spheres</span>';
-        }
-    }
-}
-
-
-function initApp() {
-    // 初回起動時はゲームを開始せずスタート画面を表示する
-    initShower();
-    applyTheme('starry');
-    
-    // ナイトモードの初期化 (デフォルトはオフ)
-    setNightMode(false);
-    
-    const chkNightMode = document.getElementById('chk-night-mode');
-    if (chkNightMode) {
-        chkNightMode.addEventListener('change', (e) => {
-            setNightMode(e.target.checked);
-        });
-    }
-
-    // 言語モードの初期化 (デフォルトはBilingual)
-    applyLangMode('bilingual');
-
-    const langButtons = document.querySelectorAll('#lang-options .btn-option');
-    langButtons.forEach(btn => {
-        const setLang = () => {
-            const lang = btn.getAttribute('data-lang');
-            applyLangMode(lang);
-        };
-        btn.addEventListener('click', setLang);
-        btn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            setLang();
-        }, { passive: false });
-    });
-    
-    // 設定関連UIの初期化
-    const btnSettings = document.getElementById('btn-settings');
-    const settingsPanel = document.getElementById('settings-panel');
-    const btnSettingsClose = document.getElementById('btn-settings-close');
-    
-    if (btnSettings && settingsPanel) {
-        btnSettings.addEventListener('click', () => {
-            settingsPanel.classList.add('active');
-        });
-    }
-    if (btnSettingsClose && settingsPanel) {
-        btnSettingsClose.addEventListener('click', () => {
-            settingsPanel.classList.remove('active');
-        });
-    }
-
-    // 設定パネルのスワイプ閉じ対応（右スワイプで閉じる）
-    if (settingsPanel) {
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchCurrentX = 0;
-        let isSwiping = false;
-        let ignoreSwipe = false;
-
-        settingsPanel.addEventListener('touchstart', (e) => {
-            // 音量スライダーなどの操作時はスワイプ判定を無視する
-            if (e.target.closest('input[type="range"]')) {
-                ignoreSwipe = true;
+        setTimeout(() => {
+            if (!gameActive) {
+                b.reserved = false;
+                b.reservedAt = 0;
                 return;
             }
-            ignoreSwipe = false;
-            
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            touchCurrentX = touchStartX;
-            isSwiping = false;
-            
-            // ドラッグ中の追従を滑らかにするため一時的にトランジションを無効化
-            settingsPanel.style.transition = 'none';
-        }, { passive: true });
-
-        settingsPanel.addEventListener('touchmove', (e) => {
-            if (ignoreSwipe) return;
-            
-            const touch = e.touches[0];
-            touchCurrentX = touch.clientX;
-            const diffX = touchCurrentX - touchStartX;
-            const diffY = touch.clientY - touchStartY;
-            
-            // 右スワイプ方向であり、横の動きが縦スクロールより強い場合のみスワイプと判定
-            if (!isSwiping && diffX > 10 && Math.abs(diffX) > Math.abs(diffY)) {
-                isSwiping = true;
+            // ユーザーが先にタップして破裂済みなら二重処理しない
+            if (b.popping || b.popTriggered) {
+                b.reserved = false;
+                b.reservedAt = 0;
+                return;
             }
-            
-            if (isSwiping) {
-                // スワイプ量に合わせてパネルを右にずらす（左方向へのドラッグは防ぐ）
-                const translateVal = Math.max(0, diffX);
-                settingsPanel.style.transform = `translateX(${translateVal}px)`;
+
+            b.reserved = false;
+            b.reservedAt = 0;
+            // 時間差の番が来たらポップアニメーションを開始する
+            b.popping = true;
+
+            // 巻き込まれたバブルのポップトリガー処理
+            if (!b.popTriggered) {
+                b.popTriggered = true;
                 
-                // スワイプ中は背景やパネル自身のスクロール等のデフォルト挙動を防止
-                if (e.cancelable) {
-                    e.preventDefault();
+                // コンボをさらにアップして上昇アルペジオにする
+                comboCount++;
+                if (comboCount > maxComboCount) {
+                    maxComboCount = comboCount;
+                }
+                
+                // ポップ音とエフェクトの再生（連打時は間引き）
+                playPopSound(comboCount, b.x);
+                
+                // 連鎖中の振動は、すべて震わせるとノイズになるので3回に1回だけプチッと振動させる
+                if (comboCount % 3 === 0) {
+                    triggerHaptic('light');
+                }
+                
+                // 巻き込まれた泡が別の「連鎖バブル（金色）」なら、さらにそこから連鎖を誘発
+                if (b.type === 'chain') {
+                    triggerChainReaction(b);
+                }
+                
+                const rippleSize = 100 + Math.min(comboCount, 12) * 20;
+                const particleCount = IS_MOBILE ? 10 : (14 + Math.min(comboCount, 12) * 3);
+                const rippleSpeed = 2.5 + Math.min(comboCount, 12) * 0.25;
+
+                createShowerRipple(b.x, b.y, rippleSize, rippleSpeed, b.hue);
+                createChainSmoke(b.x, b.y, particleCount, b.hue);
+                
+                // リフレッシュゲージも進行
+                incrementPopProgress();
+                
+                if (comboCount >= 2) {
+                    showCombo(comboCount);
+                }
+                
+                if (!infiniteMode && refreshProgress >= 1) {
+                    setTimeout(() => {
+                        endGame();
+                    }, 600);
                 }
             }
-        }, { passive: false });
-
-        settingsPanel.addEventListener('touchend', () => {
-            if (ignoreSwipe) return;
-            
-            // トランジションを元に戻す
-            settingsPanel.style.transition = '';
-            
-            const diffX = touchCurrentX - touchStartX;
-            
-            // 100px以上右へスワイプされていたら閉じる
-            if (isSwiping && diffX > 100) {
-                settingsPanel.classList.remove('active');
-            }
-            
-            // トランスフォームスタイルをクリアして元のCSSクラスのスタイリングに戻す
-            settingsPanel.style.transform = '';
-            isSwiping = false;
-        }, { passive: true });
-
-        settingsPanel.addEventListener('touchcancel', () => {
-            settingsPanel.style.transition = '';
-            settingsPanel.style.transform = '';
-            isSwiping = false;
-            ignoreSwipe = false;
-        }, { passive: true });
-    }
-    
-    const sliderVolBGM = document.getElementById('slider-vol-bgm');
-    const labelVolBGM = document.getElementById('label-vol-bgm');
-    if (sliderVolBGM) {
-        sliderVolBGM.value = volumeBGM;
-        if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
-        sliderVolBGM.addEventListener('input', (e) => {
-            volumeBGM = parseFloat(e.target.value);
-            volumeSolfeggio = volumeBGM * SOLFEGGIO_TO_BGM_RATIO;
-            if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
-            if (!audioCtx) return;
-            const now = audioCtx.currentTime;
-            if (ambientGain) {
-                ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
-                ambientGain.gain.linearRampToValueAtTime(0.003 * volumeBGM, now + 0.1);
-            }
-            if (solfeggioGain528 && solfeggioGain396) {
-                solfeggioGain528.gain.setValueAtTime(solfeggioGain528.gain.value, now);
-                solfeggioGain528.gain.linearRampToValueAtTime(0.006 * volumeSolfeggio, now + 0.1);
-                solfeggioGain396.gain.setValueAtTime(solfeggioGain396.gain.value, now);
-                solfeggioGain396.gain.linearRampToValueAtTime(0.009 * volumeSolfeggio, now + 0.1);
-            }
-        });
-    }
-    
-    const sliderVolSE = document.getElementById('slider-vol-se');
-    const labelVolSE = document.getElementById('label-vol-se');
-    if (sliderVolSE) {
-        sliderVolSE.value = volumeSE;
-        if (labelVolSE) labelVolSE.textContent = Math.round(volumeSE * 100) + '%';
-        sliderVolSE.addEventListener('input', (e) => {
-            volumeSE = parseFloat(e.target.value);
-            if (labelVolSE) labelVolSE.textContent = Math.round(volumeSE * 100) + '%';
-        });
-    }
-    
-    window.updatePopEffectUI = function(effect) {
-        popEffectMode = effect;
-        const effectButtons = document.querySelectorAll('#pop-effect-options .btn-option');
-        effectButtons.forEach(b => {
-            if (b.getAttribute('data-effect') === effect) {
-                b.classList.add('active');
-            } else {
-                b.classList.remove('active');
-            }
-        });
-    };
-    
-    const themeButtons = document.querySelectorAll('#theme-options .btn-option');
-    themeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const theme = btn.getAttribute('data-theme');
-            applyTheme(theme);
-        });
+        }, delayTime);
     });
 
-    const effectButtons = document.querySelectorAll('#pop-effect-options .btn-option');
-    effectButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const effect = btn.getAttribute('data-effect');
-            updatePopEffectUI(effect);
-        });
-    });
+    // 連鎖バブル中心部にエネルギー放出の追加特殊波紋（半径500pxの白銀波紋）
+    createShowerRipple(parentBubble.x, parentBubble.y, 500, 4.2, 210); // 白銀の特大波紋
+    createChainSmoke(parentBubble.x, parentBubble.y, IS_MOBILE ? 24 : 40, 210);
+}
+
+// 泡をタップしてポップする（ヒット判定）
+function tryPopBubble(clientX, clientY) {
+    if (!gameActive) return false;
     
-    const chkGyro = document.getElementById('chk-gyro');
-    if (chkGyro) {
-        chkGyro.checked = gyroEnabled;
-        chkGyro.addEventListener('change', (e) => {
-            gyroEnabled = e.target.checked;
-            if (!gyroEnabled) {
-                targetGyroX = 0;
-                targetGyroY = 0;
-            } else {
-                requestGyroPermission();
+    // 手前（後から描画された）泡から判定
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        if (b.popping) continue; // ポップ中のみ除外（連鎖予約中はタップで即ポップ可）
+        
+        // ジャイロ視差と同じ座標ズレを加味して判定する
+        const bOffsetX = currentGyroX * 0.4 * b.radius;
+        const bOffsetY = currentGyroY * 0.4 * b.radius;
+        const dx = clientX - (b.x + bOffsetX);
+        const dy = clientY - (b.y + bOffsetY);
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        // 半径の1.55倍＋最小サイズ保証（スマホではさらに余裕を持たせる）
+        const minHit = IS_MOBILE ? 44 : 32;
+        const hitRadius = Math.max(b.radius * (IS_MOBILE ? 1.55 : 1.4), minHit);
+        if (dist <= hitRadius) {
+            // 連鎖予約中の泡をタップしたら予約を解除して即ポップ
+            b.reserved = false;
+            b.reservedAt = 0;
+            b.popping = true;
+            
+            // 瞑想モード時の静かなタップ処理
+            if (meditationMode) {
+                playPopSound(1, b.x); // 音階上昇させずに基本音階で穏やかに鳴らす
+                triggerHaptic('light');
+                
+                // ガイドテキストを消す（初回タップ後）
+                if (!guideHidden) {
+                    guideHidden = true;
+                    const guide = document.getElementById('guide-text');
+                    if (guide) {
+                        guide.style.opacity = '0';
+                    }
+                }
+                return true;
             }
-        });
+            
+            // コンボ管理
+            const now = performance.now();
+            if (now - lastPopTime < COMBO_WINDOW) {
+                comboCount++;
+            } else {
+                comboCount = 1;
+            }
+            lastPopTime = now;
+            if (comboCount > maxComboCount) {
+                maxComboCount = comboCount;
+            }
+            
+            // 特殊泡またはフィーバーに応じた効果音再生
+            if (b.type === 'silver') {
+                feverActive = true;
+                feverEndTime = now + 8000; // フィーバータイムは8秒間
+                playFeverStartSound(b.x);
+                playCarbonatedBubbleSound(b.x);
+                triggerHaptic('heavy');
+                createShowerRipple(b.x, b.y, 280, 3.2, 210); // 白銀の特大波紋 (色相210)
+            } else if (b.type === 'chain') {
+                playPopSound(comboCount, b.x);
+                triggerHaptic('medium');
+                triggerChainReaction(b);
+            } else {
+                playPopSound(comboCount, b.x);
+                triggerHaptic('light');
+                
+                // フィーバー中ならさらに追加 of チャイム音をバックに薄く重ねる
+                if (feverActive) {
+                    playFeverChimeBackground(b.x);
+                }
+            }
+            
+            // 同色3連続タップの判定
+            tappedColorHistory.push(b.color);
+            if (tappedColorHistory.length > 3) {
+                tappedColorHistory.shift();
+            }
+            if (tappedColorHistory.length === 3 &&
+                tappedColorHistory[0] === tappedColorHistory[1] &&
+                tappedColorHistory[1] === tappedColorHistory[2]) {
+                triggerMeteorShower(b.x, b.y);
+                tappedColorHistory = []; // トリガー後の履歴をリセット
+            }
+            
+            // 大爆発判定用の履歴管理 (直近10タップ分)
+            popColorHistory.push(b.color);
+            if (popColorHistory.length > 10) {
+                popColorHistory.shift();
+            }
+            
+            if (popColorHistory.length === 10) {
+                let hasConsecutiveSame = false;
+                for (let j = 0; j < 9; j++) {
+                    if (popColorHistory[j] === popColorHistory[j + 1]) {
+                        hasConsecutiveSame = true;
+                        break;
+                    }
+                }
+                
+                if (!hasConsecutiveSame) {
+                    const first5 = popColorHistory.slice(0, 5);
+                    const last5 = popColorHistory.slice(5, 10);
+                    
+                    const first5Unique = new Set(first5).size === 5;
+                    const last5Unique = new Set(last5).size === 5;
+                    
+                    if (first5Unique && last5Unique) {
+                        triggerMeteorBigExplosion(b.x, b.y);
+                        popColorHistory = [];
+                        tappedColorHistory = [];
+                    }
+                }
+            }
+            
+            incrementPopProgress();
+            
+            if (comboCount >= 2) {
+                showCombo(comboCount);
+            }
+            
+            if (!guideHidden) {
+                guideHidden = true;
+                const guide = document.getElementById('guide-text');
+                if (guide) {
+                    guide.style.opacity = '0';
+                }
+            }
+            
+            if (!infiniteMode && refreshProgress >= 1) {
+                setTimeout(() => {
+                    endGame();
+                }, 600);
+            }
+            
+            return true;
+        }
     }
+    return false;
+}
+
+// =============================================================
+// 5. Web Audio 音声システム（アンビエント・ソルフェジオ・効果音・iOSアンロック）
+// =============================================================
+function pregenerateCarbonatedBuffer() {
+    if (carbonatedBufferCache || !audioCtx) return;
     
-    const chkHaptic = document.getElementById('chk-haptic');
-    if (chkHaptic) {
-        chkHaptic.checked = hapticEnabled;
-        chkHaptic.addEventListener('change', (e) => {
-            hapticEnabled = e.target.checked;
-        });
-    }
-    
-    const updateBreathPatternUI = () => {
-        const descEl = document.getElementById('breath-pattern-desc');
-        const container = document.getElementById('breath-pattern-container');
-        if (container) {
-            container.style.display = breathGuideEnabled ? '' : 'none';
+    try {
+        const durationSeconds = 6.5;
+        const sampleRate = audioCtx.sampleRate;
+        const bufferSize = sampleRate * durationSeconds;
+        
+        const audioBuffer = audioCtx.createBuffer(2, bufferSize, sampleRate);
+        const leftData = audioBuffer.getChannelData(0);
+        const rightData = audioBuffer.getChannelData(1);
+        
+        // 1. ベースノイズの合成
+        for (let i = 0; i < bufferSize; i++) {
+            const time = i / sampleRate;
+            const amp = Math.min(1.0, time / 0.15) * Math.exp(-time / 2.0) * 0.032;
+            const noise = Math.random() * 2 - 1;
+            leftData[i] = noise * amp;
+            rightData[i] = noise * amp;
         }
         
-        if (descEl) {
-            let desc = '';
-            if (langMode === 'en') {
-                if (breathPattern === 'coherent') {
-                    desc = '<strong>[Coherent Breathing] Inhale 5s / Exhale 5s</strong><br>Synchronizes breath with heart rhythm to balance the autonomic nervous system. The fundamental method for deepest relaxation.';
-                } else if (breathPattern === '478') {
-                    desc = '<strong>[4-7-8 Method] Inhale 4s / Hold 7s / Exhale 8s</strong><br>Strongly calms the nervous system. Blocks excess thoughts, ideal for relieving anxiety and easing into restful sleep.';
-                } else if (breathPattern === 'box') {
-                    desc = '<strong>[Box Breathing] Inhale 4s / Hold 4s / Exhale 4s / Hold 4s</strong><br>Releases tension while maintaining clear focus. Resets the nervous system and enhances concentration.';
-                }
-            } else if (langMode === 'ja') {
-                if (breathPattern === 'coherent') {
-                    desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。';
-                } else if (breathPattern === '478') {
-                    desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。';
-                } else if (breathPattern === 'box') {
-                    desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。';
-                }
+        // 2. パチパチ音（400個）を一括加算
+        const bubbleCount = 400;
+        const clickDuration = durationSeconds - 0.2;
+        
+        for (let i = 0; i < bubbleCount; i++) {
+            let timeOffset;
+            if (i < 320) {
+                timeOffset = Math.pow(Math.random(), 1.4) * 4.0;
             } else {
-                // Bilingual
-                if (breathPattern === 'coherent') {
-                    desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[Coherent Breathing] Inhale 5s / Exhale 5s - Synchronizes breath with heart rhythm to balance the autonomic nervous system.</span>';
-                } else if (breathPattern === '478') {
-                    desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[4-7-8 Method] Inhale 4s / Hold 7s / Exhale 8s - Strongly calms the nervous system and blocks excess thoughts.</span>';
-                } else if (breathPattern === 'box') {
-                    desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[Box Breathing] Inhale 4s / Hold 4s / Exhale 4s / Hold 4s - Releases tension while maintaining clear focus.</span>';
-                }
+                timeOffset = 4.0 + Math.random() * (clickDuration - 4.0);
             }
-            descEl.innerHTML = desc;
-        }
-    };
-    window.updateBreathPatternUI = updateBreathPatternUI;
-
-    window.updateBreathGuideUI = function(enabled) {
-        breathGuideEnabled = enabled;
-        const chkBreath = document.getElementById('chk-breath');
-        if (chkBreath) {
-            chkBreath.checked = enabled;
-        }
-        const breathGuide = document.getElementById('breath-guide');
-        if (breathGuide) {
-            if (enabled && gameActive) {
-                breathGuide.classList.add('visible');
-            } else {
-                breathGuide.classList.remove('visible');
-            }
-        }
-        if (typeof updateBreathPatternUI === 'function') {
-            updateBreathPatternUI();
-        }
-    };
-
-    const chkBreath = document.getElementById('chk-breath');
-    if (chkBreath) {
-        chkBreath.checked = breathGuideEnabled;
-        chkBreath.addEventListener('change', (e) => {
-            updateBreathGuideUI(e.target.checked);
-        });
-    }
-
-    const patternButtons = document.querySelectorAll('#breath-pattern-options .btn-option');
-    patternButtons.forEach(btn => {
-        const setPattern = () => {
-            patternButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            breathPattern = btn.getAttribute('data-pattern');
-            breathCycleTime = 0; // 切り替え時にサイクルを最初からやり直す
-            breathState = ''; // ステート変更を強制トリガー
-            updateBreathPatternUI();
-        };
-        btn.addEventListener('click', setPattern);
-        btn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            setPattern();
-        }, { passive: false });
-    });
-
-    // 初期化時にUIを更新
-    updateBreathPatternUI();
-    
-    // 音が鳴らない場合の案内ダイアログ制御
-    const btnSoundGuideOpen = document.getElementById('btn-sound-guide-open');
-    const btnSoundGuideClose = document.getElementById('btn-sound-guide-close');
-    const soundGuideDialog = document.getElementById('sound-guide-dialog');
-    
-    if (btnSoundGuideOpen && soundGuideDialog) {
-        btnSoundGuideOpen.addEventListener('click', (e) => {
-            e.stopPropagation();
-            soundGuideDialog.classList.add('active');
-        });
-    }
-    if (btnSoundGuideClose && soundGuideDialog) {
-        const closeGuide = () => {
-            soundGuideDialog.classList.remove('active');
-        };
-        btnSoundGuideClose.addEventListener('click', closeGuide);
-        btnSoundGuideClose.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            closeGuide();
-        }, { passive: false });
-    }
-
-    // ジャイロ許可の確認フロー（唐突な表示を防ぐためのクッションダイアログ）
-    const handleGameStartWithGyroCheck = (startCallback) => {
-        const needsPermissionPrompt = (
-            typeof DeviceOrientationEvent !== 'undefined' && 
-            typeof DeviceOrientationEvent.requestPermission === 'function' &&
-            gyroEnabled && !gyroActive && !gyroPermissionRequested
-        );
-
-        if (needsPermissionPrompt) {
-            const dialog = document.getElementById('gyro-confirm-dialog');
-            const btnAllow = document.getElementById('btn-gyro-allow');
-            const btnDeny = document.getElementById('btn-gyro-deny');
             
-            if (dialog && btnAllow && btnDeny) {
-                dialog.classList.add('active');
-                
-                const handleAllow = () => {
-                    dialog.classList.remove('active');
-                    initAudio(); // 許可タップのジェスチャで音声解除
-                    requestGyroPermission();
-                    gyroPermissionRequested = true;
-                    cleanup();
-                    startCallback();
-                };
-                
-                const handleDeny = () => {
-                    dialog.classList.remove('active');
-                    initAudio(); // 拒否タップのジェスチャでも音声解除
-                    gyroEnabled = false;
-                    const chkGyro = document.getElementById('chk-gyro');
-                    if (chkGyro) chkGyro.checked = false;
-                    gyroPermissionRequested = true;
-                    cleanup();
-                    startCallback();
-                };
-                
-                const onAllowTouch = (e) => {
-                    e.preventDefault();
-                    handleAllow();
-                };
-                
-                const onDenyTouch = (e) => {
-                    e.preventDefault();
-                    handleDeny();
-                };
-                
-                const cleanup = () => {
-                    btnAllow.removeEventListener('click', handleAllow);
-                    btnAllow.removeEventListener('touchend', onAllowTouch);
-                    btnDeny.removeEventListener('click', handleDeny);
-                    btnDeny.removeEventListener('touchend', onDenyTouch);
-                };
-                
-                btnAllow.addEventListener('click', handleAllow);
-                btnAllow.addEventListener('touchend', onAllowTouch, { passive: false });
-                btnDeny.addEventListener('click', handleDeny);
-                btnDeny.addEventListener('touchend', onDenyTouch, { passive: false });
-                return;
+            const isNoise = Math.random() < 0.35;
+            const clickLen = isNoise 
+                ? (0.003 + Math.random() * 0.006) 
+                : (0.004 + Math.random() * 0.012);
+
+            const startSample = Math.floor(timeOffset * sampleRate);
+            const lengthSamples = Math.floor(clickLen * sampleRate);
+
+            let volumeMultiplier = 1.0;
+            if (timeOffset <= 4.0) {
+                volumeMultiplier = 1.7 - (timeOffset / 4.0) * 0.5;
+            } else {
+                const postRatio = (timeOffset - 4.0) / (clickDuration - 4.0);
+                volumeMultiplier = Math.max(0.12, 1.0 - postRatio * 0.88);
+            }
+
+            const maxVolume = (isNoise
+                ? (0.026 + Math.random() * 0.028)
+                : (0.020 + Math.random() * 0.022)) * volumeMultiplier * 0.85;
+
+            // 各個別の泡の定位（ステレオの広がり）
+            const clickPan = (Math.random() * 2 - 1);
+            const gainL = Math.cos((clickPan + 1) * Math.PI / 4);
+            const gainR = Math.sin((clickPan + 1) * Math.PI / 4);
+
+            const clickFreq = 2800 + Math.random() * 6800;
+
+            for (let j = 0; j < lengthSamples; j++) {
+                const idx = startSample + j;
+                if (idx >= bufferSize) break;
+
+                const progress = j / lengthSamples;
+                const env = Math.exp(-progress * 4.5) * (1.0 - progress);
+
+                let val = 0;
+                if (isNoise) {
+                    val = (Math.random() * 2 - 1) * maxVolume * env;
+                } else {
+                    const angle = (j / sampleRate) * clickFreq * Math.PI * 2;
+                    val = Math.sin(angle) * maxVolume * env;
+                }
+
+                leftData[idx] += val * gainL;
+                rightData[idx] += val * gainR;
             }
         }
         
-        // ダイアログ不要（iOS以外、またはすでに選択済みなど）な場合はそのまま開始
-        startCallback();
-    };
-
-    // モード開始ボタン（Play / Endless / Meditation）
-    const bindModeStartButton = (btnId, setupFn) => {
-        const btn = document.getElementById(btnId);
-        if (!btn) return;
-        const start = () => {
-            initAudio(); // 最初のジェスチャで音声解除（ジャイロ確認より先）
-            handleGameStartWithGyroCheck(() => {
-                initAudio();
-                setupFn();
-                const startOverlay = document.getElementById('start-overlay');
-                if (startOverlay) startOverlay.classList.remove('active');
-                startGame();
-                Promise.resolve(initAudio()).then(() => ensureAmbientAfterUnlock());
-            });
-        };
-        // touchstart / pointerdown の方が iOS の音声解除に有効
-        btn.addEventListener('touchstart', () => { initAudio(); }, { passive: true });
-        btn.addEventListener('pointerdown', () => { initAudio(); });
-        btn.addEventListener('click', start);
-    };
-
-    bindModeStartButton('btn-play-normal', () => {
-        meditationMode = false;
-        infiniteMode = false;
-        if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
-        if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
-    });
-
-    bindModeStartButton('btn-play-infinite', () => {
-        meditationMode = false;
-        infiniteMode = true;
-        if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
-        if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
-    });
-
-    bindModeStartButton('btn-play-meditation', () => {
-        meditationMode = true;
-        infiniteMode = true;
-        if (window.updatePopEffectUI) window.updatePopEffectUI('none');
-        if (window.updateBreathGuideUI) window.updateBreathGuideUI(true);
-    });
-
-    // 再スタートボタン (リフレッシュ完了画面から)
-    const btnRestart = document.getElementById('btn-restart');
-    if (btnRestart) {
-        btnRestart.addEventListener('click', () => {
-            initAudio();
-            // リスタート時はスタート画面に戻る
-            const overlay = document.getElementById('gameover-overlay');
-            if (overlay) overlay.classList.remove('active');
-            const startOverlay = document.getElementById('start-overlay');
-            if (startOverlay) startOverlay.classList.add('active');
-        });
-        btnRestart.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            initAudio();
-            const overlay = document.getElementById('gameover-overlay');
-            if (overlay) overlay.classList.remove('active');
-            const startOverlay = document.getElementById('start-overlay');
-            if (startOverlay) startOverlay.classList.add('active');
-        }, { passive: false });
+        carbonatedBufferCache = audioBuffer;
+    } catch (e) {
+        console.warn("炭酸バブルバッファの事前生成エラー:", e);
     }
-    
-    // ゲーム終了ボタン (無限モードでも強制終了できるように引数 true を渡す)
-    const btnQuit = document.getElementById('btn-quit-active');
-    if (btnQuit) {
-        btnQuit.addEventListener('click', () => endGame(true));
-        btnQuit.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            endGame(true);
-        }, { passive: false });
-    }
-    
-    // ページ復帰時: running 状態なら Ambient のみ再開（ジェスチャ外では resume しない）
-    const handleVisibilityOrFocus = () => {
-        if (gameActive && audioCtx) {
-            if (audioCtx.state === 'running' && ambientOscs.length === 0) {
-                startAmbientSound();
-            }
-        }
-    };
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            handleVisibilityOrFocus();
-        }
-    });
-    window.addEventListener('focus', handleVisibilityOrFocus);
-
-    // iOS: UIガードに遮られず解除できるよう capture で initAudio
-    window.addEventListener('touchstart', initAudio, { capture: true });
-    window.addEventListener('mousedown', initAudio, { capture: true });
-    window.addEventListener('click', initAudio, { capture: true });
-    window.addEventListener('touchend', initAudio, { capture: true });
-    
-    // iOS Safariでのマルチタッチによるピンチズーム（拡大・縮小操作）をJS側でも強制的に防止
-    document.addEventListener('gesturestart', (e) => {
-        e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('gesturechange', (e) => {
-        e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('gestureend', (e) => {
-        e.preventDefault();
-    }, { passive: false });
-    
-    // アニメーションループ開始（ゲーム待機中も背景アニメは動かす）
-    requestAnimationFrame(mainLoop);
-
-    // AudioContext は事前生成のみ。Play ボタンのジェスチャで resume する
-    // （起動時に自動開始すると iOS では最初のタップまで無音・反応が不安定になる）
-    initAudio({ resume: false });
 }
 
-function endGame(forceQuit = false) {
-    // 無限モードかつ強制終了でない場合は何もしない
-    // （ゲージのサイクルは incrementPopProgress() が担当するため、ここでのリセットは不要）
-    if (infiniteMode && !forceQuit) {
-        return;
-    }
+// ハプティクス（バイブレーション）をトリガーするヘルパー関数
 
-    gameActive = false;
+// iOS: resume完了前に startAmbientSound が呼ばれると無音のまま残ることがある
+let pendingAmbientStart = false;
+let audioResumePromise = null;
+
+// Audio が running になったときにアンビエントを確実に開始する
+function ensureAmbientAfterUnlock() {
+    if (!gameActive || !audioCtx || audioCtx.state !== 'running') return;
     pendingAmbientStart = false;
-    
-    // クリア効果音の再生
-    playClearSound();
-    triggerHaptic('success');
-    
-    // アンビエント音を即座に停止（フェードアウトではなく即時消音）
-    stopAmbientSound(true);
-    
-    // 統計情報の集計と表示
-    const timeElapsed = ((performance.now() - gameStartTime) / 1000).toFixed(1);
-    
-    const reportTime = document.getElementById('report-time');
-    if (reportTime) {
-        reportTime.textContent = timeElapsed + 's';
-    }
-    const reportPops = document.getElementById('report-pops');
-    if (reportPops) {
-        reportPops.textContent = sessionPops;
-    }
-    const reportCombo = document.getElementById('report-combo');
-    if (reportCombo) {
-        reportCombo.textContent = maxComboCount;
-    }
-    
-    const reportMsg = document.getElementById('report-msg');
-    if (reportMsg) {
-        const comments = {
-            bilingual: [
-                "あたまがサラッとクリアになりました。",
-                "圧倒的な集中力とリズムがシンクロし、脳内が気持ちよくリセットされました！",
-                "心地よいリズムに乗って、素晴らしいプレイです。心がすっと軽くなっています。",
-                "時間を忘れて深くリラックスできたようです。上質な休息時間になりました。",
-                "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。"
-            ],
-            en: [
-                "Your mind feels clear and refreshed.",
-                "Incredible focus and rhythm — your mind has been pleasantly reset!",
-                "Riding a comfortable rhythm — wonderful play. Your heart feels light and free.",
-                "You found deep relaxation, forgetting the time. A quality moment of rest.",
-                "Taking it slow eased the tension in your mind."
-            ]
-        };
-
-        let idx = 0;
-        if (maxComboCount >= 70) idx = 1;
-        else if (maxComboCount >= 40) idx = 2;
-        else if (timeElapsed >= 90) idx = 3;
-        else if (timeElapsed >= 40) idx = 4;
-
-        const lang = (langMode === 'en') ? 'en' : 'bilingual';
-        reportMsg.textContent = comments[lang][idx];
-    }
-    
-    // リフレッシュ完了画面を表示
-    const overlay = document.getElementById('gameover-overlay');
-    if (overlay) {
-        overlay.classList.add('active');
+    if (ambientOscs.length === 0) {
+        startAmbientSound();
     }
 }
 
-// 泡が弾ける「ピチョン」音を合成して再生（ディレイ・エコー付き）  プチッと弾ける破裂音レイヤー
-let _lastPopSoundAt = 0;
-let _popSoundBurst = 0;
+// AudioContextの初期化（ユーザー操作時に都度呼び出し）
+// options.resume === false のときは Context 生成のみ（ページロード時など、ジェスチャ外での resume を避ける）
+function initAudio(options) {
+    const allowResume = !options || options.resume !== false;
+    try {
+        // すでに再生中なら重い解除処理を繰り返さない（毎タップの Audio 生成で iOS が固まる対策）
+        if (audioCtx && audioCtx.state === 'running') {
+            scheduleCarbonatedPregen();
+            if (gameActive || pendingAmbientStart) {
+                ensureAmbientAfterUnlock();
+            }
+            return Promise.resolve();
+        }
+
+        // ★Chrome (iOS) 対策: ユーザージェスチャ直下で HTML5 Audio を同期再生しスピーカーを開放
+        if (allowResume) {
+            try {
+                const audio = new Audio();
+                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAARKwAARKwAAAEAAgAZAAAATUFOWQAAAAADAAgAZGF0YQgAAAAAAAAA';
+                audio.volume = 0.0001;
+                audio.play().catch(() => {});
+            } catch (_) {}
+        }
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (audioCtx && audioCtx.state === 'closed') {
+            audioCtx = null;
+            carbonatedBufferCache = null;
+            audioResumePromise = null;
+        }
+        if (!audioCtx && AudioContextClass) {
+            audioCtx = new AudioContextClass();
+            carbonatedBufferCache = null;
+            audioResumePromise = null;
+        }
+
+        if (audioCtx) {
+            if (!audioCtx._stateChangeListenerAdded) {
+                audioCtx._stateChangeListenerAdded = true;
+                audioCtx.onstatechange = () => {
+                    if (audioCtx && audioCtx.state === 'running') {
+                        scheduleCarbonatedPregen();
+                        if (gameActive || pendingAmbientStart) {
+                            // stop+start の連打は固まりの原因。未開始時のみ開始する
+                            ensureAmbientAfterUnlock();
+                        }
+                    }
+                };
+            }
+
+            if (audioCtx.state === 'running') {
+                scheduleCarbonatedPregen();
+                if (gameActive || pendingAmbientStart) {
+                    ensureAmbientAfterUnlock();
+                }
+                return audioResumePromise || Promise.resolve();
+            }
+
+            // ジェスチャ外では resume しない（iOS で以後の解除が不安定になることがある）
+            if (!allowResume) {
+                if (gameActive) pendingAmbientStart = true;
+                return Promise.resolve();
+            }
+
+            // ロック解除用の無音バッファ（ユーザージェスチャ同期スタック内）
+            try {
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            } catch (_) {}
+
+            if (gameActive) pendingAmbientStart = true;
+
+            if (!audioResumePromise) {
+                audioResumePromise = audioCtx.resume()
+                    .then(() => {
+                        audioResumePromise = null;
+                        scheduleCarbonatedPregen();
+                        if (gameActive || pendingAmbientStart) {
+                            ensureAmbientAfterUnlock();
+                        }
+                    })
+                    .catch((err) => {
+                        audioResumePromise = null;
+                        console.warn("AudioContextのresumeに失敗しました:", err);
+                    });
+            } else {
+                // 進行中の resume 完了後も、今回の開始要求を拾わせる
+                audioResumePromise.then(() => {
+                    if (gameActive || pendingAmbientStart) {
+                        ensureAmbientAfterUnlock();
+                    }
+                }).catch(() => {});
+            }
+
+            return audioResumePromise || Promise.resolve();
+        }
+    } catch (e) {
+        console.warn("Web Audio APIの初期化に失敗しました。無音で動作します:", e);
+    }
+    return Promise.resolve();
+}
+
+// 炭酸バッファ生成は重いので、タップ判定のあとへずらす（iOSの初回タップ取りこぼし防止）
+function scheduleCarbonatedPregen() {
+    if (carbonatedBufferCache || !audioCtx) return;
+    const run = () => {
+        try {
+            pregenerateCarbonatedBuffer();
+        } catch (_) {}
+    };
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run, { timeout: 900 });
+    } else {
+        setTimeout(run, 0);
+    }
+}
+
 function playPopSound(combo = 1, originX) {
     if (!audioCtx) {
         initAudio();
@@ -4086,327 +3589,208 @@ function playCarbonatedBubbleSound(originX) {
     }
 }
 
-
-
 // =============================================================
-// 6. メインループ ＆ 初期化
+// 6. UI・操作制御・呼吸ガイド・進行ゲージ
 // =============================================================
-
-function mainLoop(timestamp) {
-    try {
-        // フレームレート制限（モバイルは30fps、PCは60fps）
-        const elapsed = timestamp - _lastFrameTime;
-        if (elapsed < FRAME_INTERVAL) {
-            requestAnimationFrame(mainLoop);
-            return;
-        }
-        _lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
-        const frameStart = performance.now();
-        
-        // iOSのツールバー伸縮で毎フレームリサイズしない（実レイアウトとの差で判定）
-        if (showerCanvas) {
-            const layout = getLayoutSize();
-            if (Math.abs(viewW - layout.w) > 8 || Math.abs(viewH - layout.h) > 8) {
-                resizeShowerCanvas();
+function triggerHaptic(type) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+            switch (type) {
+                case 'light':
+                    // 通常バブルのプチッとした微小な振動 (12ms)
+                    navigator.vibrate(12);
+                    break;
+                case 'medium':
+                    // 連鎖バブルなどの少し強めの振動 (25ms)
+                    navigator.vibrate(25);
+                    break;
+                case 'heavy':
+                    // フィーバー突入時のしっかりとした振動
+                    navigator.vibrate([40, 60, 40]);
+                    break;
+                case 'explosion':
+                    // 大爆発・流星群発生時の連続した振動
+                    navigator.vibrate([30, 40, 30, 40, 50]);
+                    break;
+                case 'success':
+                    // ゲームクリア時の心地よい2回振動
+                    navigator.vibrate([60, 80, 80]);
+                    break;
+                default:
+                    if (typeof type === 'number' || Array.isArray(type)) {
+                        navigator.vibrate(type);
+                    }
+                    break;
             }
+        } catch (e) {
+            console.warn("ハプティクス再生エラー:", e);
         }
-        
-        // バックグラウンドのマインドシャワーの更新と描画（泡もここで描画される）
-        updateShower();
-        updateBubbles(timestamp);
-        updateMeteors();
-        updateBreathGuide(timestamp);
-        
-        drawShower();
-
-        const frameCost = performance.now() - frameStart;
-        if (frameCost > FRAME_INTERVAL * 1.35) {
-            _heavyFrameStreak = Math.min(30, _heavyFrameStreak + 1);
-        } else {
-            _heavyFrameStreak = Math.max(0, _heavyFrameStreak - 1);
-        }
-    } catch (err) {
-        console.warn('mainLoop error:', err);
-    }
-    requestAnimationFrame(mainLoop);
-}
-
-// リフレッシュゲージの進行管理（通常プレイ・エンドレスプレイの両方に対応）
-function incrementPopProgress() {
-    totalPops++;
-    sessionPops++;
-    if (infiniteMode && totalPops >= REFRESH_TARGET) {
-        // 無限モード時の満タンイベント：
-        // ゲージを一瞬100%にしてから、お祝いの音を鳴らしてリセットする
-        refreshProgress = 1;
-        updateRefreshGauge();
-        
-        playClearSound();
-        triggerHaptic('success');
-        
-        totalPops = 0;
-        setTimeout(() => {
-            if (gameActive && infiniteMode) {
-                refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
-                updateRefreshGauge();
-            }
-        }, 1000);
-    } else {
-        refreshProgress = Math.min(1, totalPops / REFRESH_TARGET);
-        updateRefreshGauge();
     }
 }
 
-// 連鎖バブルがタップされた際に、周囲の泡を巻き込んで連鎖爆発させる
-function triggerChainReaction(parentBubble) {
-    if (!parentBubble) return;
-
-    const chainRadius = 500; // 連鎖する判定半径（500px）
-    const nowReserve = performance.now();
-
-    // 1. 半径500px以内の連鎖対象の泡を収集
-    const targetBubbles = [];
-    bubbles.forEach(b => {
-        // すでにポップ中(popping)またはドミノ予約済み(reserved)の泡は除外
-        if (b === parentBubble || b.popping || b.reserved) return;
-
-        const dx = b.x - parentBubble.x;
-        const dy = b.y - parentBubble.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist <= chainRadius) {
-            targetBubbles.push({ bubble: b, dist: dist });
-            b.reserved = true; // 重複巻き込みを防ぐために先に予約フラグを立てる
-            b.reservedAt = nowReserve;
-        }
-    });
-
-    // 2. 距離が近い順（昇順）にソート
-    targetBubbles.sort((a, b) => a.dist - b.dist);
-
-    // 3. ドミノ倒しのように1つずつ時間差（一定の間隔）で破裂をスケジュール
-    const dominoInterval = 90; // 各破裂の間隔 (90ms)
-
-    targetBubbles.forEach((target, index) => {
-        const b = target.bubble;
-        const delayTime = (index + 1) * dominoInterval; // 1個ずつ順番に遅延を増やす
-
-        setTimeout(() => {
-            if (!gameActive) {
-                b.reserved = false;
-                b.reservedAt = 0;
-                return;
-            }
-            // ユーザーが先にタップして破裂済みなら二重処理しない
-            if (b.popping || b.popTriggered) {
-                b.reserved = false;
-                b.reservedAt = 0;
-                return;
-            }
-
-            b.reserved = false;
-            b.reservedAt = 0;
-            // 時間差の番が来たらポップアニメーションを開始する
-            b.popping = true;
-
-            // 巻き込まれたバブルのポップトリガー処理
-            if (!b.popTriggered) {
-                b.popTriggered = true;
-                
-                // コンボをさらにアップして上昇アルペジオにする
-                comboCount++;
-                if (comboCount > maxComboCount) {
-                    maxComboCount = comboCount;
-                }
-                
-                // ポップ音とエフェクトの再生（連打時は間引き）
-                playPopSound(comboCount, b.x);
-                
-                // 連鎖中の振動は、すべて震わせるとノイズになるので3回に1回だけプチッと振動させる
-                if (comboCount % 3 === 0) {
-                    triggerHaptic('light');
-                }
-                
-                // 巻き込まれた泡が別の「連鎖バブル（金色）」なら、さらにそこから連鎖を誘発
-                if (b.type === 'chain') {
-                    triggerChainReaction(b);
-                }
-                
-                const rippleSize = 100 + Math.min(comboCount, 12) * 20;
-                const particleCount = IS_MOBILE ? 10 : (14 + Math.min(comboCount, 12) * 3);
-                const rippleSpeed = 2.5 + Math.min(comboCount, 12) * 0.25;
-
-                createShowerRipple(b.x, b.y, rippleSize, rippleSpeed, b.hue);
-                createChainSmoke(b.x, b.y, particleCount, b.hue);
-                
-                // リフレッシュゲージも進行
-                incrementPopProgress();
-                
-                if (comboCount >= 2) {
-                    showCombo(comboCount);
-                }
-                
-                if (!infiniteMode && refreshProgress >= 1) {
-                    setTimeout(() => {
-                        endGame();
-                    }, 600);
-                }
-            }
-        }, delayTime);
-    });
-
-    // 連鎖バブル中心部にエネルギー放出の追加特殊波紋（半径500pxの白銀波紋）
-    createShowerRipple(parentBubble.x, parentBubble.y, 500, 4.2, 210); // 白銀の特大波紋
-    createChainSmoke(parentBubble.x, parentBubble.y, IS_MOBILE ? 24 : 40, 210);
-}
-
-// 泡をタップしてポップする（ヒット判定）
-function tryPopBubble(clientX, clientY) {
-    if (!gameActive) return false;
+function handleOrientation(event) {
+    const maxTilt = 30; // 30度で最大の傾きとする
+    let g = event.gamma || 0; // 左右の傾き (-90 〜 90)
+    let b = event.beta || 0;  // 前後の傾き (-180 〜 180)
     
-    // 手前（後から描画された）泡から判定
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-        const b = bubbles[i];
-        if (b.popping) continue; // ポップ中のみ除外（連鎖予約中はタップで即ポップ可）
-        
-        // ジャイロ視差と同じ座標ズレを加味して判定する
-        const bOffsetX = currentGyroX * 0.4 * b.radius;
-        const bOffsetY = currentGyroY * 0.4 * b.radius;
-        const dx = clientX - (b.x + bOffsetX);
-        const dy = clientY - (b.y + bOffsetY);
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        // 半径の1.55倍＋最小サイズ保証（スマホではさらに余裕を持たせる）
-        const minHit = IS_MOBILE ? 44 : 32;
-        const hitRadius = Math.max(b.radius * (IS_MOBILE ? 1.55 : 1.4), minHit);
-        if (dist <= hitRadius) {
-            // 連鎖予約中の泡をタップしたら予約を解除して即ポップ
-            b.reserved = false;
-            b.reservedAt = 0;
-            b.popping = true;
-            
-            // 瞑想モード時の静かなタップ処理
-            if (meditationMode) {
-                playPopSound(1, b.x); // 音階上昇させずに基本音階で穏やかに鳴らす
-                triggerHaptic('light');
-                
-                // ガイドテキストを消す（初回タップ後）
-                if (!guideHidden) {
-                    guideHidden = true;
-                    const guide = document.getElementById('guide-text');
-                    if (guide) {
-                        guide.style.opacity = '0';
-                    }
-                }
-                return true;
-            }
-            
-            // コンボ管理
-            const now = performance.now();
-            if (now - lastPopTime < COMBO_WINDOW) {
-                comboCount++;
-            } else {
-                comboCount = 1;
-            }
-            lastPopTime = now;
-            if (comboCount > maxComboCount) {
-                maxComboCount = comboCount;
-            }
-            
-            // 特殊泡またはフィーバーに応じた効果音再生
-            if (b.type === 'silver') {
-                feverActive = true;
-                feverEndTime = now + 8000; // フィーバータイムは8秒間
-                playFeverStartSound(b.x);
-                playCarbonatedBubbleSound(b.x);
-                triggerHaptic('heavy');
-                createShowerRipple(b.x, b.y, 280, 3.2, 210); // 白銀の特大波紋 (色相210)
-            } else if (b.type === 'chain') {
-                playPopSound(comboCount, b.x);
-                triggerHaptic('medium');
-                triggerChainReaction(b);
-            } else {
-                playPopSound(comboCount, b.x);
-                triggerHaptic('light');
-                
-                // フィーバー中ならさらに追加 of チャイム音をバックに薄く重ねる
-                if (feverActive) {
-                    playFeverChimeBackground(b.x);
-                }
-            }
-            
-            // 同色3連続タップの判定
-            tappedColorHistory.push(b.color);
-            if (tappedColorHistory.length > 3) {
-                tappedColorHistory.shift();
-            }
-            if (tappedColorHistory.length === 3 &&
-                tappedColorHistory[0] === tappedColorHistory[1] &&
-                tappedColorHistory[1] === tappedColorHistory[2]) {
-                triggerMeteorShower(b.x, b.y);
-                tappedColorHistory = []; // トリガー後の履歴をリセット
-            }
-            
-            // 大爆発判定用の履歴管理 (直近10タップ分)
-            popColorHistory.push(b.color);
-            if (popColorHistory.length > 10) {
-                popColorHistory.shift();
-            }
-            
-            if (popColorHistory.length === 10) {
-                let hasConsecutiveSame = false;
-                for (let j = 0; j < 9; j++) {
-                    if (popColorHistory[j] === popColorHistory[j + 1]) {
-                        hasConsecutiveSame = true;
-                        break;
-                    }
-                }
-                
-                if (!hasConsecutiveSame) {
-                    const first5 = popColorHistory.slice(0, 5);
-                    const last5 = popColorHistory.slice(5, 10);
-                    
-                    const first5Unique = new Set(first5).size === 5;
-                    const last5Unique = new Set(last5).size === 5;
-                    
-                    if (first5Unique && last5Unique) {
-                        triggerMeteorBigExplosion(b.x, b.y);
-                        popColorHistory = [];
-                        tappedColorHistory = [];
-                    }
-                }
-            }
-            
-            incrementPopProgress();
-            
-            if (comboCount >= 2) {
-                showCombo(comboCount);
-            }
-            
-            if (!guideHidden) {
-                guideHidden = true;
-                const guide = document.getElementById('guide-text');
-                if (guide) {
-                    guide.style.opacity = '0';
-                }
-            }
-            
-            if (!infiniteMode && refreshProgress >= 1) {
-                setTimeout(() => {
-                    endGame();
-                }, 600);
-            }
-            
-            return true;
-        }
-    }
-    return false;
+    // 左右: -30度〜30度を -1.0〜1.0 にマッピング
+    targetGyroX = Math.max(-1, Math.min(1, g / maxTilt));
+    // 前後: 通常の縦持ち角度（約55度）を基準にし、前後30度のズレを -1.0〜1.0 にマッピング
+    targetGyroY = Math.max(-1, Math.min(1, (b - 55) / maxTilt));
 }
 
+function requestGyroPermission() {
+    if (gyroActive) return;
+    
+    if (typeof DeviceOrientationEvent !== 'undefined' && 
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    window.addEventListener('deviceorientation', handleOrientation);
+                    gyroActive = true;
+                }
+            })
+            .catch(err => {
+                console.warn("ジャイロセンサーの許可要求エラー:", err);
+            });
+    } else {
+        // iOS以外（AndroidやPC等）
+        window.addEventListener('deviceorientation', handleOrientation);
+        gyroActive = true;
+    }
+}
 
-// =============================================================
-// 4. UI更新
-// =============================================================
+// 星屑の初期化 (夜空のまたたき用)
+
+function setNightMode(enabled) {
+    const chkNightMode = document.getElementById('chk-night-mode');
+    if (chkNightMode) {
+        chkNightMode.checked = enabled;
+    }
+    if (enabled) {
+        document.body.classList.add('night-mode');
+    } else {
+        document.body.classList.remove('night-mode');
+    }
+}
+
+// ──────────────────────────────────────────────
+// 言語モード切り替え
+// mode: 'bilingual' | 'ja' | 'en'
+// ──────────────────────────────────────────────
+function applyLangMode(mode) {
+    langMode = mode;
+
+    // body クラスを切り替え
+    document.body.classList.remove('lang-ja', 'lang-en', 'lang-bilingual');
+    if (mode === 'ja') {
+        document.body.classList.add('lang-ja');
+    } else if (mode === 'en') {
+        document.body.classList.add('lang-en');
+    } else {
+        document.body.classList.add('lang-bilingual');
+    }
+
+    // 設定ボタンのアクティブ状態を更新
+    const langBtns = document.querySelectorAll('#lang-options .btn-option');
+    langBtns.forEach(btn => {
+        if (btn.getAttribute('data-lang') === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // ────────────────────────────────────────────
+    // 英語モード専用: テキストが日英混在している
+    // 要素を書き換える（CSSで隠せない箇所）
+    // ────────────────────────────────────────────
+    const langTexts = {
+        // [selector, bilingual, ja, en]
+        '#btn-quit-active':     ['終了する / Quit', '終了する', 'Quit'],
+        '#btn-sound-guide-open': ['🔊 音が鳴らないときは / If there is no sound', '🔊 音が鳴らないときは', '🔊 If there is no sound'],
+    };
+
+    Object.entries(langTexts).forEach(([sel, texts]) => {
+        if (!texts) return;
+        const el = document.querySelector(sel);
+        if (!el) return;
+        if (mode === 'bilingual') el.textContent = texts[0];
+        else if (mode === 'ja')   el.textContent = texts[1];
+        else                       el.textContent = texts[2];
+    });
+
+    // スタート画面のモードカードの説明テキスト (btn-mode-detail)
+    const modeDetails = {
+        'btn-play-normal': {
+            bilingual: '泡を150個つぶしてゴール ／ 約40秒',
+            ja:        '泡を150個つぶしてゴール ／ 約40秒',
+            en:        'Pop 150 bubbles to finish · about 40 sec'
+        },
+        'btn-play-infinite': {
+            bilingual: 'ゴールなく自由に楽しむ ／ 時間無制限',
+            ja:        'ゴールなく自由に楽しむ ／ 時間無制限',
+            en:        'Play freely without a goal · No time limit'
+        },
+        'btn-play-meditation': {
+            bilingual: '呼吸ガイドに合わせて深くリラックス',
+            ja:        '呼吸ガイドに合わせて深くリラックス',
+            en:        'Deep relaxation with breath guide'
+        }
+    };
+
+    Object.entries(modeDetails).forEach(([btnId, texts]) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        const detail = btn.querySelector('.btn-mode-detail');
+        if (detail) detail.textContent = texts[mode] || texts['bilingual'];
+    });
+
+    // スタート画面バッジテキスト
+    const badgeNormal = document.querySelector('#mode-card-normal .mode-badge');
+    if (badgeNormal) {
+        if (mode === 'en') badgeNormal.textContent = '✦ Recommended for beginners';
+        else               badgeNormal.textContent = '✦ はじめての方におすすめ';
+    }
+    const badgeMeditation = document.querySelector('#mode-card-meditation .mode-badge');
+    if (badgeMeditation) {
+        if (mode === 'en') badgeMeditation.textContent = '✦ Recommended for mental fatigue';
+        else               badgeMeditation.textContent = '✦ 脳疲労の強い方におすすめ';
+    }
+
+    // how-to-guide の説明テキスト
+    const howToDescs = document.querySelectorAll('.how-to-desc');
+    const howToDescTexts = [
+        { bilingual: '揺れる泡を\nゆっくり眺める', ja: '揺れる泡を\nゆっくり眺める', en: 'Watch the swaying\nbubbles slowly' },
+        { bilingual: '気になった泡を\nそっとタップ',   ja: '気になった泡を\nそっとタップ',   en: 'Gently tap a bubble\nthat catches your eye' },
+        { bilingual: 'あたまが\nクリアになる',       ja: 'あたまが\nクリアになる',       en: 'Your mind becomes\nclear and refreshed' }
+    ];
+    howToDescs.forEach((el, i) => {
+        if (howToDescTexts[i]) {
+            el.textContent = howToDescTexts[i][mode] || howToDescTexts[i]['bilingual'];
+        }
+    });
+
+    // 呼吸ガイドテキストを即時反映（breathStateを強制リセットして再描画を促す）
+    breathState = '';
+    
+    if (window.updateBreathPatternUI) {
+        window.updateBreathPatternUI();
+    }
+
+    // ガイドテキスト（ゲーム開始前）の初期表示切り替え
+    const guide = document.getElementById('guide-text');
+    if (guide && !gameActive) {
+        if (mode === 'en') {
+            guide.innerHTML = '<span class="en-text">Gently tap while watching the swaying spheres</span>';
+        } else if (mode === 'ja') {
+            guide.innerHTML = '<span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span>';
+        } else {
+            guide.innerHTML = '<span class="ja-text">揺れる球をながめながらゆっくりとタップしてみてください</span><br class="lang-divider"><span class="en-text">Gently tap while watching the swaying spheres</span>';
+        }
+    }
+}
 
 // 褒める言葉の定義（日本語＋英語）
 const COMBO_PRAISES = [
@@ -4752,10 +4136,49 @@ function updateRefreshGauge() {
     }
 }
 
+// =============================================================
+// 7. メインループ ＆ ゲームライフサイクル（Play / Endless / Meditation）
+// =============================================================
+function mainLoop(timestamp) {
+    try {
+        // フレームレート制限（モバイルは30fps、PCは60fps）
+        const elapsed = timestamp - _lastFrameTime;
+        if (elapsed < FRAME_INTERVAL) {
+            requestAnimationFrame(mainLoop);
+            return;
+        }
+        _lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+        const frameStart = performance.now();
+        
+        // iOSのツールバー伸縮で毎フレームリサイズしない（実レイアウトとの差で判定）
+        if (showerCanvas) {
+            const layout = getLayoutSize();
+            if (Math.abs(viewW - layout.w) > 8 || Math.abs(viewH - layout.h) > 8) {
+                resizeShowerCanvas();
+            }
+        }
+        
+        // バックグラウンドのマインドシャワーの更新と描画（泡もここで描画される）
+        updateShower();
+        updateBubbles(timestamp);
+        updateMeteors();
+        updateBreathGuide(timestamp);
+        
+        drawShower();
 
-// =============================================================
-// 5. ゲーム開始 / 終了
-// =============================================================
+        const frameCost = performance.now() - frameStart;
+        if (frameCost > FRAME_INTERVAL * 1.35) {
+            _heavyFrameStreak = Math.min(30, _heavyFrameStreak + 1);
+        } else {
+            _heavyFrameStreak = Math.max(0, _heavyFrameStreak - 1);
+        }
+    } catch (err) {
+        console.warn('mainLoop error:', err);
+    }
+    requestAnimationFrame(mainLoop);
+}
+
+// リフレッシュゲージの進行管理（通常プレイ・エンドレスプレイの両方に対応）
 
 function startGame() {
     bubbles = [];
@@ -4884,6 +4307,574 @@ function startGame() {
     }
 }
 
+function endGame(forceQuit = false) {
+    // 無限モードかつ強制終了でない場合は何もしない
+    // （ゲージのサイクルは incrementPopProgress() が担当するため、ここでのリセットは不要）
+    if (infiniteMode && !forceQuit) {
+        return;
+    }
+
+    gameActive = false;
+    pendingAmbientStart = false;
+    
+    // クリア効果音の再生
+    playClearSound();
+    triggerHaptic('success');
+    
+    // アンビエント音を即座に停止（フェードアウトではなく即時消音）
+    stopAmbientSound(true);
+    
+    // 統計情報の集計と表示
+    const timeElapsed = ((performance.now() - gameStartTime) / 1000).toFixed(1);
+    
+    const reportTime = document.getElementById('report-time');
+    if (reportTime) {
+        reportTime.textContent = timeElapsed + 's';
+    }
+    const reportPops = document.getElementById('report-pops');
+    if (reportPops) {
+        reportPops.textContent = sessionPops;
+    }
+    const reportCombo = document.getElementById('report-combo');
+    if (reportCombo) {
+        reportCombo.textContent = maxComboCount;
+    }
+    
+    const reportMsg = document.getElementById('report-msg');
+    if (reportMsg) {
+        const comments = {
+            bilingual: [
+                "あたまがサラッとクリアになりました。",
+                "圧倒的な集中力とリズムがシンクロし、脳内が気持ちよくリセットされました！",
+                "心地よいリズムに乗って、素晴らしいプレイです。心がすっと軽くなっています。",
+                "時間を忘れて深くリラックスできたようです。上質な休息時間になりました。",
+                "ゆったりとした時間を過ごすことで、脳の緊張が和らぎました。"
+            ],
+            en: [
+                "Your mind feels clear and refreshed.",
+                "Incredible focus and rhythm — your mind has been pleasantly reset!",
+                "Riding a comfortable rhythm — wonderful play. Your heart feels light and free.",
+                "You found deep relaxation, forgetting the time. A quality moment of rest.",
+                "Taking it slow eased the tension in your mind."
+            ]
+        };
+
+        let idx = 0;
+        if (maxComboCount >= 70) idx = 1;
+        else if (maxComboCount >= 40) idx = 2;
+        else if (timeElapsed >= 90) idx = 3;
+        else if (timeElapsed >= 40) idx = 4;
+
+        const lang = (langMode === 'en') ? 'en' : 'bilingual';
+        reportMsg.textContent = comments[lang][idx];
+    }
+    
+    // リフレッシュ完了画面を表示
+    const overlay = document.getElementById('gameover-overlay');
+    if (overlay) {
+        overlay.classList.add('active');
+    }
+}
+
+// 泡が弾ける「ピチョン」音を合成して再生（ディレイ・エコー付き）  プチッと弾ける破裂音レイヤー
+let _lastPopSoundAt = 0;
+let _popSoundBurst = 0;
+
+function initApp() {
+    // 初回起動時はゲームを開始せずスタート画面を表示する
+    initShower();
+    applyTheme('starry');
+    
+    // ナイトモードの初期化 (デフォルトはオフ)
+    setNightMode(false);
+    
+    const chkNightMode = document.getElementById('chk-night-mode');
+    if (chkNightMode) {
+        chkNightMode.addEventListener('change', (e) => {
+            setNightMode(e.target.checked);
+        });
+    }
+
+    // 言語モードの初期化 (デフォルトはBilingual)
+    applyLangMode('bilingual');
+
+    const langButtons = document.querySelectorAll('#lang-options .btn-option');
+    langButtons.forEach(btn => {
+        const setLang = () => {
+            const lang = btn.getAttribute('data-lang');
+            applyLangMode(lang);
+        };
+        btn.addEventListener('click', setLang);
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            setLang();
+        }, { passive: false });
+    });
+    
+    // 設定関連UIの初期化
+    const btnSettings = document.getElementById('btn-settings');
+    const settingsPanel = document.getElementById('settings-panel');
+    const btnSettingsClose = document.getElementById('btn-settings-close');
+    
+    if (btnSettings && settingsPanel) {
+        btnSettings.addEventListener('click', () => {
+            settingsPanel.classList.add('active');
+        });
+    }
+    if (btnSettingsClose && settingsPanel) {
+        btnSettingsClose.addEventListener('click', () => {
+            settingsPanel.classList.remove('active');
+        });
+    }
+
+    // 設定パネルのスワイプ閉じ対応（右スワイプで閉じる）
+    if (settingsPanel) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchCurrentX = 0;
+        let isSwiping = false;
+        let ignoreSwipe = false;
+
+        settingsPanel.addEventListener('touchstart', (e) => {
+            // 音量スライダーなどの操作時はスワイプ判定を無視する
+            if (e.target.closest('input[type="range"]')) {
+                ignoreSwipe = true;
+                return;
+            }
+            ignoreSwipe = false;
+            
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchCurrentX = touchStartX;
+            isSwiping = false;
+            
+            // ドラッグ中の追従を滑らかにするため一時的にトランジションを無効化
+            settingsPanel.style.transition = 'none';
+        }, { passive: true });
+
+        settingsPanel.addEventListener('touchmove', (e) => {
+            if (ignoreSwipe) return;
+            
+            const touch = e.touches[0];
+            touchCurrentX = touch.clientX;
+            const diffX = touchCurrentX - touchStartX;
+            const diffY = touch.clientY - touchStartY;
+            
+            // 右スワイプ方向であり、横の動きが縦スクロールより強い場合のみスワイプと判定
+            if (!isSwiping && diffX > 10 && Math.abs(diffX) > Math.abs(diffY)) {
+                isSwiping = true;
+            }
+            
+            if (isSwiping) {
+                // スワイプ量に合わせてパネルを右にずらす（左方向へのドラッグは防ぐ）
+                const translateVal = Math.max(0, diffX);
+                settingsPanel.style.transform = `translateX(${translateVal}px)`;
+                
+                // スワイプ中は背景やパネル自身のスクロール等のデフォルト挙動を防止
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        settingsPanel.addEventListener('touchend', () => {
+            if (ignoreSwipe) return;
+            
+            // トランジションを元に戻す
+            settingsPanel.style.transition = '';
+            
+            const diffX = touchCurrentX - touchStartX;
+            
+            // 100px以上右へスワイプされていたら閉じる
+            if (isSwiping && diffX > 100) {
+                settingsPanel.classList.remove('active');
+            }
+            
+            // トランスフォームスタイルをクリアして元のCSSクラスのスタイリングに戻す
+            settingsPanel.style.transform = '';
+            isSwiping = false;
+        }, { passive: true });
+
+        settingsPanel.addEventListener('touchcancel', () => {
+            settingsPanel.style.transition = '';
+            settingsPanel.style.transform = '';
+            isSwiping = false;
+            ignoreSwipe = false;
+        }, { passive: true });
+    }
+    
+    const sliderVolBGM = document.getElementById('slider-vol-bgm');
+    const labelVolBGM = document.getElementById('label-vol-bgm');
+    if (sliderVolBGM) {
+        sliderVolBGM.value = volumeBGM;
+        if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
+        sliderVolBGM.addEventListener('input', (e) => {
+            volumeBGM = parseFloat(e.target.value);
+            volumeSolfeggio = volumeBGM * SOLFEGGIO_TO_BGM_RATIO;
+            if (labelVolBGM) labelVolBGM.textContent = Math.round(volumeBGM * 100) + '%';
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            if (ambientGain) {
+                ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
+                ambientGain.gain.linearRampToValueAtTime(0.003 * volumeBGM, now + 0.1);
+            }
+            if (solfeggioGain528 && solfeggioGain396) {
+                solfeggioGain528.gain.setValueAtTime(solfeggioGain528.gain.value, now);
+                solfeggioGain528.gain.linearRampToValueAtTime(0.006 * volumeSolfeggio, now + 0.1);
+                solfeggioGain396.gain.setValueAtTime(solfeggioGain396.gain.value, now);
+                solfeggioGain396.gain.linearRampToValueAtTime(0.009 * volumeSolfeggio, now + 0.1);
+            }
+        });
+    }
+    
+    const sliderVolSE = document.getElementById('slider-vol-se');
+    const labelVolSE = document.getElementById('label-vol-se');
+    if (sliderVolSE) {
+        sliderVolSE.value = volumeSE;
+        if (labelVolSE) labelVolSE.textContent = Math.round(volumeSE * 100) + '%';
+        sliderVolSE.addEventListener('input', (e) => {
+            volumeSE = parseFloat(e.target.value);
+            if (labelVolSE) labelVolSE.textContent = Math.round(volumeSE * 100) + '%';
+        });
+    }
+    
+    window.updatePopEffectUI = function(effect) {
+        popEffectMode = effect;
+        const effectButtons = document.querySelectorAll('#pop-effect-options .btn-option');
+        effectButtons.forEach(b => {
+            if (b.getAttribute('data-effect') === effect) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+    };
+    
+    const themeButtons = document.querySelectorAll('#theme-options .btn-option');
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme');
+            applyTheme(theme);
+        });
+    });
+
+    const effectButtons = document.querySelectorAll('#pop-effect-options .btn-option');
+    effectButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const effect = btn.getAttribute('data-effect');
+            updatePopEffectUI(effect);
+        });
+    });
+    
+    const chkGyro = document.getElementById('chk-gyro');
+    if (chkGyro) {
+        chkGyro.checked = gyroEnabled;
+        chkGyro.addEventListener('change', (e) => {
+            gyroEnabled = e.target.checked;
+            if (!gyroEnabled) {
+                targetGyroX = 0;
+                targetGyroY = 0;
+            } else {
+                requestGyroPermission();
+            }
+        });
+    }
+    
+    const chkHaptic = document.getElementById('chk-haptic');
+    if (chkHaptic) {
+        chkHaptic.checked = hapticEnabled;
+        chkHaptic.addEventListener('change', (e) => {
+            hapticEnabled = e.target.checked;
+        });
+    }
+    
+    const updateBreathPatternUI = () => {
+        const descEl = document.getElementById('breath-pattern-desc');
+        const container = document.getElementById('breath-pattern-container');
+        if (container) {
+            container.style.display = breathGuideEnabled ? '' : 'none';
+        }
+        
+        if (descEl) {
+            let desc = '';
+            if (langMode === 'en') {
+                if (breathPattern === 'coherent') {
+                    desc = '<strong>[Coherent Breathing] Inhale 5s / Exhale 5s</strong><br>Synchronizes breath with heart rhythm to balance the autonomic nervous system. The fundamental method for deepest relaxation.';
+                } else if (breathPattern === '478') {
+                    desc = '<strong>[4-7-8 Method] Inhale 4s / Hold 7s / Exhale 8s</strong><br>Strongly calms the nervous system. Blocks excess thoughts, ideal for relieving anxiety and easing into restful sleep.';
+                } else if (breathPattern === 'box') {
+                    desc = '<strong>[Box Breathing] Inhale 4s / Hold 4s / Exhale 4s / Hold 4s</strong><br>Releases tension while maintaining clear focus. Resets the nervous system and enhances concentration.';
+                }
+            } else if (langMode === 'ja') {
+                if (breathPattern === 'coherent') {
+                    desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。';
+                } else if (breathPattern === '478') {
+                    desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。';
+                } else if (breathPattern === 'box') {
+                    desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。';
+                }
+            } else {
+                // Bilingual
+                if (breathPattern === 'coherent') {
+                    desc = '<strong>【コヒーレント呼吸】吸う5秒 / 吐く5秒</strong><br>心拍と呼吸の周期を同調させ、自律神経のバランスを整えます。最も深いリラクゼーションをもたらす基本の呼吸法です。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[Coherent Breathing] Inhale 5s / Exhale 5s - Synchronizes breath with heart rhythm to balance the autonomic nervous system.</span>';
+                } else if (breathPattern === '478') {
+                    desc = '<strong>【4-7-8呼吸法】吸う4秒 / 止める7秒 / 吐く8秒</strong><br>神経系を強力に鎮静させます。余計な思考を遮断し、強い不安の解消や安眠・睡眠導入に極めて効果的です。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[4-7-8 Method] Inhale 4s / Hold 7s / Exhale 8s - Strongly calms the nervous system and blocks excess thoughts.</span>';
+                } else if (breathPattern === 'box') {
+                    desc = '<strong>【ボックス呼吸】吸う4秒 / 止める4秒 / 吐く4秒 / 止める4秒</strong><br>緊張をほぐしながらも、意識をクリアに保ちます。自律神経をリセットし、高い集中力を引き出します。<br><span class="en-sub" style="margin-top:4px; display:block; opacity:0.8; font-size: 10px;">[Box Breathing] Inhale 4s / Hold 4s / Exhale 4s / Hold 4s - Releases tension while maintaining clear focus.</span>';
+                }
+            }
+            descEl.innerHTML = desc;
+        }
+    };
+    window.updateBreathPatternUI = updateBreathPatternUI;
+
+    window.updateBreathGuideUI = function(enabled) {
+        breathGuideEnabled = enabled;
+        const chkBreath = document.getElementById('chk-breath');
+        if (chkBreath) {
+            chkBreath.checked = enabled;
+        }
+        const breathGuide = document.getElementById('breath-guide');
+        if (breathGuide) {
+            if (enabled && gameActive) {
+                breathGuide.classList.add('visible');
+            } else {
+                breathGuide.classList.remove('visible');
+            }
+        }
+        if (typeof updateBreathPatternUI === 'function') {
+            updateBreathPatternUI();
+        }
+    };
+
+    const chkBreath = document.getElementById('chk-breath');
+    if (chkBreath) {
+        chkBreath.checked = breathGuideEnabled;
+        chkBreath.addEventListener('change', (e) => {
+            updateBreathGuideUI(e.target.checked);
+        });
+    }
+
+    const patternButtons = document.querySelectorAll('#breath-pattern-options .btn-option');
+    patternButtons.forEach(btn => {
+        const setPattern = () => {
+            patternButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            breathPattern = btn.getAttribute('data-pattern');
+            breathCycleTime = 0; // 切り替え時にサイクルを最初からやり直す
+            breathState = ''; // ステート変更を強制トリガー
+            updateBreathPatternUI();
+        };
+        btn.addEventListener('click', setPattern);
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            setPattern();
+        }, { passive: false });
+    });
+
+    // 初期化時にUIを更新
+    updateBreathPatternUI();
+    
+    // 音が鳴らない場合の案内ダイアログ制御
+    const btnSoundGuideOpen = document.getElementById('btn-sound-guide-open');
+    const btnSoundGuideClose = document.getElementById('btn-sound-guide-close');
+    const soundGuideDialog = document.getElementById('sound-guide-dialog');
+    
+    if (btnSoundGuideOpen && soundGuideDialog) {
+        btnSoundGuideOpen.addEventListener('click', (e) => {
+            e.stopPropagation();
+            soundGuideDialog.classList.add('active');
+        });
+    }
+    if (btnSoundGuideClose && soundGuideDialog) {
+        const closeGuide = () => {
+            soundGuideDialog.classList.remove('active');
+        };
+        btnSoundGuideClose.addEventListener('click', closeGuide);
+        btnSoundGuideClose.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            closeGuide();
+        }, { passive: false });
+    }
+
+    // ジャイロ許可の確認フロー（唐突な表示を防ぐためのクッションダイアログ）
+    const handleGameStartWithGyroCheck = (startCallback) => {
+        const needsPermissionPrompt = (
+            typeof DeviceOrientationEvent !== 'undefined' && 
+            typeof DeviceOrientationEvent.requestPermission === 'function' &&
+            gyroEnabled && !gyroActive && !gyroPermissionRequested
+        );
+
+        if (needsPermissionPrompt) {
+            const dialog = document.getElementById('gyro-confirm-dialog');
+            const btnAllow = document.getElementById('btn-gyro-allow');
+            const btnDeny = document.getElementById('btn-gyro-deny');
+            
+            if (dialog && btnAllow && btnDeny) {
+                dialog.classList.add('active');
+                
+                const handleAllow = () => {
+                    dialog.classList.remove('active');
+                    initAudio(); // 許可タップのジェスチャで音声解除
+                    requestGyroPermission();
+                    gyroPermissionRequested = true;
+                    cleanup();
+                    startCallback();
+                };
+                
+                const handleDeny = () => {
+                    dialog.classList.remove('active');
+                    initAudio(); // 拒否タップのジェスチャでも音声解除
+                    gyroEnabled = false;
+                    const chkGyro = document.getElementById('chk-gyro');
+                    if (chkGyro) chkGyro.checked = false;
+                    gyroPermissionRequested = true;
+                    cleanup();
+                    startCallback();
+                };
+                
+                const onAllowTouch = (e) => {
+                    e.preventDefault();
+                    handleAllow();
+                };
+                
+                const onDenyTouch = (e) => {
+                    e.preventDefault();
+                    handleDeny();
+                };
+                
+                const cleanup = () => {
+                    btnAllow.removeEventListener('click', handleAllow);
+                    btnAllow.removeEventListener('touchend', onAllowTouch);
+                    btnDeny.removeEventListener('click', handleDeny);
+                    btnDeny.removeEventListener('touchend', onDenyTouch);
+                };
+                
+                btnAllow.addEventListener('click', handleAllow);
+                btnAllow.addEventListener('touchend', onAllowTouch, { passive: false });
+                btnDeny.addEventListener('click', handleDeny);
+                btnDeny.addEventListener('touchend', onDenyTouch, { passive: false });
+                return;
+            }
+        }
+        
+        // ダイアログ不要（iOS以外、またはすでに選択済みなど）な場合はそのまま開始
+        startCallback();
+    };
+
+    // モード開始ボタン（Play / Endless / Meditation）
+    const bindModeStartButton = (btnId, setupFn) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        const start = () => {
+            initAudio(); // 最初のジェスチャで音声解除（ジャイロ確認より先）
+            handleGameStartWithGyroCheck(() => {
+                initAudio();
+                setupFn();
+                const startOverlay = document.getElementById('start-overlay');
+                if (startOverlay) startOverlay.classList.remove('active');
+                startGame();
+                Promise.resolve(initAudio()).then(() => ensureAmbientAfterUnlock());
+            });
+        };
+        // touchstart / pointerdown の方が iOS の音声解除に有効
+        btn.addEventListener('touchstart', () => { initAudio(); }, { passive: true });
+        btn.addEventListener('pointerdown', () => { initAudio(); });
+        btn.addEventListener('click', start);
+    };
+
+    bindModeStartButton('btn-play-normal', () => {
+        meditationMode = false;
+        infiniteMode = false;
+        if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
+    });
+
+    bindModeStartButton('btn-play-infinite', () => {
+        meditationMode = false;
+        infiniteMode = true;
+        if (window.updatePopEffectUI) window.updatePopEffectUI('praise');
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(false);
+    });
+
+    bindModeStartButton('btn-play-meditation', () => {
+        meditationMode = true;
+        infiniteMode = true;
+        if (window.updatePopEffectUI) window.updatePopEffectUI('none');
+        if (window.updateBreathGuideUI) window.updateBreathGuideUI(true);
+    });
+
+    // 再スタートボタン (リフレッシュ完了画面から)
+    const btnRestart = document.getElementById('btn-restart');
+    if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+            initAudio();
+            // リスタート時はスタート画面に戻る
+            const overlay = document.getElementById('gameover-overlay');
+            if (overlay) overlay.classList.remove('active');
+            const startOverlay = document.getElementById('start-overlay');
+            if (startOverlay) startOverlay.classList.add('active');
+        });
+        btnRestart.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            initAudio();
+            const overlay = document.getElementById('gameover-overlay');
+            if (overlay) overlay.classList.remove('active');
+            const startOverlay = document.getElementById('start-overlay');
+            if (startOverlay) startOverlay.classList.add('active');
+        }, { passive: false });
+    }
+    
+    // ゲーム終了ボタン (無限モードでも強制終了できるように引数 true を渡す)
+    const btnQuit = document.getElementById('btn-quit-active');
+    if (btnQuit) {
+        btnQuit.addEventListener('click', () => endGame(true));
+        btnQuit.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            endGame(true);
+        }, { passive: false });
+    }
+    
+    // ページ復帰時: running 状態なら Ambient のみ再開（ジェスチャ外では resume しない）
+    const handleVisibilityOrFocus = () => {
+        if (gameActive && audioCtx) {
+            if (audioCtx.state === 'running' && ambientOscs.length === 0) {
+                startAmbientSound();
+            }
+        }
+    };
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            handleVisibilityOrFocus();
+        }
+    });
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
+    // iOS: UIガードに遮られず解除できるよう capture で initAudio
+    window.addEventListener('touchstart', initAudio, { capture: true });
+    window.addEventListener('mousedown', initAudio, { capture: true });
+    window.addEventListener('click', initAudio, { capture: true });
+    window.addEventListener('touchend', initAudio, { capture: true });
+    
+    // iOS Safariでのマルチタッチによるピンチズーム（拡大・縮小操作）をJS側でも強制的に防止
+    document.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gesturechange', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gestureend', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    
+    // アニメーションループ開始（ゲーム待機中も背景アニメは動かす）
+    requestAnimationFrame(mainLoop);
+
+    // AudioContext は事前生成のみ。Play ボタンのジェスチャで resume する
+    // （起動時に自動開始すると iOS では最初のタップまで無音・反応が不安定になる）
+    initAudio({ resume: false });
+}
 
 // iPhone マルチファイル起動失敗検知用（index.html の案内バナーが参照）
 window.__BRAIN_REFLEXO_OK = true;
