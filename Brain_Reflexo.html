@@ -2396,43 +2396,43 @@ function getBubbleTemplate(type, hue, colorHex) {
     if (type === 'silver') {
         const drawRadius = templateRadius;
         
-        // 1. 白銀バブルの気品ある光彩（ルミナスグローをプラスして美しく発光）
+        // 1. 白銀バブルの気品ある光彩（ルミナスグローを高輝度にプラス）
         const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.65, 0, 0, drawRadius * 1.60);
-        glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.52)');
-        glowGrad.addColorStop(0.40, 'rgba(241, 245, 249, 0.28)');
-        glowGrad.addColorStop(0.70, 'rgba(226, 232, 240, 0.12)');
+        glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.60)');
+        glowGrad.addColorStop(0.40, 'rgba(241, 245, 249, 0.34)');
+        glowGrad.addColorStop(0.70, 'rgba(226, 232, 240, 0.15)');
         glowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius * 1.60, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body（真珠・白銀のような深みとエッジの締まり）
+        // 2. Body（真珠・白銀のような深みと高輝度な輝き）
         const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.26, -drawRadius * 0.26, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
-        bodyGrad.addColorStop(0.25, 'rgba(241, 245, 249, 0.92)');
-        bodyGrad.addColorStop(0.65, 'rgba(203, 213, 225, 0.78)');
-        bodyGrad.addColorStop(0.90, 'rgba(148, 163, 184, 0.65)');
-        bodyGrad.addColorStop(1.0, 'rgba(100, 116, 139, 0.85)'); // 外周をしっかり締めてボケを防止
+        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        bodyGrad.addColorStop(0.25, 'rgba(248, 250, 252, 0.96)');
+        bodyGrad.addColorStop(0.65, 'rgba(226, 232, 240, 0.85)');
+        bodyGrad.addColorStop(0.90, 'rgba(180, 198, 220, 0.72)');
+        bodyGrad.addColorStop(1.0, 'rgba(125, 145, 170, 0.88)'); // 外周をしっかり締めてボケを防止
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
         // 3. クッキリ鮮明なリムライン（輪郭線）
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
         ctx.lineWidth = 1.8;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius - 0.9, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. メインハイライト（シャープな光沢）
+        // 4. メインハイライト（シャープで高輝度な光沢）
         const hlX = -drawRadius * 0.32;
         const hlY = -drawRadius * 0.32;
-        const hlR = drawRadius * 0.24;
+        const hlR = drawRadius * 0.25;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
-        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.65)');
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.75)');
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
@@ -2444,7 +2444,7 @@ function getBubbleTemplate(type, hue, colorHex) {
         const subHlY = drawRadius * 0.28;
         const subHlR = drawRadius * 0.18;
         const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
         subHlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = subHlGrad;
         ctx.beginPath();
@@ -2453,54 +2453,54 @@ function getBubbleTemplate(type, hue, colorHex) {
     } else {
         const drawRadius = templateRadius;
         
-        // 1. 引き締まった鮮やかな光彩（オーロラ光彩に寄り添う輝き）
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.85, 0, 0, drawRadius * 1.20);
-        glowGrad.addColorStop(0, `hsla(${hue}, 92%, 68%, 0.28)`);
-        glowGrad.addColorStop(1, `hsla(${hue}, 92%, 68%, 0)`);
+        // 1. 鮮やかな光彩（輝度を高めたクリアなオーラ）
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.80, 0, 0, drawRadius * 1.25);
+        glowGrad.addColorStop(0, `hsla(${hue}, 92%, 75%, 0.36)`);
+        glowGrad.addColorStop(1, `hsla(${hue}, 92%, 75%, 0)`);
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.20, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.25, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body（彩度を高め、クリスタルのように色鮮やかな球体）
+        // 2. Body（輝度と彩度を両立し、クリスタルのように澄んで光る球体）
         const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, `hsla(${hue}, 90%, 86%, 0.88)`); // 光の透過部
-        bodyGrad.addColorStop(0.35, `hsla(${hue}, 88%, 70%, 0.45)`);
-        bodyGrad.addColorStop(0.72, `hsla(${hue}, 85%, 58%, 0.38)`); // 色の深み
-        bodyGrad.addColorStop(0.90, `hsla(${hue}, 90%, 62%, 0.72)`); // フレネル反射部
-        bodyGrad.addColorStop(1.0, `hsla(${hue}, 92%, 66%, 0.90)`); // 外縁の鮮やかな輪郭
+        bodyGrad.addColorStop(0, `hsla(${hue}, 90%, 92%, 0.94)`); // 光の透過部（輝度アップ）
+        bodyGrad.addColorStop(0.35, `hsla(${hue}, 88%, 76%, 0.52)`);
+        bodyGrad.addColorStop(0.72, `hsla(${hue}, 85%, 65%, 0.44)`); // 色の深み
+        bodyGrad.addColorStop(0.90, `hsla(${hue}, 90%, 70%, 0.78)`); // フレネル反射部
+        bodyGrad.addColorStop(1.0, `hsla(${hue}, 92%, 74%, 0.94)`); // 外縁の鮮やかな輪郭
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. クッキリした鮮明な光の輪郭線
-        ctx.strokeStyle = `hsla(${hue}, 92%, 82%, 0.88)`;
-        ctx.lineWidth = 1.6;
+        // 3. クッキリした鮮明で明るい光の輪郭線
+        ctx.strokeStyle = `hsla(${hue}, 92%, 88%, 0.94)`;
+        ctx.lineWidth = 1.7;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. メインハイライト（鋭く澄んだ輝き）
+        // 4. メインハイライト（鋭く澄んだ高輝度の輝き）
         const hlX = -drawRadius * 0.32;
         const hlY = -drawRadius * 0.32;
-        const hlR = drawRadius * 0.24;
+        const hlR = drawRadius * 0.26;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.96)');
-        hlGrad.addColorStop(0.45, `hsla(${hue}, 80%, 94%, 0.65)`);
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        hlGrad.addColorStop(0.45, `hsla(${hue}, 80%, 96%, 0.78)`);
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
         ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
         ctx.fill();
 
-        // 5. サブハイライト（対角の反射光）
+        // 5. サブハイライト（対角の反射光による立体的な輝き）
         const subHlX = drawRadius * 0.28;
         const subHlY = drawRadius * 0.28;
         const subHlR = drawRadius * 0.18;
         const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, `hsla(${hue}, 95%, 88%, 0.50)`);
-        subHlGrad.addColorStop(1, `hsla(${hue}, 95%, 88%, 0)`);
+        subHlGrad.addColorStop(0, `hsla(${hue}, 95%, 92%, 0.60)`);
+        subHlGrad.addColorStop(1, `hsla(${hue}, 95%, 92%, 0)`);
         ctx.fillStyle = subHlGrad;
         ctx.beginPath();
         ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
@@ -4044,7 +4044,7 @@ function createBubble(forceType) {
         swayAmplitude: 0.3 + Math.random() * 0.5,
         swaySpeed: 0.008 + Math.random() * 0.02,
         swayOffset: Math.random() * Math.PI * 2,
-        alpha: type === 'silver' ? 0.9 : (type === 'chain' ? 0.85 : 0.65 + Math.random() * 0.2),
+        alpha: type === 'silver' ? 0.94 : (type === 'chain' ? 0.90 : 0.72 + Math.random() * 0.22),
         pushX: 0,
         pushY: 0,
         wobble: 0,
