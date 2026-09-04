@@ -1352,12 +1352,12 @@ function createMeteor(hue, originX, originY) {
         vy: Math.sin(angle) * speed,
         speed: speed,
         angle: angle,
-        length: 100 + Math.random() * 100,
-        width: 1.5 + Math.random() * 2.0,
+        length: 90 + Math.random() * 90,
+        width: 0.9 + Math.random() * 0.9, // 昨日より細くシャープな光の筋（0.9〜1.8px）
         hue: hue,
         alpha: 0,
-        fadeSpeed: 0.12,
-        targetAlpha: 0.85 + Math.random() * 0.15,
+        fadeSpeed: 0.14,
+        targetAlpha: 0.95 + Math.random() * 0.05, // 輝度を高く維持
         sparkleChance: 0.5
     });
 }
@@ -1467,12 +1467,12 @@ function createBigExplosionMeteor(hue, originX, originY) {
         speed: speed,
         angle: angle,
         length: 70 + Math.random() * 80,
-        width: 2.0 + Math.random() * 2.5,
+        width: 1.1 + Math.random() * 1.1, // 昨日より細く繊細な光芒（1.1〜2.2px）
         hue: hue,
         alpha: 0,
         fadeSpeed: 0.45,
-        // モバイル時は大爆発流星の最大輝度を抑えて眩しくしない（0.623 → 0.44）
-        targetAlpha: (0.9 + Math.random() * 0.1) * (IS_MOBILE ? 0.44 : 0.623),
+        // 細くシャープな分、輝度をしっかり高く発光
+        targetAlpha: (0.95 + Math.random() * 0.05) * (IS_MOBILE ? 0.72 : 0.95),
         sparkleChance: 0.8,
         life: 0,
         maxLife: 8 + Math.random() * 8
@@ -1604,31 +1604,33 @@ function drawMeteors() {
             glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.22})`);
             glowGrad.addColorStop(0.5, `rgba(240, 245, 255, 0)`);
         } else {
+            // 彩度を抑え、白く澄み切った高輝度の流星光条
             grad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
-            grad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha})`);
-            grad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.6})`);
-            grad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`); // 鋭く純白の光芯
+            grad.addColorStop(0.20, `hsla(${m.hue}, 45%, 94%, ${m.alpha})`); // 彩度を抑えた高輝度の光
+            grad.addColorStop(0.55, `hsla(${m.hue}, 38%, 86%, ${m.alpha * 0.75})`); // 淡い残光
+            grad.addColorStop(1, `hsla(${m.hue}, 35%, 78%, 0)`);
             
+            // 周囲の繊細な高輝度グロー（彩度を落として白く上品に）
             glowGrad = showerCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.3})`);
-            glowGrad.addColorStop(0.2, `hsla(${m.hue}, 95%, 82%, ${m.alpha * 0.3})`);
-            glowGrad.addColorStop(0.5, `hsla(${m.hue}, 90%, 65%, ${m.alpha * 0.18})`);
-            glowGrad.addColorStop(1, `hsla(${m.hue}, 90%, 50%, 0)`);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * 0.50})`);
+            glowGrad.addColorStop(0.25, `hsla(${m.hue}, 45%, 90%, ${m.alpha * 0.35})`);
+            glowGrad.addColorStop(0.60, `hsla(${m.hue}, 38%, 82%, ${m.alpha * 0.15})`);
+            glowGrad.addColorStop(1, `hsla(${m.hue}, 35%, 75%, 0)`);
         }
         
         showerCtx.save();
         showerCtx.lineCap = 'round';
         
-        // グロー線
+        // グロー線（細くシャープに引き締める）
         showerCtx.strokeStyle = glowGrad;
-        showerCtx.lineWidth = m.isBackground ? m.width * 1.5 : m.width * 2.5;
+        showerCtx.lineWidth = m.isBackground ? m.width * 1.5 : m.width * 1.8;
         showerCtx.beginPath();
         showerCtx.moveTo(m.x, m.y);
         showerCtx.lineTo(tailX, tailY);
         showerCtx.stroke();
         
-        // 実線
+        // 実線（細く繊細な光芒）
         showerCtx.strokeStyle = grad;
         showerCtx.lineWidth = m.width;
         showerCtx.beginPath();
