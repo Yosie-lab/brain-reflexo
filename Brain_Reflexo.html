@@ -2213,15 +2213,15 @@ body.lang-en .play-mode-badge {
 // 1. グローバル変数と状態変数
 // =============================================================
 
-// 泡の色パレット（くすみパステル）
+// 泡の色パレット（オーロラ光彩に寄り添う、彩度豊かなジュエルカラー）
 const BUBBLE_COLORS = [
-    { hex: '#81c3d7', hue: 195 },
-    { hex: '#f3c68f', hue: 35  },
-    { hex: '#c2aff0', hue: 262 },
-    { hex: '#96e6b3', hue: 148 },
-    { hex: '#f2a3b3', hue: 349 },
-    { hex: '#8da9c4', hue: 213 },
-    { hex: '#e9c46a', hue: 42  }
+    { hex: '#38bdf8', hue: 198 }, // オーロラシアンブルー
+    { hex: '#34d399', hue: 156 }, // オーロラエメラルド
+    { hex: '#c084fc', hue: 272 }, // オーロラバイオレット
+    { hex: '#6ee7b7', hue: 160 }, // ミントグリーン
+    { hex: '#f472b6', hue: 330 }, // オーロラローズ
+    { hex: '#60a5fa', hue: 217 }, // クリスタルスカイ
+    { hex: '#fbbf24', hue: 45  }  // ルミナスゴールド
 ];
 
 // 泡の管理
@@ -2451,41 +2451,41 @@ function getBubbleTemplate(type, hue, colorHex) {
     } else {
         const drawRadius = templateRadius;
         
-        // 1. 引き締まった光彩（周囲をモヤつかせず、透明感を強調）
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.85, 0, 0, drawRadius * 1.18);
-        glowGrad.addColorStop(0, `hsla(${hue}, 80%, 75%, 0.24)`);
-        glowGrad.addColorStop(1, `hsla(${hue}, 80%, 75%, 0)`);
+        // 1. 引き締まった鮮やかな光彩（オーロラ光彩に寄り添う輝き）
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.85, 0, 0, drawRadius * 1.20);
+        glowGrad.addColorStop(0, `hsla(${hue}, 92%, 68%, 0.28)`);
+        glowGrad.addColorStop(1, `hsla(${hue}, 92%, 68%, 0)`);
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.20, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body（透明感と外縁のフレネル反射により、クッキリと自立したバブル）
+        // 2. Body（彩度を高め、クリスタルのように色鮮やかな球体）
         const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, `hsla(${hue}, 85%, 92%, 0.85)`);
-        bodyGrad.addColorStop(0.35, `hsla(${hue}, 75%, 78%, 0.40)`);
-        bodyGrad.addColorStop(0.75, `hsla(${hue}, 70%, 65%, 0.32)`);
-        bodyGrad.addColorStop(0.92, `hsla(${hue}, 75%, 68%, 0.62)`);
-        bodyGrad.addColorStop(1.0, `hsla(${hue}, 80%, 72%, 0.85)`); // 外縁が透けすぎず鮮明に輪郭を保持
+        bodyGrad.addColorStop(0, `hsla(${hue}, 90%, 86%, 0.88)`); // 光の透過部
+        bodyGrad.addColorStop(0.35, `hsla(${hue}, 88%, 70%, 0.45)`);
+        bodyGrad.addColorStop(0.72, `hsla(${hue}, 85%, 58%, 0.38)`); // 色の深み
+        bodyGrad.addColorStop(0.90, `hsla(${hue}, 90%, 62%, 0.72)`); // フレネル反射部
+        bodyGrad.addColorStop(1.0, `hsla(${hue}, 92%, 66%, 0.90)`); // 外縁の鮮やかな輪郭
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. クッキリした光の輪郭線（エッジを鮮明化）
-        ctx.strokeStyle = `hsla(${hue}, 85%, 88%, 0.82)`;
+        // 3. クッキリした鮮明な光の輪郭線
+        ctx.strokeStyle = `hsla(${hue}, 92%, 82%, 0.88)`;
         ctx.lineWidth = 1.6;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. メインハイライト（ガラスのような鋭く澄んだ輝き）
+        // 4. メインハイライト（鋭く澄んだ輝き）
         const hlX = -drawRadius * 0.32;
         const hlY = -drawRadius * 0.32;
         const hlR = drawRadius * 0.24;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.60)');
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.96)');
+        hlGrad.addColorStop(0.45, `hsla(${hue}, 80%, 94%, 0.65)`);
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
@@ -2497,8 +2497,8 @@ function getBubbleTemplate(type, hue, colorHex) {
         const subHlY = drawRadius * 0.28;
         const subHlR = drawRadius * 0.18;
         const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, `hsla(${hue}, 90%, 92%, 0.45)`);
-        subHlGrad.addColorStop(1, `hsla(${hue}, 90%, 92%, 0)`);
+        subHlGrad.addColorStop(0, `hsla(${hue}, 95%, 88%, 0.50)`);
+        subHlGrad.addColorStop(1, `hsla(${hue}, 95%, 88%, 0)`);
         ctx.fillStyle = subHlGrad;
         ctx.beginPath();
         ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
@@ -3326,8 +3326,8 @@ function drawRealAuroraCurtain(brightnessMultiplier = 1.0) {
             // 太く柔らかい光の柱（Rays）が縦に広がるような質感
             const rayVal = Math.sin(rx * 0.008 + globalT * 0.30) * Math.cos(rx * 0.003 - globalT * 0.12);
             const curtainRays = 0.70 + 0.30 * Math.abs(rayVal);
-            // オーロラカーテンの輝度（美しさはそのまま、刺激のない目に優しい輝度に調整）
-            const baseAuroraAlpha = (IS_MOBILE ? 0.11 : 0.14) * brightnessMultiplier;
+            // オーロラカーテンの輝度（美しさはそのまま、より穏やかに夜空に溶け込む輝度へ調整）
+            const baseAuroraAlpha = (IS_MOBILE ? 0.078 : 0.098) * brightnessMultiplier;
             const midAlpha = baseAuroraAlpha * globalAlphaMod * curtainRays;
 
             const grad = auroraOffCtx.createLinearGradient(ox, oyBase, ox, oyBase + ocurtainHeight);
@@ -4220,12 +4220,13 @@ function drawBubbles() {
 
 const THEME_BUBBLE_COLORS = {
     ocean: [
-        { hex: '#81c3d7', hue: 195 },
-        { hex: '#f3c68f', hue: 35  },
-        { hex: '#c2aff0', hue: 262 },
-        { hex: '#96e6b3', hue: 148 },
-        { hex: '#f2a3b3', hue: 349 },
-        { hex: '#8da9c4', hue: 213 }
+        { hex: '#38bdf8', hue: 198 },
+        { hex: '#34d399', hue: 156 },
+        { hex: '#c084fc', hue: 272 },
+        { hex: '#6ee7b7', hue: 160 },
+        { hex: '#f472b6', hue: 330 },
+        { hex: '#60a5fa', hue: 217 },
+        { hex: '#fbbf24', hue: 45  }
     ],
     aurora: [
         { hex: '#38d064', hue: 140 }, // Mint emerald
