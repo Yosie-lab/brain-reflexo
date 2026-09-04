@@ -185,15 +185,27 @@ function getBubbleTemplate(type, hue, colorHex) {
     if (type === 'silver') {
         const drawRadius = templateRadius;
         
-        // 1. 白銀バブルの気品ある光彩（ルミナスグローを高輝度にプラス）
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.65, 0, 0, drawRadius * 1.60);
-        glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.60)');
-        glowGrad.addColorStop(0.40, 'rgba(241, 245, 249, 0.34)');
-        glowGrad.addColorStop(0.70, 'rgba(226, 232, 240, 0.15)');
-        glowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
-        ctx.fillStyle = glowGrad;
+        // 1. 白銀バブルの気品ある光彩（ルミナスグローを豊かに強化）
+        // 外側にふんわり広がる柔らかな光彩
+        const outerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.75, 0, 0, drawRadius * 1.95);
+        outerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        outerGlowGrad.addColorStop(0.45, 'rgba(226, 232, 240, 0.22)');
+        outerGlowGrad.addColorStop(0.75, 'rgba(203, 213, 225, 0.08)');
+        outerGlowGrad.addColorStop(1, 'rgba(203, 213, 225, 0)');
+        ctx.fillStyle = outerGlowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.60, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.95, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 泡のすぐ外側を包む濃密な高輝度光彩
+        const innerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.55, 0, 0, drawRadius * 1.45);
+        innerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+        innerGlowGrad.addColorStop(0.40, 'rgba(248, 250, 252, 0.48)');
+        innerGlowGrad.addColorStop(0.75, 'rgba(226, 232, 240, 0.20)');
+        innerGlowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
+        ctx.fillStyle = innerGlowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius * 1.45, 0, Math.PI * 2);
         ctx.fill();
         
         // 2. Body（真珠・白銀のような深みと高輝度な輝き）
