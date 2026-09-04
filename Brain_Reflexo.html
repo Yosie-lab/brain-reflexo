@@ -425,42 +425,78 @@ body, html {
     left: 0;
     right: 0;
     width: 100%;
-    height: calc(8px + env(safe-area-inset-bottom, 0px));
-    background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    height: calc(16px + env(safe-area-inset-bottom, 0px));
+    background: rgba(10, 18, 36, 0.94);
+    border-top: 1.5px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 -3px 16px rgba(0, 0, 0, 0.75), inset 0 1px 4px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 30; /* fixed キャンバス(1)より前面に常時表示 */
     overflow: hidden;
     pointer-events: none; /* バー自体はタップを奪わない（下端の泡操作を妨げない） */
     box-sizing: border-box;
 }
 
+/* 25%, 50%, 75% のガイド目盛り */
+.refresh-gauge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 16px;
+    background: repeating-linear-gradient(
+        to right,
+        transparent 0%,
+        transparent calc(25% - 1px),
+        rgba(255, 255, 255, 0.15) calc(25% - 1px),
+        rgba(255, 255, 255, 0.15) 25%
+    );
+    pointer-events: none;
+    z-index: 10;
+}
+
 .refresh-gauge-fill {
+    position: relative;
     width: 0%;
-    height: 8px; /* 細いバー。セーフエリア分は下の余白として残す */
-    background: linear-gradient(90deg, #8da9c4, #81c3d7, #96e6b3, #c2aff0);
-    box-shadow: 0 0 8px rgba(129, 195, 215, 0.55);
-    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    height: 16px; /* セーフエリア分は下の余白として残す */
+    background: linear-gradient(90deg, #38bdf8 0%, #34d399 45%, #a78bfa 85%, #f472b6 100%);
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.85), inset 0 1px 2px rgba(255, 255, 255, 0.85);
+    transition: width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 5;
+}
+
+/* 進行先端の輝く光彩ヘッド（現在位置を一目で認識させる） */
+.refresh-gauge-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #ffffff;
+    box-shadow: 0 0 10px #ffffff, 0 0 18px #38bdf8;
+    border-radius: 2px;
 }
 
 .refresh-gauge-label {
     position: absolute;
-    top: 4px;
+    top: 8px;
     transform: translateY(-50%);
-    right: calc(12px + env(safe-area-inset-right, 0px));
-    font-size: 9px;
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    font-size: 11px;
     font-weight: 800;
     color: #ffffff;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     opacity: 0;
-    transition: opacity 0.5s ease;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    transition: opacity 0.4s ease;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 10px rgba(56, 189, 248, 0.9);
     z-index: 25;
     line-height: 1;
 }
 
 .refresh-gauge-label.visible {
-    opacity: 0.85;
+    opacity: 1;
 }
 
 /* =============================================================
@@ -6954,7 +6990,7 @@ function updateRefreshGauge() {
     
     const label = document.getElementById('refresh-gauge-label');
     if (label) {
-        if (refreshProgress >= 0.5) {
+        if (gameActive && !meditationMode) {
             label.classList.add('visible');
             label.textContent = Math.round(refreshProgress * 100) + '%';
         } else {

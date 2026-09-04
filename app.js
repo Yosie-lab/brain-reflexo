@@ -4743,7 +4743,7 @@ function updateRefreshGauge() {
     
     const label = document.getElementById('refresh-gauge-label');
     if (label) {
-        if (refreshProgress >= 0.5) {
+        if (gameActive && !meditationMode) {
             label.classList.add('visible');
             label.textContent = Math.round(refreshProgress * 100) + '%';
         } else {
