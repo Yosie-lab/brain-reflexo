@@ -177,7 +177,7 @@ function getBubbleTemplate(type, hue, colorHex) {
     const ctx = canvas.getContext('2d');
     
     const center = canvasSize / 2;
-    const templateRadius = 60; // 基準半径（高DPI向けに2倍）
+    const templateRadius = 60; // 基準半径
     
     ctx.save();
     ctx.translate(center, center);
@@ -185,84 +185,112 @@ function getBubbleTemplate(type, hue, colorHex) {
     if (type === 'silver') {
         const drawRadius = templateRadius;
         
-        // 1. Glow
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.5, 0, 0, drawRadius * 2.0);
-        glowGrad.addColorStop(0, 'rgba(226, 232, 240, 0.3)');
+        // 1. コンパクトで引き締まった光彩（周囲を白く濁らせない）
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.8, 0, 0, drawRadius * 1.22);
+        glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
         glowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 2.0, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.22, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body
-        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.2, -drawRadius * 0.2, drawRadius * 0.08, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, '#ffffff');
-        bodyGrad.addColorStop(0.35, '#f1f5f9');
-        bodyGrad.addColorStop(0.8, '#cbd5e1');
-        bodyGrad.addColorStop(1, '#94a3b8');
+        // 2. Body（真珠・白銀のような深みとエッジの締まり）
+        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.26, -drawRadius * 0.26, drawRadius * 0.06, 0, 0, drawRadius);
+        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+        bodyGrad.addColorStop(0.25, 'rgba(241, 245, 249, 0.92)');
+        bodyGrad.addColorStop(0.65, 'rgba(203, 213, 225, 0.78)');
+        bodyGrad.addColorStop(0.90, 'rgba(148, 163, 184, 0.65)');
+        bodyGrad.addColorStop(1.0, 'rgba(100, 116, 139, 0.85)'); // 外周をしっかり締めてボケを防止
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. Outline
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 1.5;
+        // 3. クッキリ鮮明なリムライン（輪郭線）
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.arc(0, 0, drawRadius - 0.5, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius - 0.9, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. Highlight
-        const hlX = -drawRadius * 0.3;
-        const hlY = -drawRadius * 0.3;
-        const hlR = drawRadius * 0.22;
+        // 4. メインハイライト（シャープな光沢）
+        const hlX = -drawRadius * 0.32;
+        const hlY = -drawRadius * 0.32;
+        const hlR = drawRadius * 0.24;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.65)');
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
         ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 5. サブハイライト（対角の反射光による立体感）
+        const subHlX = drawRadius * 0.28;
+        const subHlY = drawRadius * 0.28;
+        const subHlR = drawRadius * 0.18;
+        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
+        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        subHlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = subHlGrad;
+        ctx.beginPath();
+        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
         ctx.fill();
     } else {
         const drawRadius = templateRadius;
         
-        // 1. Glow
-        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.5, 0, 0, drawRadius * 1.8);
-        glowGrad.addColorStop(0, `hsla(${hue}, 70%, 75%, 0.12)`);
-        glowGrad.addColorStop(1, `hsla(${hue}, 70%, 75%, 0)`);
+        // 1. 引き締まった光彩（周囲をモヤつかせず、透明感を強調）
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.85, 0, 0, drawRadius * 1.18);
+        glowGrad.addColorStop(0, `hsla(${hue}, 80%, 75%, 0.24)`);
+        glowGrad.addColorStop(1, `hsla(${hue}, 80%, 75%, 0)`);
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.8, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body
-        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.2, -drawRadius * 0.2, drawRadius * 0.08, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, `hsla(${hue}, 80%, 88%, 0.9)`);
-        bodyGrad.addColorStop(0.4, `hsla(${hue}, 70%, 72%, 0.55)`);
-        bodyGrad.addColorStop(0.85, `hsla(${hue}, 60%, 58%, 0.2)`);
-        bodyGrad.addColorStop(1, `hsla(${hue}, 50%, 50%, 0.08)`);
+        // 2. Body（透明感と外縁のフレネル反射により、クッキリと自立したバブル）
+        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
+        bodyGrad.addColorStop(0, `hsla(${hue}, 85%, 92%, 0.85)`);
+        bodyGrad.addColorStop(0.35, `hsla(${hue}, 75%, 78%, 0.40)`);
+        bodyGrad.addColorStop(0.75, `hsla(${hue}, 70%, 65%, 0.32)`);
+        bodyGrad.addColorStop(0.92, `hsla(${hue}, 75%, 68%, 0.62)`);
+        bodyGrad.addColorStop(1.0, `hsla(${hue}, 80%, 72%, 0.85)`); // 外縁が透けすぎず鮮明に輪郭を保持
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. Outline
-        ctx.strokeStyle = `hsla(${hue}, 65%, 82%, 0.25)`;
-        ctx.lineWidth = 1;
+        // 3. クッキリした光の輪郭線（エッジを鮮明化）
+        ctx.strokeStyle = `hsla(${hue}, 85%, 88%, 0.82)`;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. Highlight
-        const hlX = -drawRadius * 0.3;
-        const hlY = -drawRadius * 0.3;
-        const hlR = drawRadius * 0.22;
+        // 4. メインハイライト（ガラスのような鋭く澄んだ輝き）
+        const hlX = -drawRadius * 0.32;
+        const hlY = -drawRadius * 0.32;
+        const hlR = drawRadius * 0.24;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
-        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+        hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.60)');
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
         ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 5. サブハイライト（対角の反射光）
+        const subHlX = drawRadius * 0.28;
+        const subHlY = drawRadius * 0.28;
+        const subHlR = drawRadius * 0.18;
+        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
+        subHlGrad.addColorStop(0, `hsla(${hue}, 90%, 92%, 0.45)`);
+        subHlGrad.addColorStop(1, `hsla(${hue}, 90%, 92%, 0)`);
+        ctx.fillStyle = subHlGrad;
+        ctx.beginPath();
+        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
         ctx.fill();
     }
     
@@ -714,8 +742,8 @@ function resizeShowerCanvas() {
 
     viewW = nextW;
     viewH = nextH;
-    // モバイルは描画負荷を抑えつつRetinaのぼやけを緩和（上限1.5）
-    canvasDpr = Math.min(window.devicePixelRatio || 1, IS_MOBILE ? 1.5 : 2);
+    // モバイルもRetina(2x)に対応し、分数倍スケーリングによるぼやけを防止（上限2）
+    canvasDpr = Math.min(window.devicePixelRatio || 1, 2);
     showerCanvas.width = Math.max(1, Math.round(viewW * canvasDpr));
     showerCanvas.height = Math.max(1, Math.round(viewH * canvasDpr));
     if (!showerCtx) {
@@ -725,7 +753,7 @@ function resizeShowerCanvas() {
     showerCtx.setTransform(canvasDpr, 0, 0, canvasDpr, 0, 0);
     showerCtx.imageSmoothingEnabled = true;
     if ('imageSmoothingQuality' in showerCtx) {
-        showerCtx.imageSmoothingQuality = IS_MOBILE ? 'medium' : 'high';
+        showerCtx.imageSmoothingQuality = 'high';
     }
     initStars(); // 画面リサイズ時に星屑を再配置
 }
@@ -1165,31 +1193,16 @@ function getThemeClearColor(ctx, width, height, alpha) {
 function drawShower() {
     if (!showerCtx || !showerCanvas) return;
     
-    const now = performance.now();
-    const activeCombo = (now - lastPopTime < COMBO_WINDOW) ? comboCount : 0;
-    // 負荷時は残像を弱めて画面全体のぼやけを防ぐ（煙はパーティクル側で担保）
-    const highLoad = IS_MOBILE && (
-        _heavyFrameStreak > 2 ||
-        bubbles.length > 26 ||
-        showerParticles.length > 70
-    );
-    const clearAlpha = highLoad
-        ? Math.max(0.10, 0.16 - activeCombo * 0.003)
-        : (feverActive
-            ? Math.max(0.07, 0.11 - activeCombo * 0.003)
-            : Math.max(0.08, 0.13 - activeCombo * 0.005));
-
-    // 残像のあるクリア（キャッシュされたグラデーションを使用）
-    showerCtx.globalAlpha = clearAlpha;
-    showerCtx.fillStyle = getThemeClearColor(showerCtx, viewW, viewH, clearAlpha);
-    showerCtx.fillRect(0, 0, viewW, viewH);
+    // 背景を完全クリアして描画（泡の移動残像・二重露光ボケを根絶）
     showerCtx.globalAlpha = 1.0;
+    showerCtx.fillStyle = getThemeClearColor(showerCtx, viewW, viewH, 1.0);
+    showerCtx.fillRect(0, 0, viewW, viewH);
     
     // 夜空のまたたく星屑を描画
     drawStars();
     
-    // フィーバー中のオーロラは負荷時スキップ（低解像度拡大が全体ぼやけの主因）
-    if (feverActive && !meditationMode && !highLoad) {
+    // フィーバー中のオーロラ
+    if (feverActive && !meditationMode) {
         drawRealAuroraCurtain();
     }
     
@@ -1197,9 +1210,7 @@ function drawShower() {
     showerCtx.globalCompositeOperation = 'screen';
     
     // 粒子の描画
-    // 負荷時は補間を抑えて輪郭のぼやけを減らす
     const prevSmooth = showerCtx.imageSmoothingEnabled;
-    if (highLoad) showerCtx.imageSmoothingEnabled = false;
 
     showerParticles.forEach(p => {
         // 通常の円形（type指定がない、または 'circle'）
