@@ -1666,16 +1666,75 @@ function createBubble(forceType) {
     });
 }
 
+// 泡の更新処理：ポップ（破裂）アニメーションの進行
+function updateBubblePopAnimation(b) {
+    b.popFrame++;
+    const progress = b.popFrame / b.popMaxFrames;
+    
+    // アスペクト比を弾性イージングで変形させる「ぷにゅん」破裂演出
+    if (progress < 0.3) {
+        // タップ直後 (0〜30%): 横に潰れて膨らむ（ぷにゅっ）
+        const factor = Math.sin((progress / 0.3) * Math.PI);
+        b.popScaleX = 1 + factor * 0.35;
+        b.popScaleY = 1 - factor * 0.22;
+    } else {
+        // 後半 (30〜100%): 縦に伸びながら消滅
+        const t = (progress - 0.3) / 0.7;
+        b.popScaleX = 1.35 * (1 - t);
+        b.popScaleY = 1.48 * (1 - t);
+    }
+    b.popScale = b.popScaleX; // 後方互換性維持
+    
+    // ピーク時 (30%経過時) に波紋と粒子を発生（瞑想モード時は刺激抑制のためスキップ）
+    if (!b.popTriggered && progress >= 0.3) {
+        b.popTriggered = true;
+        if (!meditationMode) {
+            const rippleSize = 115 + Math.min(comboCount, 12) * 24;
+            const particleCount = 10 + Math.min(comboCount, 12) * 4;
+            const rippleSpeed = 2.8 + Math.min(comboCount, 12) * 0.3;
+            
+            createShowerRipple(b.x, b.y, rippleSize, rippleSpeed, b.hue);
+            createShowerParticles(b.x, b.y, particleCount, b.hue, false);
+        }
+    }
+    
+    // アニメーション完了フラグ
+    return b.popFrame >= b.popMaxFrames;
+}
+
+// 泡の更新処理：通常の浮遊物理演算
+function updateBubblePhysics(b) {
+    b.time++;
+    const speedMultiplier = feverActive ? 1.8 : 1.0;
+    
+    // ゆらゆら移動成分の加算
+    const baseDy = b.vy * speedMultiplier;
+    const baseDx = Math.sin(b.time * b.swaySpeed * speedMultiplier + b.swayOffset) * b.swayAmplitude * speedMultiplier;
+    
+    b.y += baseDy;
+    b.x += baseDx;
+    
+    // 画面端の折り返し・クランプ
+    if (b.x - b.radius < 0) {
+        b.x = b.radius;
+    }
+    if (showerCanvas && b.x + b.radius > viewW) {
+        b.x = viewW - b.radius;
+    }
+    
+    // 画面上部に完全に抜けたら削除対象
+    return (b.y + b.radius < -30);
+}
+
+// 全ての泡の状態を更新
 function updateBubbles(timestamp) {
-    // 新しい泡のスポーン（ゲームが進行中のみ）
+    // 1. 新しい泡のスポーン判定（ゲーム中のみ）
     if (gameActive) {
-        // フィーバー終了チェック
         if (feverActive && performance.now() > feverEndTime) {
             feverActive = false;
         }
         
         let limit = feverActive ? FEVER_MAX_BUBBLES : MAX_BUBBLES;
-        // オーロラ（フィーバータイム）が出ている間は球の発生率を4倍にする（間隔を1/4に）
         let spawnMin = feverActive ? Math.floor(BUBBLE_SPAWN_MIN / 4) : BUBBLE_SPAWN_MIN;
         let spawnMax = feverActive ? Math.floor(BUBBLE_SPAWN_MAX / 4) : BUBBLE_SPAWN_MAX;
         
@@ -1691,137 +1750,81 @@ function updateBubbles(timestamp) {
         }
     }
     
-    // 各泡の更新
+    // 2. 各泡の更新と寿命管理
     for (let i = bubbles.length - 1; i >= 0; i--) {
         const b = bubbles[i];
 
-        // 連鎖予約のまま残った泡を復帰（無反応タップの原因）
+        // 連鎖予約のまま残った泡を安全に復帰（無反応タップの防止ガード）
         if (b.reserved && !b.popping && b.reservedAt && (performance.now() - b.reservedAt > 4000)) {
             b.reserved = false;
             b.reservedAt = 0;
         }
         
         if (b.popping) {
-            // ポップアニメーション
-            b.popFrame++;
-            const progress = b.popFrame / b.popMaxFrames;
-            
-            // アスペクト比を弾性イージングで変形させる「ぷにゅん」破裂
-            if (progress < 0.3) {
-                // タップ直後の30%の時間で、一瞬「横に潰れて膨らむ」（ぷにゅっ）
-                const factor = Math.sin((progress / 0.3) * Math.PI);
-                b.popScaleX = 1 + factor * 0.35;
-                b.popScaleY = 1 - factor * 0.22;
-            } else {
-                // 後半の70%の時間で、「縦にビヨーンと伸びながら消滅する」
-                const t = (progress - 0.3) / 0.7;
-                b.popScaleX = 1.35 * (1 - t);
-                b.popScaleY = 1.48 * (1 - t);
-            }
-            
-            b.popScale = b.popScaleX; // 後方互換性維持
-            
-            // ピーク時に波紋と粒子を発生（瞑想モード時は刺激を避けるため発生させない）
-            if (!b.popTriggered && progress >= 0.3) {
-                b.popTriggered = true;
-                
-                if (!meditationMode) {
-                    const rippleSize = 115 + Math.min(comboCount, 12) * 24;
-                    const particleCount = 10 + Math.min(comboCount, 12) * 4;
-                    const rippleSpeed = 2.8 + Math.min(comboCount, 12) * 0.3;
-                    
-                    createShowerRipple(b.x, b.y, rippleSize, rippleSpeed, b.hue);
-                    createShowerParticles(b.x, b.y, particleCount, b.hue, false);
-                }
-            }
-            
-            // アニメーション完了で削除
-            if (b.popFrame >= b.popMaxFrames) {
+            const isFinished = updateBubblePopAnimation(b);
+            if (isFinished) {
                 bubbles.splice(i, 1);
-                continue;
             }
         } else {
-            // 通常の浮遊更新
-            b.time++;
-            const speedMultiplier = feverActive ? 1.8 : 1.0;
-            
-            // 元のゆらゆら移動成分
-            const baseDy = b.vy * speedMultiplier;
-            const baseDx = Math.sin(b.time * b.swaySpeed * speedMultiplier + b.swayOffset) * b.swayAmplitude * speedMultiplier;
-            
-            b.y += baseDy;
-            b.x += baseDx;
-            
-            // 画面端で折り返し（元の端での固定処理に復元）
-            if (b.x - b.radius < 0) {
-                b.x = b.radius;
-            }
-            if (showerCanvas && b.x + b.radius > viewW) {
-                b.x = viewW - b.radius;
-            }
-            
-            // 画面の上に抜けたら削除
-            if (b.y + b.radius < -30) {
+            const isOutOfScreen = updateBubblePhysics(b);
+            if (isOutOfScreen) {
                 bubbles.splice(i, 1);
             }
         }
     }
 }
 
+// 単一の泡を描画（座標変換・スケール・アルファ・テンプレート転写）
+function drawSingleBubble(ctx, b) {
+    const drawRadius = b.radius;
+    if (drawRadius <= 0.5) return;
+    
+    // ポップ時のみアスペクト比スケールを変形（浮遊時は真球）
+    const scaleX = b.popping ? (b.popScaleX || 1) : 1;
+    const scaleY = b.popping ? (b.popScaleY || 1) : 1;
+
+    // ジャイロによる視差効果（手前のバブルほど大きく動くパララックス）
+    const bOffsetX = currentGyroX * 0.4 * b.radius;
+    const bOffsetY = currentGyroY * 0.4 * b.radius;
+
+    // ポップ中のフェードアウト係数
+    const alphaMultiplier = b.popping ? Math.max(0, 1 - (b.popFrame / b.popMaxFrames)) : 1;
+
+    ctx.save();
+    ctx.translate(b.x + bOffsetX, b.y + bOffsetY);
+    ctx.scale(scaleX, scaleY);
+    ctx.globalAlpha = b.alpha * alphaMultiplier;
+
+    // テンプレートの描画（連鎖バブルは白銀テンプレートを流用して軽量化）
+    const template = (b.type === 'chain')
+        ? getBubbleTemplate('silver', 210, '#cbd5e1')
+        : getBubbleTemplate(b.type, b.hue, b.color);
+    
+    const size = 256 * (drawRadius / 60);
+    ctx.drawImage(template, -size / 2, -size / 2, size, size);
+
+    // 連鎖バブル専用の回転破線リング
+    if (b.type === 'chain') {
+        ctx.save();
+        ctx.rotate(b.time * 0.025);
+        ctx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    ctx.restore();
+}
+
+// 全ての泡を Canvas に描画
 function drawBubbles() {
     if (!showerCtx) return;
-    
-    bubbles.forEach(b => {
-        const drawRadius = b.radius;
-        if (drawRadius <= 0.5) return;
-        
-        let scaleX = 1;
-        let scaleY = 1;
-        
-        // ポップ時のみアスペクト比スケールをかける（浮遊時は完全な円）
-        if (b.popping) {
-            scaleX = b.popScaleX || 1;
-            scaleY = b.popScaleY || 1;
-        }
-
-        showerCtx.save();
-        
-        // ジャイロによる視差効果（手前のバブルほど大きく動くパララックス）
-        const bOffsetX = currentGyroX * 0.4 * b.radius;
-        const bOffsetY = currentGyroY * 0.4 * b.radius;
-        
-        // 座標系をバブルの中心に移動させ、アスペクト比スケールをかける
-        showerCtx.translate(b.x + bOffsetX, b.y + bOffsetY);
-        showerCtx.scale(scaleX, scaleY);
-        
-        // ポップ中はフェードアウト
-        const alphaMultiplier = b.popping ? Math.max(0, 1 - (b.popFrame / b.popMaxFrames)) : 1;
-        showerCtx.globalAlpha = b.alpha * alphaMultiplier;
-        
-        if (b.type === 'silver' || b.type === 'normal') {
-            const template = getBubbleTemplate(b.type, b.hue, b.color);
-            const size = 256 * (drawRadius / 60);
-            showerCtx.drawImage(template, -size / 2, -size / 2, size, size);
-        } else if (b.type === 'chain') {
-            // 連鎖バブルは事前キャッシュされたシルバーテンプレートを流用して軽量描画
-            const template = getBubbleTemplate('silver', 210, '#cbd5e1');
-            const size = 256 * (drawRadius / 60);
-            showerCtx.drawImage(template, -size / 2, -size / 2, size, size);
-            
-            // 回転リングのみ追加描画（グラデーション生成なし）
-            showerCtx.save();
-            showerCtx.rotate(b.time * 0.025);
-            showerCtx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
-            showerCtx.lineWidth = 1.5;
-            showerCtx.setLineDash([4, 6]);
-            showerCtx.beginPath();
-            showerCtx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
-            showerCtx.stroke();
-            showerCtx.restore();
-        }
-        
-        showerCtx.restore();
-    });
+    for (let i = 0; i < bubbles.length; i++) {
+        drawSingleBubble(showerCtx, bubbles[i]);
+    }
 }
 
 function incrementPopProgress() {
