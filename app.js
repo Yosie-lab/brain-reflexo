@@ -1473,20 +1473,20 @@ function getBubbleTemplate(type, hue, colorHex) {
         ctx.arc(0, 0, drawRadius * 1.45, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body（真珠・白銀のような深みとクリアな透明感）
+        // 2. Body（真珠・白銀のような深みと高輝度なクリア感）
         const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.26, -drawRadius * 0.26, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.90)');
-        bodyGrad.addColorStop(0.25, 'rgba(248, 250, 252, 0.70)');
-        bodyGrad.addColorStop(0.65, 'rgba(226, 232, 240, 0.48)'); // 中央の透明度を高めて背景を美しく透かす
-        bodyGrad.addColorStop(0.90, 'rgba(180, 198, 220, 0.68)');
-        bodyGrad.addColorStop(1.0, 'rgba(125, 145, 170, 0.84)'); // 外周をしっかり締めてボケを防止
+        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+        bodyGrad.addColorStop(0.25, 'rgba(250, 252, 255, 0.80)');
+        bodyGrad.addColorStop(0.65, 'rgba(235, 242, 250, 0.56)'); // 背景を美しく透かす高い透明度
+        bodyGrad.addColorStop(0.90, 'rgba(205, 222, 242, 0.74)');
+        bodyGrad.addColorStop(1.0, 'rgba(145, 168, 195, 0.86)'); // 外周をしっかり締めてボケを防止
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
         // 3. クッキリ鮮明なリムライン（輪郭線）
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
         ctx.lineWidth = 1.8;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius - 0.9, 0, Math.PI * 2);
@@ -1498,7 +1498,7 @@ function getBubbleTemplate(type, hue, colorHex) {
         const hlR = drawRadius * 0.25;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
         hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.75)');
+        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.80)');
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
@@ -1510,7 +1510,7 @@ function getBubbleTemplate(type, hue, colorHex) {
         const subHlY = drawRadius * 0.28;
         const subHlR = drawRadius * 0.18;
         const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.62)');
         subHlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = subHlGrad;
         ctx.beginPath();
@@ -1519,29 +1519,29 @@ function getBubbleTemplate(type, hue, colorHex) {
     } else {
         const drawRadius = templateRadius;
         
-        // 1. 鮮やかな光彩（高彩度・クリアなオーラ）
+        // 1. 鮮やかな光彩（高輝度・高彩度なオーラ）
         const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.80, 0, 0, drawRadius * 1.25);
-        glowGrad.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.40)`);
-        glowGrad.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);
+        glowGrad.addColorStop(0, `hsla(${hue}, 100%, 75%, 0.44)`);
+        glowGrad.addColorStop(1, `hsla(${hue}, 100%, 75%, 0)`);
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius * 1.25, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. Body（彩度を高め、クリスタルのように澄み渡る高い透明度と鮮やかさ）
+        // 2. Body（高い透明度と高彩度を保ちながら、輝度を引き上げたクリスタル球体）
         const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
-        bodyGrad.addColorStop(0, `hsla(${hue}, 96%, 88%, 0.70)`); // 光の透過部（透明度UP）
-        bodyGrad.addColorStop(0.35, `hsla(${hue}, 96%, 66%, 0.30)`); // 内側透過層（背景を綺麗に透かす）
-        bodyGrad.addColorStop(0.72, `hsla(${hue}, 100%, 58%, 0.22)`); // 色の深みとクリアな透明度（高彩度）
-        bodyGrad.addColorStop(0.90, `hsla(${hue}, 100%, 65%, 0.68)`); // フレネル反射部（鮮明なリング）
-        bodyGrad.addColorStop(1.0, `hsla(${hue}, 100%, 70%, 0.88)`); // 外縁の鮮やかな輪郭
+        bodyGrad.addColorStop(0, `hsla(${hue}, 92%, 94%, 0.80)`); // 光の透過部（輝度UP）
+        bodyGrad.addColorStop(0.35, `hsla(${hue}, 94%, 76%, 0.36)`); // 内側透過層（明るく澄んだ透明感）
+        bodyGrad.addColorStop(0.72, `hsla(${hue}, 98%, 68%, 0.26)`); // 色の深みとクリアな透過（高彩度・高輝度）
+        bodyGrad.addColorStop(0.90, `hsla(${hue}, 100%, 74%, 0.72)`); // フレネル反射部（明るく鮮明なリング）
+        bodyGrad.addColorStop(1.0, `hsla(${hue}, 100%, 78%, 0.90)`); // 外縁の鮮やかな輪郭
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. クッキリした鮮明で高彩度な光の輪郭線
-        ctx.strokeStyle = `hsla(${hue}, 100%, 80%, 0.92)`;
+        // 3. クッキリした鮮明で明るく高彩度な光の輪郭線
+        ctx.strokeStyle = `hsla(${hue}, 100%, 86%, 0.95)`;
         ctx.lineWidth = 1.7;
         ctx.beginPath();
         ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
@@ -1553,7 +1553,7 @@ function getBubbleTemplate(type, hue, colorHex) {
         const hlR = drawRadius * 0.26;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
         hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        hlGrad.addColorStop(0.45, `hsla(${hue}, 90%, 94%, 0.75)`);
+        hlGrad.addColorStop(0.45, `hsla(${hue}, 85%, 96%, 0.82)`);
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
@@ -1565,8 +1565,8 @@ function getBubbleTemplate(type, hue, colorHex) {
         const subHlY = drawRadius * 0.28;
         const subHlR = drawRadius * 0.18;
         const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
-        subHlGrad.addColorStop(0, `hsla(${hue}, 100%, 90%, 0.55)`);
-        subHlGrad.addColorStop(1, `hsla(${hue}, 100%, 90%, 0)`);
+        subHlGrad.addColorStop(0, `hsla(${hue}, 100%, 94%, 0.62)`);
+        subHlGrad.addColorStop(1, `hsla(${hue}, 100%, 94%, 0)`);
         ctx.fillStyle = subHlGrad;
         ctx.beginPath();
         ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
@@ -1641,7 +1641,7 @@ function createBubble(forceType) {
         swayAmplitude: 0.3 + Math.random() * 0.5,
         swaySpeed: 0.008 + Math.random() * 0.02,
         swayOffset: Math.random() * Math.PI * 2,
-        alpha: type === 'silver' ? 0.88 : (type === 'chain' ? 0.84 : 0.60 + Math.random() * 0.20),
+        alpha: type === 'silver' ? 0.92 : (type === 'chain' ? 0.88 : 0.68 + Math.random() * 0.18),
         pushX: 0,
         pushY: 0,
         wobble: 0,
