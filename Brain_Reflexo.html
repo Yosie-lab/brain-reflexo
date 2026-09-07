@@ -3676,14 +3676,6 @@ function drawMeteors() {
 // =============================================================
 // 4. 泡（バブル）システム（生成・浮遊・破裂・光彩）
 // =============================================================
-
-/**
- * 泡の描画テンプレート（オフスクリーンCanvas）を生成・キャッシュする
- * @param {'normal'|'silver'|'chain'} type 泡の種別
- * @param {number} hue 色相角 (0-360)
- * @param {string} colorHex 代表色HEX
- * @returns {HTMLCanvasElement}
- */
 function getBubbleTemplate(type, hue, colorHex) {
     const key = `${type}_${hue}`;
     if (bubbleTemplateCache[key]) {
@@ -3697,128 +3689,134 @@ function getBubbleTemplate(type, hue, colorHex) {
     const ctx = canvas.getContext('2d');
     
     const center = canvasSize / 2;
-    const r = 60; // 基準半径 (templateRadius)
+    const templateRadius = 60; // 基準半径
     
     ctx.save();
     ctx.translate(center, center);
     
     if (type === 'silver') {
-        // --- 白銀バブル（真珠のような気品あるクリア発光質感） ---
+        const drawRadius = templateRadius;
         
-        // 1. 白銀バブル専用の多段光彩（ルミナスグロー）
-        // 1-A. 外側のやわらかな広域オーラ
-        const outerGlow = ctx.createRadialGradient(0, 0, r * 0.75, 0, 0, r * 1.95);
-        outerGlow.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
-        outerGlow.addColorStop(0.45, 'rgba(226, 232, 240, 0.22)');
-        outerGlow.addColorStop(0.75, 'rgba(203, 213, 225, 0.08)');
-        outerGlow.addColorStop(1, 'rgba(203, 213, 225, 0)');
-        ctx.fillStyle = outerGlow;
+        // 1. 白銀バブルの気品ある光彩（ルミナスグローを豊かに強化）
+        // 外側にふんわり広がる柔らかな光彩
+        const outerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.75, 0, 0, drawRadius * 1.95);
+        outerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        outerGlowGrad.addColorStop(0.45, 'rgba(226, 232, 240, 0.22)');
+        outerGlowGrad.addColorStop(0.75, 'rgba(203, 213, 225, 0.08)');
+        outerGlowGrad.addColorStop(1, 'rgba(203, 213, 225, 0)');
+        ctx.fillStyle = outerGlowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, r * 1.95, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.95, 0, Math.PI * 2);
         ctx.fill();
 
-        // 1-B. 泡外周を包む濃密な高輝度光彩
-        const innerGlow = ctx.createRadialGradient(0, 0, r * 0.55, 0, 0, r * 1.45);
-        innerGlow.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
-        innerGlow.addColorStop(0.40, 'rgba(248, 250, 252, 0.48)');
-        innerGlow.addColorStop(0.75, 'rgba(226, 232, 240, 0.20)');
-        innerGlow.addColorStop(1, 'rgba(226, 232, 240, 0)');
-        ctx.fillStyle = innerGlow;
+        // 泡のすぐ外側を包む濃密な高輝度光彩
+        const innerGlowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.55, 0, 0, drawRadius * 1.45);
+        innerGlowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+        innerGlowGrad.addColorStop(0.40, 'rgba(248, 250, 252, 0.48)');
+        innerGlowGrad.addColorStop(0.75, 'rgba(226, 232, 240, 0.20)');
+        innerGlowGrad.addColorStop(1, 'rgba(226, 232, 240, 0)');
+        ctx.fillStyle = innerGlowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, r * 1.45, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.45, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. 球体Body（中心部の高い透明度と、外周の引き締まったエッジ）
-        const bodyGrad = ctx.createRadialGradient(-r * 0.26, -r * 0.26, r * 0.06, 0, 0, r);
-        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.92)');
-        bodyGrad.addColorStop(0.25, 'rgba(252, 254, 255, 0.52)'); // 内部透過層
-        bodyGrad.addColorStop(0.65, 'rgba(240, 246, 255, 0.26)'); // 背景が透ける抜け感
-        bodyGrad.addColorStop(0.90, 'rgba(215, 230, 248, 0.68)'); // フレネル反射
-        bodyGrad.addColorStop(1.0, 'rgba(160, 182, 208, 0.84)'); // 外周リム
+        // 2. Body（真珠・白銀のような深みと高輝度なクリア透明感）
+        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.26, -drawRadius * 0.26, drawRadius * 0.06, 0, 0, drawRadius);
+        bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+        bodyGrad.addColorStop(0.25, 'rgba(252, 254, 255, 0.70)');
+        bodyGrad.addColorStop(0.65, 'rgba(240, 246, 255, 0.42)'); // 中央の透明度をさらに高めて背景を美しく透かす
+        bodyGrad.addColorStop(0.90, 'rgba(215, 230, 248, 0.70)');
+        bodyGrad.addColorStop(1.0, 'rgba(160, 182, 208, 0.82)'); // 外周をしっかり締めてボケを防止
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. 高輝度リムライン（白銀の極細輪郭線）
-        ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)';
+        // 3. クッキリ鮮明なリムライン（輪郭線）
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
         ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.arc(0, 0, r - 0.9, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius - 0.9, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. メインハイライト（シャープな高輝度光沢）
-        const hlX = -r * 0.32, hlY = -r * 0.32, hlR = r * 0.28;
+        // 4. メインハイライト（シャープで高輝度な光沢）
+        const hlX = -drawRadius * 0.32;
+        const hlY = -drawRadius * 0.32;
+        const hlR = drawRadius * 0.27;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
         hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        hlGrad.addColorStop(0.45, 'rgba(255, 255, 255, 0.95)');
-        hlGrad.addColorStop(0.70, 'rgba(240, 246, 255, 0.50)');
+        hlGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.85)');
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
         ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
         ctx.fill();
 
-        // 5. サブハイライト（対角の反射光）
-        const subX = r * 0.28, subY = r * 0.28, subR = r * 0.18;
-        const subGrad = ctx.createRadialGradient(subX, subY, 0, subX, subY, subR);
-        subGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
-        subGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = subGrad;
+        // 5. サブハイライト（対角の反射光による立体感）
+        const subHlX = drawRadius * 0.28;
+        const subHlY = drawRadius * 0.28;
+        const subHlR = drawRadius * 0.18;
+        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
+        subHlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.68)');
+        subHlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = subHlGrad;
         ctx.beginPath();
-        ctx.arc(subX, subY, subR, 0, Math.PI * 2);
+        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
         ctx.fill();
     } else {
-        // --- 通常バブル（高い透明度と鮮烈なジュエルカラー・クリスタル質感） ---
+        const drawRadius = templateRadius;
         
-        // 1. 鮮やかな光彩オーラ（純度の高い色鮮やかなグロー）
-        const glowGrad = ctx.createRadialGradient(0, 0, r * 0.80, 0, 0, r * 1.25);
-        glowGrad.addColorStop(0, `hsla(${hue}, 100%, 68%, 0.50)`);
-        glowGrad.addColorStop(1, `hsla(${hue}, 100%, 68%, 0)`);
+        // 1. 鮮やかな光彩（高輝度・高彩度なオーラ）
+        const glowGrad = ctx.createRadialGradient(0, 0, drawRadius * 0.80, 0, 0, drawRadius * 1.25);
+        glowGrad.addColorStop(0, `hsla(${hue}, 100%, 80%, 0.46)`);
+        glowGrad.addColorStop(1, `hsla(${hue}, 100%, 80%, 0)`);
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, r * 1.25, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius * 1.25, 0, Math.PI * 2);
         ctx.fill();
         
-        // 2. 球体Body（中心部は透明感を保ち、外周にかけて色鮮やかに発色）
-        const bodyGrad = ctx.createRadialGradient(-r * 0.24, -r * 0.24, r * 0.06, 0, 0, r);
-        bodyGrad.addColorStop(0, `hsla(${hue}, 100%, 92%, 0.52)`); // 光の透過部（高輝度エミッション）
-        bodyGrad.addColorStop(0.35, `hsla(${hue}, 100%, 75%, 0.18)`); // 内側透過層（背景がくっきり透ける）
-        bodyGrad.addColorStop(0.70, `hsla(${hue}, 100%, 65%, 0.14)`); // 色の深みと豊かな彩度
-        bodyGrad.addColorStop(0.88, `hsla(${hue}, 100%, 68%, 0.72)`); // フレネル反射部（鮮やかに発色するリング）
-        bodyGrad.addColorStop(1.0, `hsla(${hue}, 100%, 72%, 0.90)`); // 外縁の鮮やかな輪郭
+        // 2. Body（高い透明度と高彩度を保ちながら、輝度を引き上げたクリスタル球体）
+        const bodyGrad = ctx.createRadialGradient(-drawRadius * 0.24, -drawRadius * 0.24, drawRadius * 0.06, 0, 0, drawRadius);
+        bodyGrad.addColorStop(0, `hsla(${hue}, 90%, 96%, 0.72)`); // 光の透過部（輝度UP・透明度UP）
+        bodyGrad.addColorStop(0.35, `hsla(${hue}, 92%, 80%, 0.28)`); // 内側透過層（明るく澄んだ透明感）
+        bodyGrad.addColorStop(0.72, `hsla(${hue}, 98%, 72%, 0.20)`); // 色の深みとクリアな透過（高彩度・高輝度・高透明度）
+        bodyGrad.addColorStop(0.90, `hsla(${hue}, 100%, 78%, 0.68)`); // フレネル反射部（明るく鮮明なリング）
+        bodyGrad.addColorStop(1.0, `hsla(${hue}, 100%, 82%, 0.88)`); // 外縁の鮮やかな輪郭
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 3. 高彩度・鮮明な光の輪郭線（エッジライン）
-        ctx.strokeStyle = `hsla(${hue}, 100%, 82%, 0.96)`;
-        ctx.lineWidth = 1.8;
+        // 3. クッキリした鮮明で明るく高彩度な光の輪郭線
+        ctx.strokeStyle = `hsla(${hue}, 100%, 90%, 0.96)`;
+        ctx.lineWidth = 1.7;
         ctx.beginPath();
-        ctx.arc(0, 0, r - 0.8, 0, Math.PI * 2);
+        ctx.arc(0, 0, drawRadius - 0.8, 0, Math.PI * 2);
         ctx.stroke();
         
-        // 4. メインハイライト（鋭く澄んだ高輝度の光沢）
-        const hlX = -r * 0.32, hlY = -r * 0.32, hlR = r * 0.29;
+        // 4. メインハイライト（鋭く澄んだ高輝度の輝き）
+        const hlX = -drawRadius * 0.32;
+        const hlY = -drawRadius * 0.32;
+        const hlR = drawRadius * 0.28;
         const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR);
         hlGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        hlGrad.addColorStop(0.40, 'rgba(255, 255, 255, 0.95)');
-        hlGrad.addColorStop(0.65, `hsla(${hue}, 90%, 92%, 0.70)`);
+        hlGrad.addColorStop(0.5, `hsla(${hue}, 80%, 98%, 0.88)`);
         hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
         ctx.fillStyle = hlGrad;
         ctx.beginPath();
         ctx.arc(hlX, hlY, hlR, 0, Math.PI * 2);
         ctx.fill();
 
-        // 5. サブハイライト（対角の反射光）
-        const subX = r * 0.28, subY = r * 0.28, subR = r * 0.18;
-        const subGrad = ctx.createRadialGradient(subX, subY, 0, subX, subY, subR);
-        subGrad.addColorStop(0, `hsla(${hue}, 100%, 94%, 0.75)`);
-        subGrad.addColorStop(1, `hsla(${hue}, 100%, 94%, 0)`);
-        ctx.fillStyle = subGrad;
+        // 5. サブハイライト（対角の反射光による立体的な輝き）
+        const subHlX = drawRadius * 0.28;
+        const subHlY = drawRadius * 0.28;
+        const subHlR = drawRadius * 0.18;
+        const subHlGrad = ctx.createRadialGradient(subHlX, subHlY, 0, subHlX, subHlY, subHlR);
+        subHlGrad.addColorStop(0, `hsla(${hue}, 100%, 96%, 0.68)`);
+        subHlGrad.addColorStop(1, `hsla(${hue}, 100%, 96%, 0)`);
+        ctx.fillStyle = subHlGrad;
         ctx.beginPath();
-        ctx.arc(subX, subY, subR, 0, Math.PI * 2);
+        ctx.arc(subHlX, subHlY, subHlR, 0, Math.PI * 2);
         ctx.fill();
     }
     
@@ -3878,11 +3876,6 @@ function createBubble(forceType) {
     
     // 浮遊速度の決定（基準の2.4倍）
     let vy = (type === 'silver' ? -(0.25 + Math.random() * 0.35) : -(0.3 + Math.random() * 0.5)) * 2.4;
-
-    // 泡種別ごとの基準透明度（抜け感と視認性の最適バランス）
-    const alpha = type === 'silver'
-        ? 0.86
-        : (type === 'chain' ? 0.82 : 0.58 + Math.random() * 0.16);
     
     bubbles.push({
         type: type,
@@ -3895,7 +3888,7 @@ function createBubble(forceType) {
         swayAmplitude: 0.3 + Math.random() * 0.5,
         swaySpeed: 0.008 + Math.random() * 0.02,
         swayOffset: Math.random() * Math.PI * 2,
-        alpha: alpha,
+        alpha: type === 'silver' ? 0.88 : (type === 'chain' ? 0.84 : 0.62 + Math.random() * 0.18),
         pushX: 0,
         pushY: 0,
         wobble: 0,
@@ -3913,75 +3906,16 @@ function createBubble(forceType) {
     });
 }
 
-// 泡の更新処理：ポップ（破裂）アニメーションの進行
-function updateBubblePopAnimation(b) {
-    b.popFrame++;
-    const progress = b.popFrame / b.popMaxFrames;
-    
-    // アスペクト比を弾性イージングで変形させる「ぷにゅん」破裂演出
-    if (progress < 0.3) {
-        // タップ直後 (0〜30%): 横に潰れて膨らむ（ぷにゅっ）
-        const factor = Math.sin((progress / 0.3) * Math.PI);
-        b.popScaleX = 1 + factor * 0.35;
-        b.popScaleY = 1 - factor * 0.22;
-    } else {
-        // 後半 (30〜100%): 縦に伸びながら消滅
-        const t = (progress - 0.3) / 0.7;
-        b.popScaleX = 1.35 * (1 - t);
-        b.popScaleY = 1.48 * (1 - t);
-    }
-    b.popScale = b.popScaleX; // 後方互換性維持
-    
-    // ピーク時 (30%経過時) に波紋と粒子を発生（瞑想モード時は刺激抑制のためスキップ）
-    if (!b.popTriggered && progress >= 0.3) {
-        b.popTriggered = true;
-        if (!meditationMode) {
-            const rippleSize = 115 + Math.min(comboCount, 12) * 24;
-            const particleCount = 10 + Math.min(comboCount, 12) * 4;
-            const rippleSpeed = 2.8 + Math.min(comboCount, 12) * 0.3;
-            
-            createShowerRipple(b.x, b.y, rippleSize, rippleSpeed, b.hue);
-            createShowerParticles(b.x, b.y, particleCount, b.hue, false);
-        }
-    }
-    
-    // アニメーション完了フラグ
-    return b.popFrame >= b.popMaxFrames;
-}
-
-// 泡の更新処理：通常の浮遊物理演算
-function updateBubblePhysics(b) {
-    b.time++;
-    const speedMultiplier = feverActive ? 1.8 : 1.0;
-    
-    // ゆらゆら移動成分の加算
-    const baseDy = b.vy * speedMultiplier;
-    const baseDx = Math.sin(b.time * b.swaySpeed * speedMultiplier + b.swayOffset) * b.swayAmplitude * speedMultiplier;
-    
-    b.y += baseDy;
-    b.x += baseDx;
-    
-    // 画面端の折り返し・クランプ
-    if (b.x - b.radius < 0) {
-        b.x = b.radius;
-    }
-    if (showerCanvas && b.x + b.radius > viewW) {
-        b.x = viewW - b.radius;
-    }
-    
-    // 画面上部に完全に抜けたら削除対象
-    return (b.y + b.radius < -30);
-}
-
-// 全ての泡の状態を更新
 function updateBubbles(timestamp) {
-    // 1. 新しい泡のスポーン判定（ゲーム中のみ）
+    // 新しい泡のスポーン（ゲームが進行中のみ）
     if (gameActive) {
+        // フィーバー終了チェック
         if (feverActive && performance.now() > feverEndTime) {
             feverActive = false;
         }
         
         let limit = feverActive ? FEVER_MAX_BUBBLES : MAX_BUBBLES;
+        // オーロラ（フィーバータイム）が出ている間は球の発生率を4倍にする（間隔を1/4に）
         let spawnMin = feverActive ? Math.floor(BUBBLE_SPAWN_MIN / 4) : BUBBLE_SPAWN_MIN;
         let spawnMax = feverActive ? Math.floor(BUBBLE_SPAWN_MAX / 4) : BUBBLE_SPAWN_MAX;
         
@@ -3997,81 +3931,137 @@ function updateBubbles(timestamp) {
         }
     }
     
-    // 2. 各泡の更新と寿命管理
+    // 各泡の更新
     for (let i = bubbles.length - 1; i >= 0; i--) {
         const b = bubbles[i];
 
-        // 連鎖予約のまま残った泡を安全に復帰（無反応タップの防止ガード）
+        // 連鎖予約のまま残った泡を復帰（無反応タップの原因）
         if (b.reserved && !b.popping && b.reservedAt && (performance.now() - b.reservedAt > 4000)) {
             b.reserved = false;
             b.reservedAt = 0;
         }
         
         if (b.popping) {
-            const isFinished = updateBubblePopAnimation(b);
-            if (isFinished) {
+            // ポップアニメーション
+            b.popFrame++;
+            const progress = b.popFrame / b.popMaxFrames;
+            
+            // アスペクト比を弾性イージングで変形させる「ぷにゅん」破裂
+            if (progress < 0.3) {
+                // タップ直後の30%の時間で、一瞬「横に潰れて膨らむ」（ぷにゅっ）
+                const factor = Math.sin((progress / 0.3) * Math.PI);
+                b.popScaleX = 1 + factor * 0.35;
+                b.popScaleY = 1 - factor * 0.22;
+            } else {
+                // 後半の70%の時間で、「縦にビヨーンと伸びながら消滅する」
+                const t = (progress - 0.3) / 0.7;
+                b.popScaleX = 1.35 * (1 - t);
+                b.popScaleY = 1.48 * (1 - t);
+            }
+            
+            b.popScale = b.popScaleX; // 後方互換性維持
+            
+            // ピーク時に波紋と粒子を発生（瞑想モード時は刺激を避けるため発生させない）
+            if (!b.popTriggered && progress >= 0.3) {
+                b.popTriggered = true;
+                
+                if (!meditationMode) {
+                    const rippleSize = 115 + Math.min(comboCount, 12) * 24;
+                    const particleCount = 10 + Math.min(comboCount, 12) * 4;
+                    const rippleSpeed = 2.8 + Math.min(comboCount, 12) * 0.3;
+                    
+                    createShowerRipple(b.x, b.y, rippleSize, rippleSpeed, b.hue);
+                    createShowerParticles(b.x, b.y, particleCount, b.hue, false);
+                }
+            }
+            
+            // アニメーション完了で削除
+            if (b.popFrame >= b.popMaxFrames) {
                 bubbles.splice(i, 1);
+                continue;
             }
         } else {
-            const isOutOfScreen = updateBubblePhysics(b);
-            if (isOutOfScreen) {
+            // 通常の浮遊更新
+            b.time++;
+            const speedMultiplier = feverActive ? 1.8 : 1.0;
+            
+            // 元のゆらゆら移動成分
+            const baseDy = b.vy * speedMultiplier;
+            const baseDx = Math.sin(b.time * b.swaySpeed * speedMultiplier + b.swayOffset) * b.swayAmplitude * speedMultiplier;
+            
+            b.y += baseDy;
+            b.x += baseDx;
+            
+            // 画面端で折り返し（元の端での固定処理に復元）
+            if (b.x - b.radius < 0) {
+                b.x = b.radius;
+            }
+            if (showerCanvas && b.x + b.radius > viewW) {
+                b.x = viewW - b.radius;
+            }
+            
+            // 画面の上に抜けたら削除
+            if (b.y + b.radius < -30) {
                 bubbles.splice(i, 1);
             }
         }
     }
 }
 
-// 単一の泡を描画（座標変換・スケール・アルファ・テンプレート転写）
-function drawSingleBubble(ctx, b) {
-    const drawRadius = b.radius;
-    if (drawRadius <= 0.5) return;
-    
-    // ポップ時のみアスペクト比スケールを変形（浮遊時は真球）
-    const scaleX = b.popping ? (b.popScaleX || 1) : 1;
-    const scaleY = b.popping ? (b.popScaleY || 1) : 1;
-
-    // ジャイロによる視差効果（手前のバブルほど大きく動くパララックス）
-    const bOffsetX = currentGyroX * 0.4 * b.radius;
-    const bOffsetY = currentGyroY * 0.4 * b.radius;
-
-    // ポップ中のフェードアウト係数
-    const alphaMultiplier = b.popping ? Math.max(0, 1 - (b.popFrame / b.popMaxFrames)) : 1;
-
-    ctx.save();
-    ctx.translate(b.x + bOffsetX, b.y + bOffsetY);
-    ctx.scale(scaleX, scaleY);
-    ctx.globalAlpha = b.alpha * alphaMultiplier;
-
-    // テンプレートの描画（連鎖バブルは白銀テンプレートを流用して軽量化）
-    const template = (b.type === 'chain')
-        ? getBubbleTemplate('silver', 210, '#cbd5e1')
-        : getBubbleTemplate(b.type, b.hue, b.color);
-    
-    const size = 256 * (drawRadius / 60);
-    ctx.drawImage(template, -size / 2, -size / 2, size, size);
-
-    // 連鎖バブル専用の回転破線リング
-    if (b.type === 'chain') {
-        ctx.save();
-        ctx.rotate(b.time * 0.025);
-        ctx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 6]);
-        ctx.beginPath();
-        ctx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    ctx.restore();
-}
-
-// 全ての泡を Canvas に描画
 function drawBubbles() {
     if (!showerCtx) return;
-    for (let i = 0; i < bubbles.length; i++) {
-        drawSingleBubble(showerCtx, bubbles[i]);
-    }
+    
+    bubbles.forEach(b => {
+        const drawRadius = b.radius;
+        if (drawRadius <= 0.5) return;
+        
+        let scaleX = 1;
+        let scaleY = 1;
+        
+        // ポップ時のみアスペクト比スケールをかける（浮遊時は完全な円）
+        if (b.popping) {
+            scaleX = b.popScaleX || 1;
+            scaleY = b.popScaleY || 1;
+        }
+
+        showerCtx.save();
+        
+        // ジャイロによる視差効果（手前のバブルほど大きく動くパララックス）
+        const bOffsetX = currentGyroX * 0.4 * b.radius;
+        const bOffsetY = currentGyroY * 0.4 * b.radius;
+        
+        // 座標系をバブルの中心に移動させ、アスペクト比スケールをかける
+        showerCtx.translate(b.x + bOffsetX, b.y + bOffsetY);
+        showerCtx.scale(scaleX, scaleY);
+        
+        // ポップ中はフェードアウト
+        const alphaMultiplier = b.popping ? Math.max(0, 1 - (b.popFrame / b.popMaxFrames)) : 1;
+        showerCtx.globalAlpha = b.alpha * alphaMultiplier;
+        
+        if (b.type === 'silver' || b.type === 'normal') {
+            const template = getBubbleTemplate(b.type, b.hue, b.color);
+            const size = 256 * (drawRadius / 60);
+            showerCtx.drawImage(template, -size / 2, -size / 2, size, size);
+        } else if (b.type === 'chain') {
+            // 連鎖バブルは事前キャッシュされたシルバーテンプレートを流用して軽量描画
+            const template = getBubbleTemplate('silver', 210, '#cbd5e1');
+            const size = 256 * (drawRadius / 60);
+            showerCtx.drawImage(template, -size / 2, -size / 2, size, size);
+            
+            // 回転リングのみ追加描画（グラデーション生成なし）
+            showerCtx.save();
+            showerCtx.rotate(b.time * 0.025);
+            showerCtx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
+            showerCtx.lineWidth = 1.5;
+            showerCtx.setLineDash([4, 6]);
+            showerCtx.beginPath();
+            showerCtx.arc(0, 0, drawRadius * 1.18, 0, Math.PI * 2);
+            showerCtx.stroke();
+            showerCtx.restore();
+        }
+        
+        showerCtx.restore();
+    });
 }
 
 function incrementPopProgress() {
