@@ -26,8 +26,8 @@ body, html {
     max-height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
-    background-color: #050811; /* フォールバック用の暗い背景色 */
-    background: radial-gradient(circle at 50% 30%, #0b1528 0%, #050811 60%, #010205 100%);
+    background-color: #0a1224; /* フォールバック用の暗い背景色 */
+    background: radial-gradient(circle at 50% 30%, #101c38 0%, #0a1224 60%, #060c18 100%);
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
     color: #f8fafc;
     touch-action: none; /* ダブルタップズームやピンチズーム、スクロールによるレイアウト崩れを防ぐ */
@@ -1158,7 +1158,7 @@ body.theme-aurora {
 }
 
 body.theme-starry {
-    background: #000000;
+    background: radial-gradient(circle at 50% 30%, #101c38 0%, #0a1224 60%, #060c18 100%);
 }
 
 body.theme-sakura {

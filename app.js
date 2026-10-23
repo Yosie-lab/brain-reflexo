@@ -870,9 +870,10 @@ function getThemeClearColor(ctx, width, height, alpha) {
             grad.addColorStop(0.6, 'rgb(3, 8, 11)');
             grad.addColorStop(1, 'rgb(0, 2, 4)');
         } else if (currentTheme === 'starry') {
-            grad.addColorStop(0, 'rgb(0, 0, 0)');
-            grad.addColorStop(0.6, 'rgb(0, 0, 0)');
-            grad.addColorStop(1, 'rgb(0, 0, 0)');
+            // 完全黒より一段明るい深宇宙（泡の彩度が乗りやすいトーン）
+            grad.addColorStop(0, 'rgb(16, 28, 52)');
+            grad.addColorStop(0.6, 'rgb(10, 18, 36)');
+            grad.addColorStop(1, 'rgb(6, 12, 24)');
         } else if (currentTheme === 'sakura') {
             grad.addColorStop(0, 'rgb(26, 15, 24)');
             grad.addColorStop(0.6, 'rgb(10, 5, 13)');
